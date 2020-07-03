@@ -28,6 +28,7 @@ LPDIRECTDRAWSURFACE7 D3DSurfaceBackground = nullptr;
 bool bD3DFull = false;
 bool repaintsides = false;
 DWORD dwOldStyle = 0;
+DWORD dwOldStyleEx = 0;
 
 void D3D_DirectDrawScreenSetup() {
     InternalWidth = 800;
@@ -35,8 +36,11 @@ void D3D_DirectDrawScreenSetup() {
     IDirectDraw->SetCooperativeLevel(hWnd, DDSCL_NORMAL | DDSCL_NOWINDOWCHANGES);
     if (!dwOldStyle) {
         dwOldStyle = GetWindowLong(hWnd, GWL_STYLE);
-        dwOldStyle &= ~(WS_MAXIMIZEBOX | WS_EX_TOPMOST);
+        dwOldStyleEx = GetWindowLong(hWnd, GWL_EXSTYLE);
+        dwOldStyle &= ~(WS_MAXIMIZEBOX);
+        dwOldStyle &= ~(WS_EX_TOPMOST);
         SetWindowLong(hWnd, GWL_STYLE, dwOldStyle);
+        SetWindowLong(hWnd, GWL_EXSTYLE, dwOldStyleEx);
     }
 }
 
@@ -151,11 +155,6 @@ DWORD BeginScene() {
     Direct3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, filterType);
     Direct3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, filterType);
 
-    D3DVIEWPORT v{ 0 };
-    if (Direct3DViewport->GetViewport(&v) == DD_OK) {
-        Direct3DViewport->SetViewport(&v);
-    }
-    
     return true;
 }
 
