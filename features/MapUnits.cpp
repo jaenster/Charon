@@ -17,29 +17,6 @@ public:
         // gamelog << COLOR(4) << "Installing unit tracker..." << std::endl;
     }
 
-    void gameUnitPreDraw() {
-        D2::Types::UnitAny* player = D2::PlayerUnit;
-        if (player) {
-            D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
-            if (level) {
-                // Loop trough all rooms of current lvl
-                for (D2::Types::Room2* room = player->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room; room = room->pRoom2Next) {
-                    if (room->pPreset) {
-                        // Loop trough presets of current lvl
-                        for (D2::Types::PresetUnit* ps = room->pPreset; ps; ps = ps->pPresetNext) {
-                            //@ToDo; figure out which dots are important and which aren't
-                            // for now all we do is draw a green dot
-                            if (ps->dwType == 5) {
-                                DrawWorldRadialShape({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }, 4, 32, 0x83);
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-    }
-
     void gameAutomapPostDraw() {
         BYTE d;
 

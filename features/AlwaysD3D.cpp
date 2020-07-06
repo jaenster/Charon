@@ -226,6 +226,7 @@ namespace AlwaysD3D {
             MemoryPatch(0x4f5570) << JUMP(GetWindowSizeByResolutionMode);
             MemoryPatch(0x44ba30) << CALL(ScreenSizeHook) << NOP_TO(0x44ba7c);
             MemoryPatch(0x6b2030) << ASM::RET; // Disable min/mag filters.
+            MemoryPatch(0x44f278) << NOP_TO(0x44f280); // Disable frame skipping
 
 
             HotkeyCallbacks[VK_RETURN] = [&](LPARAM options) -> BOOL {
