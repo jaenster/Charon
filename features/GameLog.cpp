@@ -6,6 +6,7 @@
 
 REMOTEFUNC(void __fastcall, PrintGameString, (const wchar_t* wMessage, int nColor), 0x49E3A0)
 REMOTEFUNC(void __fastcall, PrintPartyString, (const wchar_t* wMessage, int nColor), 0x49E5C0) // Updated 1.14d //0049E5C0-BASE
+REMOTEREF(DWORD, PanelState, 0x07a5210);
 
 struct GameLogMessage {
     DWORD timestamp;
@@ -14,6 +15,8 @@ struct GameLogMessage {
 
 std::list<GameLogMessage> GameLogMessages;
 GameOutput gamelog;
+
+bool ingame = false;
 
 int GameOutput::GameOutputBuffer::sync() {
     std::wstring::size_type start = 0;
@@ -41,6 +44,35 @@ std::wstring COLOR(BYTE color) {
     return ret;
 }
 
+void __fastcall PrintGameStringHook(const wchar_t* wMessage, int nColor) {
+    gamelog << COLOR(nColor) << wMessage << std::endl;
+}
+
+ASMPTR GameStringInterceptExit = 0x49e3a9;
+
+void __declspec(naked) PrintGameStringIntercept() {
+    __asm {
+        // preserve the registers around our call
+        pushad
+        call PrintGameStringHook
+        popad
+
+        // mimic instructions we've replaced
+        push ebp
+        mov ebp, esp
+        sub esp, 0x110
+
+        // resume the original function
+        jmp GameStringInterceptExit
+    }
+}
+
+void ClearChatMessages() {
+    while (!GameLogMessages.empty()) {
+        GameLogMessages.pop_front();
+    }
+}
+
 namespace GameLog {
 
     class : public Feature {
@@ -48,18 +80,19 @@ namespace GameLog {
     public:
         void init() {
             //gamelog << COLOR(4) << "Game log installed..." << std::endl;
+            MemoryPatch(0x49dcb8) << NOP_TO(0x49ddc9);
+            MemoryPatch(0x49e3a0) << JUMP(PrintGameStringIntercept) << NOP_TO(GameStringInterceptExit);
+            MemoryPatch(0x4a01fa) << JUMP(ClearChatMessages);
         }
 
-        void gamePostDraw() {
-            while (!GameLogMessages.empty()) {
-                PrintGameString(GameLogMessages.front().text.c_str(), 0);
-                GameLogMessages.pop_front();
+        void showMessages() {
+            int top = 10, left = 15;
+            DWORD height = 0, width = 0, fontno = 13;
+            int space = -8;
+
+            if (PanelState == 2) {
+                left += D2::ScreenWidth / 2;
             }
-        }
-
-        void oogPostDraw() {
-            int top = 5, left = 10;
-            DWORD height = 0, width = 0, fontno = 4;
 
             if (!start) {
                 start = GetTickCount();
@@ -69,7 +102,7 @@ namespace GameLog {
                 return;
             }
 
-            while (!GameLogMessages.empty() && GameLogMessages.front().timestamp + 8000 < GetTickCount()) {
+            while (!GameLogMessages.empty() && GameLogMessages.front().timestamp + 10000 < GetTickCount()) {
                 GameLogMessages.pop_front();
             }
 
@@ -77,8 +110,18 @@ namespace GameLog {
 
             for (GameLogMessage message : GameLogMessages) {
                 height = D2::GetTextSize(message.text.c_str(), &width, &fontno);
-                D2::DrawGameText(message.text.c_str(), left, top += (height - 10), 0, 0);
+                D2::DrawGameText(message.text.c_str(), left, top += (height + space), 0, 0);
             }
+        }
+
+        void gamePostDraw() {
+            if (!D2::GetUiFlag(0x18)) {
+                showMessages();
+            }
+        }
+
+        void oogPostDraw() {
+            showMessages();
         }
     } feature;
 
