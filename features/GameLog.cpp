@@ -85,8 +85,8 @@ namespace GameLog {
             MemoryPatch(0x4a01fa) << JUMP(ClearChatMessages);
         }
 
-        void showMessages() {
-            int top = 10, left = 15;
+        void showMessages(bool lower) {
+            int top = lower ? 0x5f : 10, left = 15;
             DWORD height = 0, width = 0, fontno = 13;
             int space = -8;
 
@@ -116,12 +116,12 @@ namespace GameLog {
 
         void gamePostDraw() {
             if (!D2::GetUiFlag(0x18)) {
-                showMessages();
+                showMessages(D2::GetUiFlag(0x13));
             }
         }
 
         void oogPostDraw() {
-            showMessages();
+            showMessages(false);
         }
     } feature;
 
