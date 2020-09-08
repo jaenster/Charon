@@ -844,6 +844,58 @@ namespace D2 {
             int nGAMMA;
             bool bVSYNC;
         };
+
+        struct RunesTable { // Taken from PlugY v1.14
+            char	Name[0x40];		//+00
+            char	RuneName[0x40];	//+40
+            BYTE	Complete;		//+80
+            BYTE	Server;			//+81
+            WORD	RuneNameID;		//+82
+            WORD	zero;			//+84 (=0x0000)
+            WORD	Itypes[6];		//+86
+            WORD	Etypes[3];		//+92
+            int		Runes[6];		//+98
+            DWORD	t1code1;		//+B0
+            DWORD	t1param1;		//+B4
+            DWORD	t1min1;			//+B8
+            DWORD	t1max1;			//+BC
+            DWORD	t1code2;		//+C0
+            DWORD	t1param2;		//+C4
+            DWORD	t1min2;			//+C8
+            DWORD	t1max2;			//+CC
+            DWORD	t1code3;		//+D0
+            DWORD	t1param3;		//+D4
+            DWORD	t1min3;			//+D8
+            DWORD	t1max3;			//+DC
+            DWORD	t1code4;		//+E0
+            DWORD	t1param4;		//+E4
+            DWORD	t1min4;			//+E8
+            DWORD	t1max4;			//+EC
+            DWORD	t1code5;		//+F0
+            DWORD	t1param5;		//+F4
+            DWORD	t1min5;			//+F8
+            DWORD	t1max5;			//+FC
+            DWORD	t1code6;		//+100
+            DWORD	t1param6;		//+104
+            DWORD	t1min6;			//+108
+            DWORD	t1max6;			//+10C
+            DWORD	t1code7;		//+110
+            DWORD	t1param7;		//+114
+            DWORD	t1min7;			//+118
+            DWORD	t1max7;			//+11C
+        };
+
+        struct ItemRatioTable {
+            struct {
+                DWORD value, divisor, min;
+            } unique, rare, set, magic;
+            struct {
+                DWORD value, divisor;
+            } hiQuality, normal;
+            WORD version;
+            BYTE uber, classSpecific;
+        };
+
     }
 }
 
