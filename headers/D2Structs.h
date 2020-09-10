@@ -896,6 +896,24 @@ namespace D2 {
             BYTE uber, classSpecific;
         };
 
+        struct UniqueItemsTable
+        {
+            WORD index;
+            BYTE name[0x20];
+            WORD namestr;
+            WORD version;
+            BYTE uk2[0x6];
+            union {
+                BYTE	flag;
+                struct { // bit fields I guess?
+                    bool enabled : 1;
+                    bool nolimit : 1;
+                    bool carry1 : 1;
+                    bool ladder : 1;
+                };
+            };
+            BYTE uk3[0x11F];
+        };
     }
 }
 
