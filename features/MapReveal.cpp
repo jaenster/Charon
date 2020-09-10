@@ -89,6 +89,7 @@ public:
                     if (room2->pLevel && room2->pLevel->pMisc && room2->pLevel->pMisc->pAct) {
                         if (EnsureRoom(room2)) {
                             RevealAutomapRoom(room2->pRoom1, TRUE, revealdata[level->dwLevelNo].layer);
+                            DrawPresets(room2, revealdata[level->dwLevelNo].layer);
                             // Not sure that we need to unload the room again... we're going to need it again later.
                             // D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, room2->pRoom1);
                         }
@@ -96,6 +97,105 @@ public:
 
                     room2 = revealdata[level->dwLevelNo].room2 = revealdata[level->dwLevelNo].room2->pRoom2Next;
                 }
+            }
+        }
+    }
+
+    // Most of this stuff is based on the d2bs preset unit implementation.
+    void GenerateCell(D2::Types::Room2* pRoom2, D2::Types::PresetUnit* pUnit, int mCell, D2::Types::AutomapLayer* layer) {
+        D2::Types::AutomapCell* pCell = NewAutomapCell();
+        pCell->nCellNo = (WORD)mCell;
+        int pX = (pUnit->dwPosX + (pRoom2->dwPosX * 5));
+        int pY = (pUnit->dwPosY + (pRoom2->dwPosY * 5));
+        pCell->xPixel = (WORD)((((pX - pY) * 16) / 10) + 1);
+        pCell->yPixel = (WORD)((((pY + pX) * 8) / 10) - 3);
+        AddAutomapCell(pCell, &(layer->pObjects));
+    }
+
+    void GenerateMarkerCell(D2::Types::Room2* pRoom2, D2::Types::PresetUnit* pUnit, D2::Types::AutomapLayer* layer) {
+        GenerateCell(pRoom2, pUnit, 300, layer);
+    }
+
+    void GenerateSuperchestCell(D2::Types::Room2* pRoom2, D2::Types::PresetUnit* pUnit, D2::Types::AutomapLayer* layer) {
+        GenerateCell(pRoom2, pUnit, 318, layer);
+    }
+
+    void GenerateChestCell(D2::Types::Room2* pRoom2, D2::Types::PresetUnit* pUnit, D2::Types::AutomapLayer* layer) {
+        GenerateCell(pRoom2, pUnit, 319, layer);
+    }
+
+    void GenerateOwnCell(D2::Types::Room2* pRoom2, D2::Types::PresetUnit* pUnit, D2::Types::AutomapLayer* layer) {
+        D2::Types::ObjectTxt* obj = obj = D2::GetObjectText(pUnit->dwTxtFileNo);
+
+        if (obj->nAutoMap > 0) {
+            GenerateCell(pRoom2, pUnit, obj->nAutoMap, layer);
+        }
+    }
+
+    void GenerateCustomMarkerCell(D2::Types::Room2* pRoom2, int x, int y, D2::Types::AutomapLayer* layer) {
+        D2::Types::AutomapCell* pCell = NewAutomapCell();
+        pCell->nCellNo = 300;
+        pCell->xPixel = (WORD)((((x - y) * 16) / 10) + 1);
+        pCell->yPixel = (WORD)((((y + x) * 8) / 10) - 3);
+        AddAutomapCell(pCell, &(layer->pObjects));
+    }
+
+    void DrawPresets(D2::Types::Room2* pRoom2, D2::Types::AutomapLayer* layer) {
+        for (D2::Types::PresetUnit* pUnit = pRoom2->pPreset; pUnit; pUnit = pUnit->pPresetNext) {
+            int mCell = -1;
+
+            switch (pUnit->dwType) {
+            case 1: // NPCs
+                switch (pUnit->dwTxtFileNo) {
+                case 250: // Summoner
+                case 256: // Izual
+                    GenerateMarkerCell(pRoom2, pUnit, layer);
+                    continue;
+                }
+                break;
+            case 2: // Objects
+                switch (pUnit->dwTxtFileNo) {
+                case 580:
+                    // Lower Kurast uber chests
+                    if (pRoom2->pLevel->dwLevelNo == 79) {
+                        GenerateChestCell(pRoom2, pUnit, layer);
+                        continue;
+                    }
+                    break;
+                case 371: // Countess Chest - not sure if this works though
+                    GenerateSuperchestCell(pRoom2, pUnit, layer);
+                    continue;
+                case 152: // Tomb Orifice
+                    GenerateMarkerCell(pRoom2, pUnit, layer);
+                    continue;
+                case 460: // Frozen Anya
+                    GenerateCell(pRoom2, pUnit, 1468, layer);
+                    continue;
+                case 402: // Canyon Waypoint
+                    if (pRoom2->pLevel->dwLevelNo == 46) {
+                        //continue;
+                    }
+                    break;
+                case 267: // Stashes in act 1, 2, 5 Get double rendered.
+                    if (pRoom2->pLevel->dwLevelNo != 75 && pRoom2->pLevel->dwLevelNo != 103) {
+                        continue;
+                    }
+                    break;
+                case 268: // Wirt's Body
+                    GenerateMarkerCell(pRoom2, pUnit, layer);
+                    continue;
+                case 376: // Hellforge gets double rendered.
+                    if (pRoom2->pLevel->dwLevelNo == 107) {
+                        continue;
+                    }
+                    break;
+                }
+
+                if (pUnit->dwTxtFileNo <= 574) {
+                    GenerateOwnCell(pRoom2, pUnit, layer);
+                }
+
+                break;
             }
         }
     }
