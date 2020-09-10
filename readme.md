@@ -2,8 +2,11 @@
 
 This is an experiment and utility for Diablo 2. It is intended for single player and TCP/IP game use, so connections to Battle.net are disabled. It's main features include:
 
-    Map Reveal
+    Ladder Runewords and Unique Items in Single Player and TCP/IP
+    Gently Improved Drop Rates with Respect to Single Player
+    Map Reveal (more information now)
     Display Monsters, Missiles, and Items (superior and above) on Automap
+    Updated Item Tooltips and Item Level Display
     /players X uncap (16-20 is reasonable, but very difficult)
     Improved experience scaling for /players X by typing: /xp
     Weather toggle (press insert key)
