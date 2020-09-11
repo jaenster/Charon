@@ -8,6 +8,8 @@ This is an experiment and utility for Diablo 2. It is intended for single player
     Display Monsters, Missiles, and Items (superior and above) on Automap
     Updated Item Tooltips and Item Level Display
     /players X uncap (16-20 is reasonable, but very difficult)
+    Force socket quest available with: /socket
+    Force respec quest available with: /respec
     Improved experience scaling for /players X by typing: /xp
     Weather toggle (press insert key)
     Always in Direct 3D Mode

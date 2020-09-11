@@ -92,6 +92,45 @@ void __fastcall ItemDescription_Hook(wchar_t* wBuffer, long *x, long *y) {
     CalcTextDimensions(wBuffer, x, y);
 }
 
+BOOL respecEnable = false, socketEnable = false;
+
+BOOL __fastcall OverrideQuestState(int questId, int questState, BOOL value) {
+    switch (questId) {
+    case 7: // Act 1 complete
+    case 15: // Act 2 complete
+    case 23: // Act 3 complete
+    case 28: // Act 4 complete
+        break;
+    case 35: // Socket Quest
+        if (socketEnable && questState == 1) {
+            return true;
+        }
+        break;
+
+    case 41: // Respec Quest
+        if (respecEnable && questState == 0) {
+            return false;
+        }
+        if (respecEnable && questState == 1) {
+            return true;
+        }
+        break;
+    }
+
+    return value;
+}
+
+__declspec(naked) void GetQuestState_Intercept() {
+    __asm {
+        push eax
+        mov ecx, [ebp + 0xc]
+        mov edx, [ebp + 0x10]
+        call OverrideQuestState
+        pop ebp
+        ret 0xc
+    }
+}
+
 ASMPTR SocketNotGrey_Patches[] = { 0x452857, 0x48E878, 0x48E897 };
 
 DWORD gamestart = 0;
@@ -115,6 +154,7 @@ public:
         MemoryPatch(SocketNotGrey_Patches[1]) << DWORD(0x400000);
         MemoryPatch(SocketNotGrey_Patches[2]) << DWORD(0x400000);
 
+        MemoryPatch(0x65C34E) << JUMP(GetQuestState_Intercept);
         MemoryPatch(0x45ADE8) << CALL(_drawAutoMapInfo);
 
         AutomapInfoHooks.push_back([]() -> std::wstring {
@@ -127,6 +167,20 @@ public:
             swprintf_s(msg, L"%d:%02d", minutes, seconds);
             return msg;
         });
+
+        ChatInputCallbacks[L"/respec"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
+            respecEnable = !respecEnable;
+            gamelog << "Respec option at Akara is " << (respecEnable ? "forced available" : "not forced available") << std::endl;
+
+            return FALSE;
+        };
+
+        ChatInputCallbacks[L"/socket"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
+            socketEnable = !socketEnable;
+            gamelog << "Socket quest at Larzuk is " << (socketEnable ? "forced available" : "not forced available") << std::endl;
+
+            return FALSE;
+        };
 
         D2::NoPickUp = true;
     }
