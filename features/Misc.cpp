@@ -13,6 +13,7 @@
 
 REMOTEREF(int, DrawAutoMapStatsOffsetY, 0x7A51BC);
 REMOTEREF(D2::Types::UnitAny*, CurrentTooltipItem, 0x7BCBF4);
+REMOTEFUNC(BYTE __stdcall, GetMaxSocketCount, (D2::Types::UnitAny *pItem), 0x62BC20);
 
 void _drawAutoMapInfo(DWORD size) {
     DWORD width = 0, height = 0, fileno = 1;
@@ -46,26 +47,39 @@ BOOL __fastcall GetItemName_Intercept(D2::Types::UnitAny* item, wchar_t* wBuffer
     DWORD sockets = D2::GetUnitStat(item, 194, 0);
 
     if (sockets > 0) {
-        size_t len = wcslen(wBuffer);
-        wchar_t* tmpBuffer = new wchar_t[dwSize];
+        wchar_t *tmpBuffer = new wchar_t[dwSize], *a = wBuffer;
 
-        if (wBuffer[len - 1] == L' ') {
-            wBuffer[len - 1] = L'\0';
+        while (*a != L'\0' && *a != L'\n') {
+            a++;
         }
 
+        if (*a == L'\n') {
+            *a++ = L'\0';
+            swprintf(tmpBuffer, 128, L"%ls (%d)\n%ls", wBuffer, sockets, a);
+            wcscpy_s(wBuffer, dwSize, tmpBuffer);
+        }
+        else {
         swprintf(tmpBuffer, 128, L"%ls (%d)", wBuffer, sockets);
-        wcscpy_s(wBuffer, 128, tmpBuffer);
-
-        delete[] tmpBuffer;
+            wcscpy_s(wBuffer, dwSize, tmpBuffer);
+    }
     }
 
-    return TRUE;
+    return ret;
 }
 
 void __fastcall GetItemDescription(wchar_t* wBuffer) {
-    if (CurrentTooltipItem->pItemData->dwItemLevel > 0) {
+    if (CurrentTooltipItem->pItemData->dwItemLevel > 1) {
         wchar_t tmpBuffer[1024];
-        swprintf(tmpBuffer, 1024, L"�c2Item Level: %d\n%ls", CurrentTooltipItem->pItemData->dwItemLevel, wBuffer);
+        if (D2::GetUnitStat(CurrentTooltipItem, 194, 0) < 1 && CurrentTooltipItem->pItemData->dwQuality < 4) {
+            BYTE maxSockets = GetMaxSocketCount(CurrentTooltipItem);
+            if (maxSockets > 0) {
+                swprintf(tmpBuffer, 1024, L"�c5Max Sockets: %d\nItem Level: %d\n%ls", maxSockets, CurrentTooltipItem->pItemData->dwItemLevel, wBuffer);
+                wcscpy_s(wBuffer, 1024, tmpBuffer);
+                return;
+            }
+        }
+
+        swprintf(tmpBuffer, 1024, L"�c5Item Level: %d\n%ls", CurrentTooltipItem->pItemData->dwItemLevel, wBuffer);
         wcscpy_s(wBuffer, 1024, tmpBuffer);
     }
 }
