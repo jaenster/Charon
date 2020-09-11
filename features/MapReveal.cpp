@@ -112,6 +112,10 @@ public:
         AddAutomapCell(pCell, &(layer->pObjects));
     }
 
+    void GenerateMegaMarkerCell(D2::Types::Room2* pRoom2, D2::Types::PresetUnit* pUnit, D2::Types::AutomapLayer* layer) {
+        GenerateCell(pRoom2, pUnit, 301, layer);
+    }
+
     void GenerateMarkerCell(D2::Types::Room2* pRoom2, D2::Types::PresetUnit* pUnit, D2::Types::AutomapLayer* layer) {
         GenerateCell(pRoom2, pUnit, 300, layer);
     }
@@ -130,14 +134,6 @@ public:
         if (obj->nAutoMap > 0) {
             GenerateCell(pRoom2, pUnit, obj->nAutoMap, layer);
         }
-    }
-
-    void GenerateCustomMarkerCell(D2::Types::Room2* pRoom2, int x, int y, D2::Types::AutomapLayer* layer) {
-        D2::Types::AutomapCell* pCell = NewAutomapCell();
-        pCell->nCellNo = 300;
-        pCell->xPixel = (WORD)((((x - y) * 16) / 10) + 1);
-        pCell->yPixel = (WORD)((((y + x) * 8) / 10) - 3);
-        AddAutomapCell(pCell, &(layer->pObjects));
     }
 
     void DrawPresets(D2::Types::Room2* pRoom2, D2::Types::AutomapLayer* layer) {
@@ -193,6 +189,17 @@ public:
 
                 if (pUnit->dwTxtFileNo <= 574) {
                     GenerateOwnCell(pRoom2, pUnit, layer);
+                }
+
+                break;
+
+            case 5:
+                if (pRoom2->pLevel && pRoom2->pLevel->pMisc && pRoom2->pLevel->pMisc->dwStaffTombLevel) {
+                    for (D2::Types::RoomTile* pRoomTile = pRoom2->pRoomTiles; pRoomTile; pRoomTile = pRoomTile->pNext) {
+                        if (*(pRoomTile->nNum) == pUnit->dwTxtFileNo && pRoomTile->pRoom2->pLevel->dwLevelNo == pRoom2->pLevel->pMisc->dwStaffTombLevel) {
+                            GenerateMegaMarkerCell(pRoom2, pUnit, layer);
+                        }
+                    }
                 }
 
                 break;
