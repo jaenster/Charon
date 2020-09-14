@@ -914,6 +914,22 @@ namespace D2 {
             };
             BYTE uk3[0x11F];
         };
+
+        struct TreasureClassExTable {
+            char treasureClass[32];
+            long picks;
+            short group;
+            short level;
+            short magic;
+            short rare;
+            short set;
+            short unique;
+            short unk1[2];
+            short nodrop; // this might be a long, but nothing uses the upper byte
+            short unk2;
+            char items[10][64];
+            long prob[10];
+        };
     }
 }
 

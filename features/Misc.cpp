@@ -92,15 +92,32 @@ void __fastcall ItemDescription_Hook(wchar_t* wBuffer, long *x, long *y) {
     CalcTextDimensions(wBuffer, x, y);
 }
 
-BOOL respecEnable = false, socketEnable = false;
+BOOL respecEnable = false, socketEnable = false, imbueEnable = false, cowsEnable = false;
 
 BOOL __fastcall OverrideQuestState(int questId, int questState, BOOL value) {
     switch (questId) {
+    case 3: // Imbue quest
+        if (imbueEnable && questState == 0) {
+            return false;
+        }
+        if (imbueEnable && questState == 1) {
+            return true;
+        }
+        break;
+
+    case 4: // Can open cow potal
+        if (cowsEnable && questState == 10) {
+            gamelog << "Quest 4:" << questState << " = " << value << std::endl;
+            return false;
+        }
+        break;
+
     case 7: // Act 1 complete
     case 15: // Act 2 complete
     case 23: // Act 3 complete
     case 28: // Act 4 complete
         break;
+
     case 35: // Socket Quest
         if (socketEnable && questState == 1) {
             return true;
@@ -131,6 +148,10 @@ __declspec(naked) void GetQuestState_Intercept() {
     }
 }
 
+DWORD __stdcall OverrideWaypoints(DWORD a, DWORD b) {
+    return true;
+}
+
 ASMPTR SocketNotGrey_Patches[] = { 0x452857, 0x48E878, 0x48E897 };
 
 DWORD gamestart = 0;
@@ -142,6 +163,8 @@ public:
 		MemoryPatch(0x4F5623) << CALL(multi) << ASM::NOP; // Allow multiple windows open
         MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
         MemoryPatch(0x43BF60) << ASM::RET; // Prevent battle.net connections
+        //MemoryPatch(0x660E50) << JUMP(OverrideWaypoints);
+        //MemoryPatch(0x56A200) << BYTE(0xEB); // Always regenerate map even in single player
         MemoryPatch(0x515FB1) << BYTE(0x01); // Delay of 1 on cleaning up sounds after quiting game
         MemoryPatch(0x4781AC) << BYTESEQ{ 0x6A, 0x05, 0x90, 0x90, 0x90 }; // Hyperjoin for TCP/IP games
         MemoryPatch(GetItemName_Original) << JUMP(GetItemName_Intercept);
@@ -178,6 +201,20 @@ public:
         ChatInputCallbacks[L"/socket"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
             socketEnable = !socketEnable;
             gamelog << "Socket quest at Larzuk is " << (socketEnable ? "forced available" : "not forced available") << std::endl;
+
+            return FALSE;
+        };
+
+        ChatInputCallbacks[L"/imbue"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
+            imbueEnable = !imbueEnable;
+            gamelog << "Imbue quest at Charsi is " << (imbueEnable ? "forced available" : "not forced available") << std::endl;
+
+            return FALSE;
+        };
+
+        ChatInputCallbacks[L"/cows"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
+            cowsEnable = !cowsEnable;
+            gamelog << "Opening cow portal is " << (cowsEnable ? "forced available" : "not forced available") << std::endl;
 
             return FALSE;
         };
