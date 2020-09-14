@@ -21,7 +21,7 @@ public:
 std::wstring COLOR(BYTE color);
 
 const DWORD DEFAULT_FONT = 1;
-const std::wstring version = L"Charon v1.1.1";
+const std::wstring version = L"Charon v1.1.2";
 extern GameOutput gamelog;
 
 namespace D2 {
