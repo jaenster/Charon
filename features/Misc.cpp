@@ -177,6 +177,9 @@ public:
         MemoryPatch(SocketNotGrey_Patches[1]) << DWORD(0x400000);
         MemoryPatch(SocketNotGrey_Patches[2]) << DWORD(0x400000);
 
+        // Fix RandTransforms.dat for LoD, to colorize monsters properly
+        MemoryPatch(0x4666A5) << BYTE(0x26); // RandTransforms
+
         MemoryPatch(0x65C34E) << JUMP(GetQuestState_Intercept);
         MemoryPatch(0x45ADE8) << CALL(_drawAutoMapInfo);
 
