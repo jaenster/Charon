@@ -73,13 +73,13 @@ void __fastcall GetItemDescription(wchar_t* wBuffer) {
         if (D2::GetUnitStat(CurrentTooltipItem, 194, 0) < 1 && CurrentTooltipItem->pItemData->dwQuality < 4) {
             BYTE maxSockets = GetMaxSocketCount(CurrentTooltipItem);
             if (maxSockets > 0) {
-                swprintf(tmpBuffer, 1024, L"�c5Max Sockets: %d\nItem Level: %d\n%ls", maxSockets, CurrentTooltipItem->pItemData->dwItemLevel, wBuffer);
+                swprintf(tmpBuffer, 1024, L"\u00FFc5Max Sockets: %d\nItem Level: %d\n%ls", maxSockets, CurrentTooltipItem->pItemData->dwItemLevel, wBuffer);
                 wcscpy_s(wBuffer, 1024, tmpBuffer);
                 return;
             }
         }
 
-        swprintf(tmpBuffer, 1024, L"�c5Item Level: %d\n%ls", CurrentTooltipItem->pItemData->dwItemLevel, wBuffer);
+        swprintf(tmpBuffer, 1024, L"\u00FFc5Item Level: %d\n%ls", CurrentTooltipItem->pItemData->dwItemLevel, wBuffer);
         wcscpy_s(wBuffer, 1024, tmpBuffer);
     }
 }
