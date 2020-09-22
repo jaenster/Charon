@@ -40,8 +40,8 @@ class : public Feature {
 public:
     void toggleDebug() {
         Settings["debugMode"] = !Settings["debugMode"];
+        SaveSettings();
 
-        MemoryPatch(EnableDebugPrint) << (bool)Settings["debugMode"]; // Enable in-game debug prints
         if (Settings["debugMode"]) {
             gamelog << COLOR(2) << "Debugging on." << std::endl;
         }
@@ -56,7 +56,7 @@ public:
         MemoryPatch(0x476CDC) << CALL(_drawFloor); // Allow disabling the floor.
         MemoryPatch(0x51A480) << JUMP(printf_newline); // Enable even more console debug prints
 
-        ChatInputCallbacks[L"/debug"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
+        HotkeyCallbacks[VK_F10] = [&](LPARAM options) -> BOOL {
             toggleDebug();
             return FALSE;
         };
