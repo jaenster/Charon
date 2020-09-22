@@ -16,11 +16,11 @@ namespace Omnivision {
         }
 
         void gameLoop() {
-            if (State["debugMode"] && !State["omnivision"]) {
+            if (Settings["debugMode"] && !State["omnivision"]) {
                 MemoryPatch(0x4DC713) << JUMP((LPVOID)0x4DC73A) << BYTE(0x90) << BYTE(0x90);
                 State["omnivision"] = true;
             }
-            else if (!State["debugMode"] && State["omnivision"]) {
+            else if (!Settings["debugMode"] && State["omnivision"]) {
                 MemoryPatch(0x4DC713) << REVERT(7);
                 State["omnivision"] = false;
             }

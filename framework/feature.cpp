@@ -5,6 +5,7 @@ HotkeyCallbackMap HotkeyCallbacks;
 AutomapInfoCallbackList AutomapInfoHooks;
 InputCallbackMap ChatInputCallbacks;
 StateMap State;
+StateMap Settings;
 Feature* Features;
 
 Feature::Feature() {

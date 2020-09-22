@@ -39,7 +39,7 @@ int GameOutput::GameOutputBuffer::sync() {
 GameOutput::GameOutput() : std::wostream(&buf) { }
 
 std::wstring COLOR(BYTE color) {
-    wchar_t ret[]{ 255, 99, 48, 0 };
+    wchar_t ret[]{ 0xFF, 0x63, 0x30, 0 };
     ret[2] += (color & 0xf);
     return ret;
 }

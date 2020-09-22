@@ -12,6 +12,15 @@
 #pragma optimize("", off)
 
 namespace D2 {
+    enum UnitType : int {
+        UNIT_PLAYER = 0,
+        UNIT_MONSTER = 1,
+        UNIT_OBJECT = 2,
+        UNIT_MISSILE = 3,
+        UNIT_ITEM = 4,
+        UNIT_ROOMTILE = 5,
+    };
+
     namespace Types {
         struct UnitAny;
         struct Room1;
@@ -929,6 +938,43 @@ namespace D2 {
             short unk2;
             char items[10][64];
             long prob[10];
+        };
+
+        enum class BINFieldType : int {
+            FIELDTYPE_END = 0,
+            FIELDTYPE_DATA_ASCII = 1,
+            FIELDTYPE_DATA_DWORD = 2,
+            FIELDTYPE_DATA_WORD = 3,
+            FIELDTYPE_DATA_BYTE = 4,
+            FIELDTYPE_UNKNOWN_5 = 5,
+            FIELDTYPE_DATA_BYTE_2 = 6,
+            FIELDTYPE_DATA_DWORD_2 = 8,
+            FIELDTYPE_DATA_RAW = 9,
+            FIELDTYPE_ASCII_TO_CODE = 10,
+            FIELDTYPE_UNKNOWN_11 = 11,
+            FIELDTYPE_UNKNOWN_12 = 12,
+            FIELDTYPE_CODE_TO_BYTE = 13,
+            FIELDTYPE_UNKNOWN_14 = 14,
+            FIELDTYPE_CODE_TO_WORD = 15,
+            FIELDTYPE_UNKNOWN_16 = 16,
+            FIELDTYPE_NAME_TO_INDEX = 17,
+            FIELDTYPE_NAME_TO_INDEX_2 = 18,
+            FIELDTYPE_NAME_TO_DWORD = 19,
+            FIELDTYPE_NAME_TO_WORD = 20,
+            FIELDTYPE_NAME_TO_WORD_2 = 21,
+            FIELDTYPE_KEY_TO_WORD = 22,
+            FIELDTYPE_MONSTER_COMPS = 23,
+            FIELDTYPE_UNKNOWN_24 = 24,
+            FIELDTYPE_CALC_TO_DWORD = 25,
+            FIELDTYPE_DATA_BIT = 26,
+        };
+
+        struct BINField {
+            char* fieldName;
+            BINFieldType type;
+            DWORD	strLength;
+            DWORD	offset;
+            void* lookup;
         };
     }
 }

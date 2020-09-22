@@ -6,6 +6,9 @@
 #include <windows.h>
 #include <cstring>
 #include <vector>
+#include <unordered_map>
+
+extern std::unordered_map<DWORD, BYTE> OriginalBytes;
 
 class BYTES {
     BYTE value;
@@ -79,6 +82,8 @@ public:
     REVERT(size_t length);
     friend class MemoryPatch;
 };
+
+DWORD RevertBytes(DWORD pAddr, DWORD dwLen);
 
 class MemoryPatch {
     DWORD pAddr = NULL;

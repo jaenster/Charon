@@ -15,7 +15,7 @@ ASMPTR EnableDebugPrint = 0x8846DC;
 REMOTEFUNC(void __fastcall, DrawFloor, (void* unknown), 0x4DED10);
 
 void __fastcall _drawFloor(void* unknown) {
-    if (!State["debugMode"]) {
+    if (!Settings["debugMode"]) {
         DrawFloor(unknown);
     }
 }
@@ -39,10 +39,10 @@ int __stdcall printf_newline(const char* format, ...) {
 class : public Feature {
 public:
     void toggleDebug() {
-        State["debugMode"] = !State["debugMode"];
+        Settings["debugMode"] = !Settings["debugMode"];
+        SaveSettings();
 
-        MemoryPatch(EnableDebugPrint) << (bool)State["debugMode"]; // Enable in-game debug prints
-        if (State["debugMode"]) {
+        if (Settings["debugMode"]) {
             gamelog << COLOR(2) << "Debugging on." << std::endl;
         }
         else {
@@ -51,17 +51,10 @@ public:
     }
 
     void init() {
-        State["debugMode"] = false;
-
         MemoryPatch(0x476CDC) << CALL(_drawFloor); // Allow disabling the floor.
         MemoryPatch(0x51A480) << JUMP(printf_newline); // Enable even more console debug prints
 
-        ChatInputCallbacks[L"/debug"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
-            toggleDebug();
-            return FALSE;
-        };
-
-        HotkeyCallbacks[VK_F12] = [&](LPARAM options) -> BOOL {
+        HotkeyCallbacks[VK_F10] = [&](LPARAM options) -> BOOL {
             toggleDebug();
             return FALSE;
         };
@@ -70,7 +63,7 @@ public:
     void gameUnitPreDraw() {
         BYTE d;
         // Server side tracks enemies
-        if (State["debugMode"]) {
+        if (Settings["debugMode"]) {
             D2::Types::Room1* current = D2::PlayerUnit->pPath->pRoom1;
             D2::Types::CollMap* coll = current->Coll;
             WORD* p = coll->pMapStart;
@@ -126,7 +119,7 @@ public:
         BYTE d;
 
         // Server side tracks enemies
-        if (State["debugMode"] && State["debugVerbose"]) {
+        if (Settings["debugMode"]) {
             wchar_t msg[512];
             DWORD fontNum = 12, width = 0, height = 0;
             D2::SetFont(fontNum);
@@ -137,7 +130,7 @@ public:
                         POINT pos = WorldToScreen(unit->pPath);
 
                         if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
-                            swprintf_s(msg, L"%s\n%s\n%s", (isAttackable(unit) ? L"Combat" : L"Non-Combat"), align[D2::GetUnitStat(unit, 172, 0)], D2::GetUnitName(unit));
+                            swprintf_s(msg, L"%s\n%s\n%s\ndwTxtFileNo: %d", (isAttackable(unit) ? L"Combat" : L"Non-Combat"), align[D2::GetUnitStat(unit, 172, 0)], D2::GetUnitName(unit), unit->dwTxtFileNo);
                             height = D2::GetTextSize(msg, &width, &fontNum);
                             D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height, 0, 1);
                         }

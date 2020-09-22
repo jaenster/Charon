@@ -20,9 +20,9 @@ REMOTEREF(LPDIRECTDRAWSURFACE7, D3DSurfacePrimary, 0x970e68);
 REMOTEREF(LPDIRECTDRAWSURFACE7, D3DSurfaceSecondary, 0x970e6c);
 REMOTEREF(LPDIRECT3DDEVICE3, Direct3DDevice, 0x970e78);
 REMOTEREF(LPDIRECT3DVIEWPORT3, Direct3DViewport, 0x970e7c);
-REMOTEREF(HWND, hWnd, 0x7c8cbc);
 REMOTEREF(DWORD, GameType, 0x7a0610);
 REMOTEPTR(DWORD, unknownInBeginScene, 0x970e54);
+REMOTEFUNC(void, D3D_DirectDrawPostSetup, (), 0x6b8f10);
 
 LPDIRECTDRAWSURFACE7 D3DSurfaceBackground = nullptr;
 bool bD3DFull = false;
@@ -33,15 +33,19 @@ DWORD dwOldStyleEx = 0;
 void D3D_DirectDrawScreenSetup() {
     InternalWidth = 800;
     InternalHeight = 600;
-    IDirectDraw->SetCooperativeLevel(hWnd, DDSCL_NORMAL | DDSCL_NOWINDOWCHANGES);
+    IDirectDraw->SetCooperativeLevel(D2::hWnd, DDSCL_NORMAL);
     if (!dwOldStyle) {
-        dwOldStyle = GetWindowLong(hWnd, GWL_STYLE);
-        dwOldStyleEx = GetWindowLong(hWnd, GWL_EXSTYLE);
+        dwOldStyle = GetWindowLong(D2::hWnd, GWL_STYLE);
+        dwOldStyleEx = GetWindowLong(D2::hWnd, GWL_EXSTYLE);
         dwOldStyle &= ~(WS_MAXIMIZEBOX);
         dwOldStyle &= ~(WS_EX_TOPMOST);
-        SetWindowLong(hWnd, GWL_STYLE, dwOldStyle);
-        SetWindowLong(hWnd, GWL_EXSTYLE, dwOldStyleEx);
+        SetWindowLong(D2::hWnd, GWL_STYLE, dwOldStyle);
+        SetWindowLong(D2::hWnd, GWL_EXSTYLE, dwOldStyleEx);
     }
+}
+
+void D3D_DirectDrawPostSetup_Intercept() {
+    D3D_DirectDrawPostSetup();
 }
 
 void ScreenSizeHook() {
@@ -59,17 +63,17 @@ void ToggleFullscreen() {
     bD3DFull = !bD3DFull;
 
     if (bD3DFull) {
-        ShowWindow(hWnd, SW_RESTORE);
-        SetWindowLong(hWnd, GWL_STYLE, dwOldStyle & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU));
-        ShowWindow(hWnd, SW_MAXIMIZE);
+        ShowWindow(D2::hWnd, SW_RESTORE);
+        SetWindowLong(D2::hWnd, GWL_STYLE, dwOldStyle & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU));
+        ShowWindow(D2::hWnd, SW_MAXIMIZE);
     }
     else {
-        ShowWindow(hWnd, SW_RESTORE);
-        SetWindowLong(hWnd, GWL_STYLE, dwOldStyle);
+        ShowWindow(D2::hWnd, SW_RESTORE);
+        SetWindowLong(D2::hWnd, GWL_STYLE, dwOldStyle);
     }
 
     repaintsides = true;
-    SetWindowPos(hWnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+    SetWindowPos(D2::hWnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 }
 
 void __cdecl LogFileDivert(char* format, ...) {
@@ -94,7 +98,7 @@ HRESULT __stdcall CreatePrimarySurfaceIntercept(IDirectDraw7* ddi, LPDDSURFACEDE
     if (ret == DD_OK) {
         IDirectDrawClipper* Clipper;
         IDirectDraw->CreateClipper(0, &Clipper, NULL);
-        Clipper->SetHWnd(0, hWnd);
+        Clipper->SetHWnd(0, D2::hWnd);
         ppSurface[0]->SetClipper(Clipper);
         Clipper->Release();
     }
@@ -148,12 +152,30 @@ void throttle() {
     }
 }
 
+std::wstring filterParams[6] = {
+    L"Default",
+    L"D3DTFG_POINT",
+    L"D3DTFG_LINEAR",
+    L"D3DTFG_FLATCUBIC",
+    L"D3DTFG_GAUSSIANCUBIC",
+    L"D3DTFG_ANISOTROPIC",
+};
+
+int filterValues[6] = {
+    0,
+    D3DTFG_POINT,
+    D3DTFG_LINEAR,
+    D3DTFG_FLATCUBIC,
+    D3DTFG_GAUSSIANCUBIC,
+    D3DTFG_ANISOTROPIC,
+};
+
 DWORD BeginScene() {
     // This is the highest filtering that retains the sprite outlines properly IMO.
     // Gaussian Cubic seems to deform the outlines a bit.
-    DWORD filterType = D3DTFG_FLATCUBIC;
+    DWORD filterType = filterValues[Settings["alwaysD3DFilter"]];
     Direct3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, filterType);
-    Direct3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, filterType);
+    Direct3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
 
     return true;
 }
@@ -163,8 +185,8 @@ BOOL __fastcall FlipSurfaces() {
 
     throttle();
 
-    GetClientRect(hWnd, &windowrect);
-    MapWindowPoints(hWnd, NULL, (LPPOINT)&windowrect, 2);
+    GetClientRect(D2::hWnd, &windowrect);
+    MapWindowPoints(D2::hWnd, NULL, (LPPOINT)&windowrect, 2);
 
     long newwidth = (windowrect.bottom - windowrect.top) * InternalWidth / InternalHeight;
     targetrect.top = windowrect.top;
@@ -198,45 +220,48 @@ namespace AlwaysD3D {
     class : public Feature {
     public:
         void init() {
-            // Prevent this MoveWindow call since it pushes the window off the screen.
-            MemoryPatch(0x4f5b8b) << CALL(SetWindowPosStub) << ASM::NOP;
+            if (Settings["alwaysD3D"]) {
+                // Prevent this MoveWindow call since it pushes the window off the screen.
+                MemoryPatch(0x4f5b8b) << CALL(SetWindowPosStub) << ASM::NOP;
 
-            MemoryPatch(0x405cb3)
-                << BYTESEQ{ 0xc7, 0x45, 0x08 }
-                << DWORD(6)
-                << BYTESEQ{ 0x8d, 0x0e }
-                << CALL(UpdateD2INI)
-                << NOP_TO(0x405ced); // Force this renderer
-            MemoryPatch(0x405cf1)
-                << BYTESEQ{ 0xb3, 0x01, ASM::NOP } // Force this window mode
-            << NOP_TO(0x405cf7);
-            MemoryPatch(0x4f9050)
-                << BYTESEQ{ 0x31, 0xC0 }
-            << ASM::RET; // Skip all videos; xor EAX and return
-            MemoryPatch(0x6b5003)
-                << CALL(D3D_DirectDrawScreenSetup)
-                << NOP_TO(0x6b5046)
-                << SKIP(10)
-                << NOP_TO(0x6b50d4); // Override resolution, coop level, and screen mode
-            MemoryPatch(0x410610) << JUMP(LogFileDivert);
-            MemoryPatch(0x6b5130) << CALL(CreatePrimarySurfaceIntercept);
-            MemoryPatch(0x6b517d) << CALL(CreateSecondarySurfaceIntercept);
-            MemoryPatch(0x6b1c30) << JUMP(FlipSurfaces);
-            MemoryPatch(0x6b57be) << CALL(BeginScene) << BYTESEQ{ 0xc2, 0x08, 0x00 };
-            MemoryPatch(0x4f5570) << JUMP(GetWindowSizeByResolutionMode);
-            MemoryPatch(0x44ba30) << CALL(ScreenSizeHook) << NOP_TO(0x44ba7c);
-            MemoryPatch(0x6b2030) << ASM::RET; // Disable min/mag filters.
-            MemoryPatch(0x44f278) << NOP_TO(0x44f280); // Disable frame skipping
+                MemoryPatch(0x405cb3)
+                    << BYTESEQ{ 0xc7, 0x45, 0x08 }
+                    << DWORD(6)
+                    << BYTESEQ{ 0x8d, 0x0e }
+                    << CALL(UpdateD2INI)
+                    << NOP_TO(0x405ced); // Force this renderer
+                MemoryPatch(0x405cf1)
+                    << BYTESEQ{ 0xb3, 0x01, ASM::NOP } // Force this window mode
+                << NOP_TO(0x405cf7);
+                MemoryPatch(0x4f9050)
+                    << BYTESEQ{ 0x31, 0xC0 }
+                << ASM::RET; // Skip all videos; xor EAX and return
+                MemoryPatch(0x6b5003)
+                    << CALL(D3D_DirectDrawScreenSetup)
+                    << NOP_TO(0x6b5046)
+                    << SKIP(10)
+                    << NOP_TO(0x6b50d4); // Override resolution, coop level, and screen mode
+                MemoryPatch(0x6b5510) << CALL(D3D_DirectDrawPostSetup_Intercept);
+                MemoryPatch(0x410610) << JUMP(LogFileDivert);
+                MemoryPatch(0x6b5130) << CALL(CreatePrimarySurfaceIntercept);
+                MemoryPatch(0x6b517d) << CALL(CreateSecondarySurfaceIntercept);
+                MemoryPatch(0x6b1c30) << JUMP(FlipSurfaces);
+                MemoryPatch(0x6b57be) << CALL(BeginScene) << BYTESEQ{ 0xc2, 0x08, 0x00 };
+                MemoryPatch(0x4f5570) << JUMP(GetWindowSizeByResolutionMode);
+                MemoryPatch(0x44ba30) << CALL(ScreenSizeHook) << NOP_TO(0x44ba7c);
+                MemoryPatch(0x6b2030) << ASM::RET; // Disable min/mag filters.
+                MemoryPatch(0x44f278) << NOP_TO(0x44f280); // Disable frame skipping
 
 
-            HotkeyCallbacks[VK_RETURN] = [&](LPARAM options) -> BOOL {
-                if (options & 0x20000000) {
-                    ToggleFullscreen();
-                    return FALSE;
-                }
+                HotkeyCallbacks[VK_RETURN] = [&](LPARAM options) -> BOOL {
+                    if (options & 0x20000000) {
+                        ToggleFullscreen();
+                        return FALSE;
+                    }
 
-                return TRUE;
-            };
+                    return TRUE;
+                };
+            }
         }
     } feature;
 

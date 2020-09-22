@@ -27,8 +27,12 @@ namespace D2 {
 	// global pointer 'GLOBALPTR' macro, otherwise use global reference 'GLOBALREF' instead
 	GLOBALPTR(Types::UnitHashTable, ClientSideUnitHashTables, 0x7A5270);
 	GLOBALPTR(Types::UnitHashTable, ServerSideUnitHashTables, 0x7A5E70);
+	GLOBALPTR(Types::GameStructInfo, GameInfo, 0x7A0438);
 	GLOBALREF(Types::UnitAny*, PlayerUnit, 0x7A6A70);
 	GLOBALREF(DWORD, NoPickUp, 0x7A6A90);
+	GLOBALREF(HINSTANCE, hInst, 0x7C8CA8);
+	GLOBALREF(HWND, hWnd, 0x7C8CBC);
+
 
 	// For referencing D2's functions use this specialized macro instead
 	GLOBALFUNC(DWORD __fastcall, SetFont, (DWORD dwFileNo), 0x502EF0);
@@ -46,7 +50,7 @@ namespace D2 {
 	GLOBALFUNC(Types::LevelTxt* __stdcall, GetLevelText, (DWORD levelno), 0x61DB70);
 	GLOBALFUNC(Types::ObjectTxt* __stdcall, GetObjectText, (DWORD objno), 0x640E90);
 	GLOBALFUNC(Types::ItemTxt* __stdcall, GetItemText, (DWORD itemno), 0x6335F0);
-
+	GLOBALFUNC(Types::UnitAny* __fastcall, CreateUnit, (UnitType type, DWORD classId, DWORD x, DWORD y, void* ptGame, Types::Room1* ptRoom, DWORD uk1, DWORD uk2, DWORD uk3), 0x555230);
 }
 
 #pragma warning( default : 4229 )
