@@ -13,29 +13,6 @@ wchar_t wHex[] = L"0123456789ABCDEF";
 // This feature class registers itself.
 class : public Feature {
 public:
-    void toggleSwatch() {
-        State["drawSwatch"] = !State["drawSwatch"];
-
-        if (State["drawSwatch"]) {
-            gamelog << COLOR(2) << "Swatch on." << std::endl;
-        }
-        else {
-            gamelog << COLOR(1) << "Swatch off." << std::endl;
-        }
-    }
-
-    void init() {
-        ChatInputCallbacks[L"/swatch"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
-            toggleSwatch();
-            return FALSE;
-        };
-
-        HotkeyCallbacks[VK_F11] = [&](LPARAM options) -> BOOL {
-            toggleSwatch();
-            return FALSE;
-        };
-    }
-
     void gamePostDraw() {
         DWORD fontnum = 8, height, width;
         D2::SetFont(fontnum);

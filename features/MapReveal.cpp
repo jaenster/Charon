@@ -44,7 +44,7 @@ public:
         }
         D2::Types::UnitAny* me = D2::PlayerUnit;
 
-        if (me && me->pPath && me->pPath->pRoom1 && me->pPath->pRoom1->pRoom2 && me->pPath->pRoom1->pRoom2->pLevel) {
+        if (Settings["revealLevel"] && me && me->pPath && me->pPath->pRoom1 && me->pPath->pRoom1->pRoom2 && me->pPath->pRoom1->pRoom2->pLevel) {
             DWORD levelno = me->pPath->pRoom1->pRoom2->pLevel->dwLevelNo;
             if (levelno != currentLevel) {
                 currentLevel = levelno;

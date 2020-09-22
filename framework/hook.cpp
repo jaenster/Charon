@@ -1,7 +1,6 @@
 #include <windows.h>
 #include "../headers/hook.h"
 #include <iostream>
-#include <unordered_map>
 
 std::unordered_map<DWORD, BYTE> OriginalBytes;
 

@@ -55,32 +55,34 @@ BOOL __fastcall GetItemName_Intercept(D2::Types::UnitAny* item, wchar_t* wBuffer
 
         if (*a == L'\n') {
             *a++ = L'\0';
-            swprintf(tmpBuffer, 128, L"%ls (%d)\n%ls", wBuffer, sockets, a);
+            swprintf_s(tmpBuffer, dwSize, L"%ls (%d)\n%ls", wBuffer, sockets, a);
             wcscpy_s(wBuffer, dwSize, tmpBuffer);
         }
         else {
-        swprintf(tmpBuffer, 128, L"%ls (%d)", wBuffer, sockets);
+            swprintf_s(tmpBuffer, dwSize, L"%ls (%d)", wBuffer, sockets);
             wcscpy_s(wBuffer, dwSize, tmpBuffer);
-    }
+        }
     }
 
     return ret;
 }
 
 void __fastcall GetItemDescription(wchar_t* wBuffer) {
-    if (CurrentTooltipItem->pItemData->dwItemLevel > 1) {
-        wchar_t tmpBuffer[1024];
+    const size_t dwSize = 1024;
+
+    if (Settings["itemInfo"] && CurrentTooltipItem->pItemData->dwItemLevel > 1) {
+        wchar_t tmpBuffer[dwSize];
         if (D2::GetUnitStat(CurrentTooltipItem, 194, 0) < 1 && CurrentTooltipItem->pItemData->dwQuality < 4) {
             BYTE maxSockets = GetMaxSocketCount(CurrentTooltipItem);
             if (maxSockets > 0) {
                 swprintf(tmpBuffer, 1024, L"\u00FFc5Max Sockets: %d\nItem Level: %d\n%ls", maxSockets, CurrentTooltipItem->pItemData->dwItemLevel, wBuffer);
-                wcscpy_s(wBuffer, 1024, tmpBuffer);
+                wcscpy_s(wBuffer, dwSize, tmpBuffer);
                 return;
             }
         }
 
         swprintf(tmpBuffer, 1024, L"\u00FFc5Item Level: %d\n%ls", CurrentTooltipItem->pItemData->dwItemLevel, wBuffer);
-        wcscpy_s(wBuffer, 1024, tmpBuffer);
+        wcscpy_s(wBuffer, dwSize, tmpBuffer);
     }
 }
 
@@ -92,21 +94,19 @@ void __fastcall ItemDescription_Hook(wchar_t* wBuffer, long *x, long *y) {
     CalcTextDimensions(wBuffer, x, y);
 }
 
-BOOL respecEnable = false, socketEnable = false, imbueEnable = false, cowsEnable = false;
-
 BOOL __fastcall OverrideQuestState(int questId, int questState, BOOL value) {
     switch (questId) {
     case 3: // Imbue quest
-        if (imbueEnable && questState == 0) {
+        if (Settings["imbueOverride"] && questState == 0) {
             return false;
         }
-        if (imbueEnable && questState == 1) {
+        if (Settings["imbueOverride"] && questState == 1) {
             return true;
         }
         break;
 
     case 4: // Can open cow potal
-        if (cowsEnable && questState == 10) {
+        if (Settings["cowsOverride"] && questState == 10) {
             gamelog << "Quest 4:" << questState << " = " << value << std::endl;
             return false;
         }
@@ -119,16 +119,16 @@ BOOL __fastcall OverrideQuestState(int questId, int questState, BOOL value) {
         break;
 
     case 35: // Socket Quest
-        if (socketEnable && questState == 1) {
+        if (Settings["socketOverride"] && questState == 1) {
             return true;
         }
         break;
 
     case 41: // Respec Quest
-        if (respecEnable && questState == 0) {
+        if (Settings["respecOverride"] && questState == 0) {
             return false;
         }
-        if (respecEnable && questState == 1) {
+        if (Settings["respecOverride"] && questState == 1) {
             return true;
         }
         break;
@@ -156,13 +156,46 @@ ASMPTR SocketNotGrey_Patches[] = { 0x452857, 0x48E878, 0x48E897 };
 
 DWORD gamestart = 0;
 
+double flashy = 0, speed = 0.03;
+
+ASMPTR GetGlobalLight_Rejoin = 0x61C0B6;
+
+__declspec(naked) void __stdcall GetGlobalLight_Original(void* pAct, BYTE* red, BYTE* green, BYTE* blue) {
+    __asm {
+        push ebp
+        mov ebp, esp
+        mov ecx, dword ptr[ebp + 0x8]
+        jmp GetGlobalLight_Rejoin
+    }
+}
+
+void __stdcall GetGlobalLight(void* pAct, BYTE &red, BYTE &green, BYTE &blue) {
+    if (Settings["useColors"]) {
+        red = (BYTE)(sin(flashy) * 127.5 + 127.5);
+        green = (BYTE)(sin(flashy * 2) * 127.5 + 127.5);
+        blue = (BYTE)(sin(flashy * 3) * 127.5 + 127.5);
+        return;
+    }
+
+    GetGlobalLight_Original(pAct, &red, &green, &blue);
+}
+
 // This feature class registers itself.
 class : public Feature {
 public:
     void init() {
 		MemoryPatch(0x4F5623) << CALL(multi) << ASM::NOP; // Allow multiple windows open
         MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
+        #ifdef _DEBUG
+        MemoryPatch(0x51FE3B) << BYTES(ASM::NOP, 6); // Extra work blocker
+        //MemoryPatch(0x61c0bf) << BYTESEQ{ 0xB1, 255 } << ASM::NOP << ASM::NOP;
+        //MemoryPatch(0x61c0c8) << BYTESEQ{ 0xB1, 255 } << ASM::NOP << ASM::NOP;
+        //MemoryPatch(0x61c0d1) << BYTESEQ{ 0xB0, 255 } << ASM::NOP;
+        //MemoryPatch(0x61c0e0) << BYTESEQ{ 0xB8, 0xFF, 0, 0, 0, 0xC2, 0x4, 0 };
+        MemoryPatch(0x61C0B0) << JUMP(GetGlobalLight);
+        #else
         MemoryPatch(0x43BF60) << ASM::RET; // Prevent battle.net connections
+        #endif
         //MemoryPatch(0x660E50) << JUMP(OverrideWaypoints);
         //MemoryPatch(0x56A200) << BYTE(0xEB); // Always regenerate map even in single player
         MemoryPatch(0x515FB1) << BYTE(0x01); // Delay of 1 on cleaning up sounds after quiting game
@@ -194,39 +227,12 @@ public:
             return msg;
         });
 
-        ChatInputCallbacks[L"/respec"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
-            respecEnable = !respecEnable;
-            gamelog << "Respec option at Akara is " << (respecEnable ? "forced available" : "not forced available") << std::endl;
-
-            return FALSE;
-        };
-
-        ChatInputCallbacks[L"/socket"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
-            socketEnable = !socketEnable;
-            gamelog << "Socket quest at Larzuk is " << (socketEnable ? "forced available" : "not forced available") << std::endl;
-
-            return FALSE;
-        };
-
-        ChatInputCallbacks[L"/imbue"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
-            imbueEnable = !imbueEnable;
-            gamelog << "Imbue quest at Charsi is " << (imbueEnable ? "forced available" : "not forced available") << std::endl;
-
-            return FALSE;
-        };
-
-        ChatInputCallbacks[L"/cows"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
-            cowsEnable = !cowsEnable;
-            gamelog << "Opening cow portal is " << (cowsEnable ? "forced available" : "not forced available") << std::endl;
-
-            return FALSE;
-        };
-
-        D2::NoPickUp = true;
+        D2::NoPickUp = Settings["noPickup"];
     }
 
     void gameLoop() {
         gamestart = gamestart ? gamestart : GetTickCount();
+        flashy += speed;
     }
 
     void oogLoop() {

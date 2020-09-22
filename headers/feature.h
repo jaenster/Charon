@@ -49,3 +49,5 @@ extern HotkeyCallbackMap HotkeyCallbacks;
 extern AutomapInfoCallbackList AutomapInfoHooks;
 extern InputCallbackMap ChatInputCallbacks;
 extern StateMap State;
+extern StateMap Settings;
+void LoadSettings();
