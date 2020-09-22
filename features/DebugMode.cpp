@@ -51,8 +51,6 @@ public:
     }
 
     void init() {
-        Settings["debugMode"] = false;
-
         MemoryPatch(0x476CDC) << CALL(_drawFloor); // Allow disabling the floor.
         MemoryPatch(0x51A480) << JUMP(printf_newline); // Enable even more console debug prints
 
