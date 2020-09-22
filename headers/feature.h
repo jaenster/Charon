@@ -51,3 +51,4 @@ extern InputCallbackMap ChatInputCallbacks;
 extern StateMap State;
 extern StateMap Settings;
 void LoadSettings();
+void SaveSettings();
