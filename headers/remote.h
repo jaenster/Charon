@@ -51,6 +51,9 @@ namespace D2 {
 	GLOBALFUNC(Types::ObjectTxt* __stdcall, GetObjectText, (DWORD objno), 0x640E90);
 	GLOBALFUNC(Types::ItemTxt* __stdcall, GetItemText, (DWORD itemno), 0x6335F0);
 	GLOBALFUNC(Types::UnitAny* __fastcall, CreateUnit, (UnitType type, DWORD classId, DWORD x, DWORD y, void* ptGame, Types::Room1* ptRoom, DWORD uk1, DWORD uk2, DWORD uk3), 0x555230);
+	GLOBALFUNC(void __fastcall, OkDialog, (const WCHAR* title, const WCHAR* primary, const WCHAR* secondary, void (*callback)()), 0x4331c0);
+	GLOBALFUNC(void, MainMenuForm, (), 0x4336c0); // No params, so calling convention doesn't matter
+	GLOBALFUNC(void __fastcall, CreateFormElementFromListExEx, (int idx), 0x0042f430);
 }
 
 #pragma warning( default : 4229 )
