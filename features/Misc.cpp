@@ -218,7 +218,7 @@ public:
 
         AutomapInfoHooks.push_back([]() -> std::wstring {
             return version;
-            });
+        });
 
         AutomapInfoHooks.push_back([]() -> std::wstring {
             DWORD elapsed = GetTickCount() - gamestart, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
