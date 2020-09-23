@@ -95,40 +95,44 @@ public:
         };
 
         WindowMessageHandlers[WM_COMMAND] = [](HWND hwnd, WPARAM wParam, LPARAM lParam) -> BOOL {
-            if (LOWORD(wParam) == IDOK) {
-                PostMessage(hwnd, WM_CLOSE, 0, 0);
-                return TRUE;
+            HWND hFilters;
+
+            switch (LOWORD(wParam)) {
+                case IDOK:
+                    Settings["useColors"] = IsDlgButtonChecked(hwnd, IDC_LIGHTING_TEST);
+                    Settings["debugMode"] = IsDlgButtonChecked(hwnd, IDC_DEBUG_MODE);
+                    State["drawSwatch"] = IsDlgButtonChecked(hwnd, IDC_DRAW_SWATCH);
+                    Settings["xpMultiplier"] = IsDlgButtonChecked(hwnd, IDC_XP_MULTIPLIER);
+                    Settings["reportXP"] = IsDlgButtonChecked(hwnd, IDC_REPORT_XP);
+                    Settings["revealLevel"] = IsDlgButtonChecked(hwnd, IDC_REVEAL_LEVEL);
+                    Settings["showMonsters"] = IsDlgButtonChecked(hwnd, IDC_SHOW_MONSTERS);
+                    Settings["showItems"] = IsDlgButtonChecked(hwnd, IDC_SHOW_ITEMS);
+                    Settings["showMissiles"] = IsDlgButtonChecked(hwnd, IDC_SHOW_MISSILES);
+                    Settings["ladderItems"] = IsDlgButtonChecked(hwnd, IDC_LADDER_ITEMS);
+                    Settings["rebalanceDrops"] = IsDlgButtonChecked(hwnd, IDC_REBALANCE_DROPS);
+                    Settings["alwaysD3D"] = IsDlgButtonChecked(hwnd, IDC_ALWAYS_D3D);
+                    Settings["itemInfo"] = IsDlgButtonChecked(hwnd, IDC_ITEM_INFO);
+                    Settings["cowsOverride"] = IsDlgButtonChecked(hwnd, IDC_COWS_OVERRIDE);
+                    Settings["respecOverride"] = IsDlgButtonChecked(hwnd, IDC_RESPEC_OVERRIDE);
+                    Settings["imbueOverride"] = IsDlgButtonChecked(hwnd, IDC_IMBUE_OVERRIDE);
+                    Settings["socketOverride"] = IsDlgButtonChecked(hwnd, IDC_SOCKET_OVERRIDE);
+                    D2::NoPickUp = Settings["noPickup"] = IsDlgButtonChecked(hwnd, IDC_NO_PICKUP);
+                    Settings["disableWeather"] = IsDlgButtonChecked(hwnd, IDC_DISABLE_WEATHER);
+
+                    hFilters = GetDlgItem(hwnd, IDC_ALWAYS_D3D_FILTER);
+                    Settings["alwaysD3DFilter"] = SendMessage(hFilters, CB_GETCURSEL, 0, 0);
+
+                    SaveSettings();
+
+                case IDCANCEL:
+                    PostMessage(hwnd, WM_CLOSE, 0, 0);
+                    break;
             }
 
-            return FALSE;
+            return TRUE;
         };
 
         WindowMessageHandlers[WM_CLOSE] = [](HWND hwnd, WPARAM wParam, LPARAM lParam) -> BOOL {
-            Settings["useColors"] = IsDlgButtonChecked(hwnd, IDC_LIGHTING_TEST);
-            Settings["debugMode"] = IsDlgButtonChecked(hwnd, IDC_DEBUG_MODE);
-            State["drawSwatch"] = IsDlgButtonChecked(hwnd, IDC_DRAW_SWATCH);
-            Settings["xpMultiplier"] = IsDlgButtonChecked(hwnd, IDC_XP_MULTIPLIER);
-            Settings["reportXP"] = IsDlgButtonChecked(hwnd, IDC_REPORT_XP);
-            Settings["revealLevel"] = IsDlgButtonChecked(hwnd, IDC_REVEAL_LEVEL);
-            Settings["showMonsters"] = IsDlgButtonChecked(hwnd, IDC_SHOW_MONSTERS);
-            Settings["showItems"] = IsDlgButtonChecked(hwnd, IDC_SHOW_ITEMS);
-            Settings["showMissiles"] = IsDlgButtonChecked(hwnd, IDC_SHOW_MISSILES);
-            Settings["ladderItems"] = IsDlgButtonChecked(hwnd, IDC_LADDER_ITEMS);
-            Settings["rebalanceDrops"] = IsDlgButtonChecked(hwnd, IDC_REBALANCE_DROPS);
-            Settings["alwaysD3D"] = IsDlgButtonChecked(hwnd, IDC_ALWAYS_D3D);
-            Settings["itemInfo"] = IsDlgButtonChecked(hwnd, IDC_ITEM_INFO);
-            Settings["cowsOverride"] = IsDlgButtonChecked(hwnd, IDC_COWS_OVERRIDE);
-            Settings["respecOverride"] = IsDlgButtonChecked(hwnd, IDC_RESPEC_OVERRIDE);
-            Settings["imbueOverride"] = IsDlgButtonChecked(hwnd, IDC_IMBUE_OVERRIDE);
-            Settings["socketOverride"] = IsDlgButtonChecked(hwnd, IDC_SOCKET_OVERRIDE);
-            D2::NoPickUp = Settings["noPickup"] = IsDlgButtonChecked(hwnd, IDC_NO_PICKUP);
-            Settings["disableWeather"] = IsDlgButtonChecked(hwnd, IDC_DISABLE_WEATHER);
-
-            HWND hFilters = GetDlgItem(hwnd, IDC_ALWAYS_D3D_FILTER);
-            Settings["alwaysD3DFilter"] = SendMessage(hFilters, CB_GETCURSEL, 0, 0);
-
-            SaveSettings();
-
             DestroyWindow(hwnd);
             ShowCursor(false);
             hwndSettings = nullptr;
