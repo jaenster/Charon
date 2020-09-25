@@ -232,8 +232,6 @@ public:
             swprintf_s(msg, L"%d:%02d", minutes, seconds);
             return msg;
         });
-
-        D2::NoPickUp = Settings["noPickup"];
     }
 
     void gameLoop() {

@@ -19,6 +19,11 @@ enum class Orientation {
     CENTER,
 };
 
+struct LineInfo {
+    POINT a, b;
+    int color, opacity;
+};
+
 class Element {
 protected:
     RECT pos = { 0, 0, 0, 0 };
@@ -26,6 +31,7 @@ protected:
     std::function<void(MouseButton button, bool down)> clickCallback;
     bool visible = false;
     std::vector<Element*> children;
+    std::vector<LineInfo> lines;
 
 public:
     Element();
@@ -35,6 +41,7 @@ public:
     void setPos(int x, int y);
     void setDimensions(int width, int height);
     void setFrame(int backgroundColor, int backgroundOpacity, int borderColor);
+    void addLine(POINT a, POINT b, int color, int opacity = 0xFF);
     void show();
     void hide();
     void setVisibile(bool value);
@@ -51,7 +58,7 @@ public:
 class TextElement : public Element {
 protected:
     std::function<std::wstring()> textCallback = []() -> std::wstring { return L"Text Element"; };
-    int font = 1, color = 4, textOffsetX = 0, textOffsetY = 0;
+    int font = 0, color = 4, textOffsetX = -4, textOffsetY = 0;
     Orientation orientation = Orientation::LEFT;
 
 public:

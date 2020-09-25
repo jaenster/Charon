@@ -43,6 +43,10 @@ void Element::setFrame(int backgroundColor, int backgroundOpacity, int borderCol
     this->borderColor = borderColor;
 }
 
+void Element::addLine(POINT a, POINT b, int color, int opacity) {
+    lines.push_back({ a, b, color, opacity });
+}
+
 void Element::show() {
     visible = true;
 }
@@ -70,13 +74,17 @@ void Element::onClick(std::function<void(MouseButton button, bool down)> handler
 void Element::drawFrame(int ox, int oy) {
     if (!visible) return;
 
-    if (backgroundColor >= 0) {
+    if (backgroundColor >= 0 && backgroundOpacity > 0) {
         D2::DrawSolidRectAlpha(ox + pos.left, oy + pos.top, ox + pos.right, oy + pos.bottom, backgroundColor, backgroundOpacity);
     }
 
     if (borderColor >= 0) {
         RECT b = { ox + pos.left, oy + pos.top, ox + pos.right, oy + pos.bottom };
         D2::DrawRect(&b, borderColor);
+    }
+
+    for (LineInfo& line : lines) {
+        D2::DrawLine(ox + pos.left + line.a.x, oy + pos.top + line.a.y, ox + pos.left + line.b.x, oy + pos.top + line.b.y, line.color, line.opacity);
     }
 }
 
@@ -170,7 +178,7 @@ void TextElement::draw(int ox, int oy) {
 
 Dialog::Dialog() : Element() {
     backgroundColor = 0;
-    backgroundOpacity = 192;
+    backgroundOpacity = 0xD0;
     borderColor = 0xD;
     dialogs.push_back(this);
 }
