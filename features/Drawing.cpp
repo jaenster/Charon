@@ -12,6 +12,9 @@
 
 REMOTEFUNC(void __fastcall, DrawAutomap, (), 0x45ad60);
 REMOTEFUNC(void __fastcall, DrawSprites, (), 0x4F9870);
+REMOTEREF(D2::Types::RendererFunctionsStrc*, CurrentRendererFunctions, 0x7c8cc0);
+REMOTEFUNC(void, DrawCursor, (), 0x4684C0);
+REMOTEFUNC(void, DrawCursorOOG, (), 0x4F97E0);
 
 /**
  * Drawing hooks.
@@ -45,13 +48,16 @@ void gameAutomapDraw() {
 
 void oogDraw() {
     State["inGame"] = false;
-    DrawSprites();
     D2::GetScreenModeSize(D2::GetScreenMode(), &D2::ScreenWidth, &D2::ScreenHeight);
     DWORD old = D2::SetFont(DEFAULT_FONT);
     for (Feature* f = Features; f; f = f->next) {
         f->oogPostDraw();
     }
+    for (Feature* f = Features; f; f = f->next) {
+        f->allPostDraw();
+    }
     D2::SetFont(old);
+    DrawCursorOOG();
     // Since we patch to override DrawSprites, we need to call it ourselves.
 }
 
@@ -60,8 +66,30 @@ void gameDraw() {
     for (Feature* f = Features; f; f = f->next) {
         f->gamePostDraw();
     }
+    for (Feature* f = Features; f; f = f->next) {
+        f->allPostDraw();
+    }
     D2::SetFont(old);
 }
+
+void DrawCursorHook() {
+    DWORD old = D2::SetFont(DEFAULT_FONT);
+    for (Feature* f = Features; f; f = f->next) {
+        f->allPostDraw();
+    }
+    D2::SetFont(old);
+    DrawCursor();
+}
+
+void _allFinalDraw() {
+    for (Feature* f = Features; f; f = f->next) {
+        f->allFinalDraw();
+    }
+
+    CurrentRendererFunctions->fpEndScene();
+}
+
+REMOTEFUNC(float, PerfModOriginal, (), 0x4f6130);
 
 // This feature class registers itself.
 class : public Feature {
@@ -70,7 +98,12 @@ public:
         MemoryPatch(0x476ce1) << CALL(preDrawUnitsPatch); // Hook the unit draw
         MemoryPatch(0x456fa5) << CALL(gameAutomapDraw); // Hook the automap draw
         MemoryPatch(0x44CB14) << CALL(gameDraw); // Hook the game draw
-        MemoryPatch(0x4F9A0D) << CALL(oogDraw); // Hook the oog draw
+        MemoryPatch(0x4F9A5D) << CALL(oogDraw); // Hook the oog draw
+        MemoryPatch(0x44ebea) << CALL(DrawCursorHook); // Congratulations screen hook
+        MemoryPatch(0x45fe1f) << CALL(DrawCursorHook); // Disc screen hook
+        MemoryPatch(0x4601d6) << CALL(DrawCursorHook); // Unknown screen hook
+
         MemoryPatch(0x476d31) << JUMP(_gameUnitPostDraw);
+        MemoryPatch(0x4F6230) << CALL(_allFinalDraw) << NOP_TO(0x4F623A);
     }
 } feature;

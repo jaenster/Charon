@@ -2,27 +2,13 @@
 #include "headers/common.h"
 #include "headers/hook.h"
 #include "headers/remote.h"
-#include "resource.h"
+#include "headers/dialog.h"
 #include <unordered_map>
 #include <functional>
 #include <fstream>
 #include <string>
 
-std::unordered_map<UINT, std::function<BOOL CALLBACK(HWND, WPARAM, LPARAM)>> WindowMessageHandlers;
-
-HWND hwndSettings = nullptr;
 wchar_t settingsPath[512] = { 0 };
-
-BOOL CALLBACK SettingsWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    return WindowMessageHandlers[uMsg] ? WindowMessageHandlers[uMsg](hwnd, wParam, lParam) : FALSE;
-}
-
-void __stdcall TranslateDispatchIntercept(MSG* lpMsg) {
-    if (!IsWindow(hwndSettings) || !IsDialogMessage(hwndSettings, lpMsg)) {
-        TranslateMessage(lpMsg);
-        DispatchMessage(lpMsg);
-    }
-}
 
 void LoadSettings() {
     std::ifstream file(settingsPath);
@@ -50,105 +36,477 @@ void SaveSettings() {
 }
 
 class : public Feature {
+    Element *dialog;
+    bool test;
+    int p = -200;
 public:
     void init() {
-        MemoryPatch(0x4202eb) << CALL(TranslateDispatchIntercept) << NOP_TO(0x4202fb);
-        MemoryPatch(0x431821) << CALL(TranslateDispatchIntercept) << NOP_TO(0x431829);
-        MemoryPatch(0x451c0a) << CALL(TranslateDispatchIntercept) << NOP_TO(0x451c1a);
-        MemoryPatch(0x4fa5f4) << CALL(TranslateDispatchIntercept) << NOP_TO(0x4fa604);
-        MemoryPatch(0x50ff9a) << CALL(TranslateDispatchIntercept) << NOP_TO(0x50ffaa);
-        MemoryPatch(0x513991) << CALL(TranslateDispatchIntercept) << NOP_TO(0x5139a1);
-        MemoryPatch(0x6bbe91) << CALL(TranslateDispatchIntercept) << NOP_TO(0x6bbea1);
+        dialog = new Dialog();
+        dialog->setPos(-200, -121);
+        dialog->setDimensions(400, 242);
 
-        WindowMessageHandlers[WM_INITDIALOG] = [](HWND hwnd, WPARAM wParam, LPARAM lParam) -> BOOL {
-            ShowCursor(true);
+        int width = 190, height = 15, top = 15, x = 5, y = 30, font = 0;
 
-            CheckDlgButton(hwnd, IDC_LIGHTING_TEST, Settings["useColors"]);
-            CheckDlgButton(hwnd, IDC_DEBUG_MODE, Settings["debugMode"]);
-            CheckDlgButton(hwnd, IDC_DRAW_SWATCH, State["drawSwatch"]);
-            CheckDlgButton(hwnd, IDC_XP_MULTIPLIER, Settings["xpMultiplier"]);
-            CheckDlgButton(hwnd, IDC_REPORT_XP, Settings["reportXP"]);
-            CheckDlgButton(hwnd, IDC_REVEAL_LEVEL, Settings["revealLevel"]);
-            CheckDlgButton(hwnd, IDC_SHOW_MONSTERS, Settings["showMonsters"]);
-            CheckDlgButton(hwnd, IDC_SHOW_ITEMS, Settings["showItems"]);
-            CheckDlgButton(hwnd, IDC_SHOW_MISSILES, Settings["showMissiles"]);
-            CheckDlgButton(hwnd, IDC_LADDER_ITEMS, Settings["ladderItems"]);
-            CheckDlgButton(hwnd, IDC_REBALANCE_DROPS, Settings["rebalanceDrops"]);
-            CheckDlgButton(hwnd, IDC_ALWAYS_D3D, Settings["alwaysD3D"]);
-            CheckDlgButton(hwnd, IDC_ITEM_INFO, Settings["itemInfo"]);
-            CheckDlgButton(hwnd, IDC_COWS_OVERRIDE, Settings["cowsOverride"]);
-            CheckDlgButton(hwnd, IDC_RESPEC_OVERRIDE, Settings["respecOverride"]);
-            CheckDlgButton(hwnd, IDC_IMBUE_OVERRIDE, Settings["imbueOverride"]);
-            CheckDlgButton(hwnd, IDC_SOCKET_OVERRIDE, Settings["socketOverride"]);
-            CheckDlgButton(hwnd, IDC_NO_PICKUP, D2::NoPickUp);
-            CheckDlgButton(hwnd, IDC_DISABLE_WEATHER, Settings["disableWeather"]);
+        TextElement* dlabel = new TextElement();
+        dlabel->setPos(200, 0); dlabel->setTextOffset(0, -3); dlabel->setDimensions(0, 25); dlabel->setFont(5); dlabel->setOrientation(Orientation::CENTER); dlabel->setText(L"Charon Settings"); dlabel->show(); dialog->addChild(dlabel);
 
-            HWND hFilters = GetDlgItem(hwnd, IDC_ALWAYS_D3D_FILTER);
+        TextElement* close = new TextElement();
+        close->setPos(400 - 50, 5); close->setDimensions(45, 18); close->setTextOffset(0, -4);  close->setFont(font); close->setText(L"Close"); close->setOrientation(Orientation::CENTER); close->setFrame(0xD, 128, 0xD); close->show(); dialog->addChild(close);
 
-            for (int c = 0, pos = 0; c < 6; c++) {
-                pos = SendMessage(hFilters, CB_ADDSTRING, 0, (LPARAM)filterParams[c].c_str());
-            }
+        close->onClick([&](MouseButton button, bool down) -> void {
+            dialog->hide();
+        });
 
-            SendMessage(hFilters, CB_SETCURSEL, Settings["alwaysD3DFilter"], 0);
+        TextElement* caption = new TextElement();
+        caption->setPos(0, 227); caption->setDimensions(400, height); caption->setTextOffset(0, -4);  caption->setFont(font); caption->setText(L"\u00FFc3*\u00FFc4Requires New Game, \u00FFc;*\u00FFc4Requires Restart"); caption->setOrientation(Orientation::CENTER); caption->show(); dialog->addChild(caption);
 
-            return TRUE;
-        };
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Reveal Map"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
 
-        WindowMessageHandlers[WM_COMMAND] = [](HWND hwnd, WPARAM wParam, LPARAM lParam) -> BOOL {
-            HWND hFilters;
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["revealLevel"] = !Settings["revealLevel"];
+                SaveSettings();
+            });
 
-            switch (LOWORD(wParam)) {
-                case IDOK:
-                    Settings["useColors"] = IsDlgButtonChecked(hwnd, IDC_LIGHTING_TEST);
-                    Settings["debugMode"] = IsDlgButtonChecked(hwnd, IDC_DEBUG_MODE);
-                    State["drawSwatch"] = IsDlgButtonChecked(hwnd, IDC_DRAW_SWATCH);
-                    Settings["xpMultiplier"] = IsDlgButtonChecked(hwnd, IDC_XP_MULTIPLIER);
-                    Settings["reportXP"] = IsDlgButtonChecked(hwnd, IDC_REPORT_XP);
-                    Settings["revealLevel"] = IsDlgButtonChecked(hwnd, IDC_REVEAL_LEVEL);
-                    Settings["showMonsters"] = IsDlgButtonChecked(hwnd, IDC_SHOW_MONSTERS);
-                    Settings["showItems"] = IsDlgButtonChecked(hwnd, IDC_SHOW_ITEMS);
-                    Settings["showMissiles"] = IsDlgButtonChecked(hwnd, IDC_SHOW_MISSILES);
-                    Settings["ladderItems"] = IsDlgButtonChecked(hwnd, IDC_LADDER_ITEMS);
-                    Settings["rebalanceDrops"] = IsDlgButtonChecked(hwnd, IDC_REBALANCE_DROPS);
-                    Settings["alwaysD3D"] = IsDlgButtonChecked(hwnd, IDC_ALWAYS_D3D);
-                    Settings["itemInfo"] = IsDlgButtonChecked(hwnd, IDC_ITEM_INFO);
-                    Settings["cowsOverride"] = IsDlgButtonChecked(hwnd, IDC_COWS_OVERRIDE);
-                    Settings["respecOverride"] = IsDlgButtonChecked(hwnd, IDC_RESPEC_OVERRIDE);
-                    Settings["imbueOverride"] = IsDlgButtonChecked(hwnd, IDC_IMBUE_OVERRIDE);
-                    Settings["socketOverride"] = IsDlgButtonChecked(hwnd, IDC_SOCKET_OVERRIDE);
-                    D2::NoPickUp = Settings["noPickup"] = IsDlgButtonChecked(hwnd, IDC_NO_PICKUP);
-                    Settings["disableWeather"] = IsDlgButtonChecked(hwnd, IDC_DISABLE_WEATHER);
+            elem->setText([&]() -> std::wstring {
+                return Settings["revealLevel"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            });
 
-                    hFilters = GetDlgItem(hwnd, IDC_ALWAYS_D3D_FILTER);
-                    Settings["alwaysD3DFilter"] = SendMessage(hFilters, CB_GETCURSEL, 0, 0);
+            y += height;
+        }
 
-                    SaveSettings();
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Show Monsters"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
 
-                case IDCANCEL:
-                    PostMessage(hwnd, WM_CLOSE, 0, 0);
-                    break;
-            }
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["showMonsters"] = !Settings["showMonsters"];
+                SaveSettings();
+            });
 
-            return TRUE;
-        };
+            elem->setText([&]() -> std::wstring {
+                return Settings["showMonsters"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            });
 
-        WindowMessageHandlers[WM_CLOSE] = [](HWND hwnd, WPARAM wParam, LPARAM lParam) -> BOOL {
-            DestroyWindow(hwnd);
-            ShowCursor(false);
-            hwndSettings = nullptr;
-            return TRUE;
-        };
+            y += height;
+        }
 
-        HotkeyCallbacks[VK_F11] = [](LPARAM options) -> BOOL {
-            if (hwndSettings == nullptr) {
-                hwndSettings = CreateDialog(hInst, MAKEINTRESOURCE(IDD_SETTINGS), D2::hWnd, SettingsWindowProc);
-                ShowWindow(hwndSettings, SW_SHOW);
-            }
-            else {
-                PostMessage(hwndSettings, WM_CLOSE, 0, 0);
-            }
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Show Items"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
 
-            return FALSE;
-        };
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["showItems"] = !Settings["showItems"];
+                SaveSettings();
+            });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["showItems"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Show Missiles"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["showMissiles"] = !Settings["showMissiles"];
+                SaveSettings();
+            });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["showMissiles"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Show Extra Item Info"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["itemInfo"] = !Settings["itemInfo"];
+                SaveSettings();
+            });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["itemInfo"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            });
+
+            y += height * 3;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Default /nopickup"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                D2::NoPickUp = Settings["noPickup"] = !Settings["noPickup"];
+                SaveSettings();
+            });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["noPickup"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Repeatable Cow Portal"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["cowsOverride"] = !Settings["cowsOverride"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["cowsOverride"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Repeatable Respec Quest"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["respecOverride"] = !Settings["respecOverride"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["respecOverride"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Repeatable Imbue Quest"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["imbueOverride"] = !Settings["imbueOverride"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["imbueOverride"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Repeatable Socket Quest"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["socketOverride"] = !Settings["socketOverride"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["socketOverride"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        x = 205;
+        y = 30;
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"\u00FFc3*\u00FFc4Enable Ladder Items"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["ladderItems"] = !Settings["ladderItems"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["ladderItems"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"\u00FFc3*\u00FFc4Tweak Drops for Solo"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["rebalanceDrops"] = !Settings["rebalanceDrops"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["rebalanceDrops"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Better Players XP Scaling"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["xpMultiplier"] = !Settings["xpMultiplier"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["xpMultiplier"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Report XP Gains"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["reportXP"] = !Settings["reportXP"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["reportXP"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height * 2;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Draw Color Swatch"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                State["drawSwatch"] = !State["drawSwatch"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return State["drawSwatch"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Disable Weather"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["disableWeather"] = !Settings["disableWeather"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["disableWeather"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Lighting Test"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["useColors"] = !Settings["useColors"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["useColors"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"Debug Mode"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["debugMode"] = !Settings["debugMode"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["debugMode"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"\u00FFc;*\u00FFc4Always D3D Mode"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["alwaysD3D"] = !Settings["alwaysD3D"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["alwaysD3D"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"AD3D Filter"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["alwaysD3DFilter"] = (Settings["alwaysD3DFilter"] + 1) % 6;
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                std::wstring ret = Settings["alwaysD3DFilter"] ? L"\u00FFc8" : L"\u00FFc5";
+                ret += filterParams[Settings["alwaysD3DFilter"]];
+                return ret;
+                });
+
+            y += height;
+        }
+
+        {
+            TextElement* elem;
+            Element* group = new Element();
+            group->setPos(x, y); group->setDimensions(width, height); group->show(); dialog->addChild(group);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setText(L"AD3D Start Fullscreen"); elem->show(); group->addChild(elem);
+            elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+
+            group->onClick([&](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["alwaysD3DStartFull"] = !Settings["alwaysD3DStartFull"];
+                SaveSettings();
+                });
+
+            elem->setText([&]() -> std::wstring {
+                return Settings["alwaysD3DStartFull"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                });
+
+            y += height;
+        }
     }
+
+    bool keyEvent(DWORD keyCode, bool down, DWORD flags) {
+        switch (keyCode) {
+        case VK_ESCAPE:
+            if (dialog->isVisible()) {
+                if (down) {
+                    dialog->hide();
+                    return false;
+                }
+            }
+
+            break;
+        case VK_F11:
+            dialog->setVisibile(!dialog->isVisible());
+            return false;
+
+        case VK_LEFT:
+            dialog->setPos(p, p++);
+            return false;
+        }
+
+        return true;
+    }
+
 } feature;

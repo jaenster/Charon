@@ -154,11 +154,11 @@ void throttle() {
 
 std::wstring filterParams[6] = {
     L"Default",
-    L"D3DTFG_POINT",
-    L"D3DTFG_LINEAR",
-    L"D3DTFG_FLATCUBIC",
-    L"D3DTFG_GAUSSIANCUBIC",
-    L"D3DTFG_ANISOTROPIC",
+    L"Point",
+    L"Linear",
+    L"Flat Cubic",
+    L"Gaussian Cubic",
+    L"Anisotropic",
 };
 
 int filterValues[6] = {
@@ -218,6 +218,7 @@ BOOL __stdcall SetWindowPosStub(HWND hWnd, HWND hWndInsertAfter, int X, int Y, i
 namespace AlwaysD3D {
 
     class : public Feature {
+        bool startFull = false;
     public:
         void init() {
             if (Settings["alwaysD3D"]) {
@@ -261,6 +262,15 @@ namespace AlwaysD3D {
 
                     return TRUE;
                 };
+
+                startFull = Settings["alwaysD3DStartFull"];
+            }
+        }
+
+        void allFinalDraw() {
+            if (startFull) {
+                ToggleFullscreen();
+                startFull = false;
             }
         }
     } feature;
