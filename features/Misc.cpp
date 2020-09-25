@@ -15,6 +15,18 @@ REMOTEREF(int, DrawAutoMapStatsOffsetY, 0x7A51BC);
 REMOTEREF(D2::Types::UnitAny*, CurrentTooltipItem, 0x7BCBF4);
 REMOTEFUNC(BYTE __stdcall, GetMaxSocketCount, (D2::Types::UnitAny *pItem), 0x62BC20);
 
+// Replaces the automatic splash screen timeout
+void SplashScreenHook() {
+    D2::OkDialog(
+        version.c_str(),
+        L"This is an experiment and utility for Diablo 2. It is intended for single player and TCP/IP game use, so connections to Battle.net are disabled.",
+        L"I see him there at the oars of his little boat in the lake, the ferryman of the dead, Charon, with his hand upon the oar and he calls me now. \n~Alcestis (from Alcestis by Euripides)",
+        []() -> void {
+            D2::MainMenuForm();
+        }
+    );
+}
+
 void _drawAutoMapInfo(DWORD size) {
     DWORD width = 0, height = 0, fileno = 1;
     height = D2::GetTextSize(L"test", &width, &fileno);
@@ -184,18 +196,12 @@ void __stdcall GetGlobalLight(void* pAct, BYTE &red, BYTE &green, BYTE &blue) {
 class : public Feature {
 public:
     void init() {
+        MemoryPatch(0x42fb40) << CALL(SplashScreenHook);
+
 		MemoryPatch(0x4F5623) << CALL(multi) << ASM::NOP; // Allow multiple windows open
         MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
-        #ifdef _DEBUG
-        MemoryPatch(0x51FE3B) << BYTES(ASM::NOP, 6); // Extra work blocker
-        //MemoryPatch(0x61c0bf) << BYTESEQ{ 0xB1, 255 } << ASM::NOP << ASM::NOP;
-        //MemoryPatch(0x61c0c8) << BYTESEQ{ 0xB1, 255 } << ASM::NOP << ASM::NOP;
-        //MemoryPatch(0x61c0d1) << BYTESEQ{ 0xB0, 255 } << ASM::NOP;
-        //MemoryPatch(0x61c0e0) << BYTESEQ{ 0xB8, 0xFF, 0, 0, 0, 0xC2, 0x4, 0 };
-        MemoryPatch(0x61C0B0) << JUMP(GetGlobalLight);
-        #else
         MemoryPatch(0x43BF60) << ASM::RET; // Prevent battle.net connections
-        #endif
+        MemoryPatch(0x61C0B0) << JUMP(GetGlobalLight);
         //MemoryPatch(0x660E50) << JUMP(OverrideWaypoints);
         //MemoryPatch(0x56A200) << BYTE(0xEB); // Always regenerate map even in single player
         MemoryPatch(0x515FB1) << BYTE(0x01); // Delay of 1 on cleaning up sounds after quiting game
@@ -218,7 +224,7 @@ public:
 
         AutomapInfoHooks.push_back([]() -> std::wstring {
             return version;
-            });
+        });
 
         AutomapInfoHooks.push_back([]() -> std::wstring {
             DWORD elapsed = GetTickCount() - gamestart, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
@@ -226,8 +232,6 @@ public:
             swprintf_s(msg, L"%d:%02d", minutes, seconds);
             return msg;
         });
-
-        D2::NoPickUp = Settings["noPickup"];
     }
 
     void gameLoop() {

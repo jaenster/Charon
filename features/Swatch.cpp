@@ -13,7 +13,7 @@ wchar_t wHex[] = L"0123456789ABCDEF";
 // This feature class registers itself.
 class : public Feature {
 public:
-    void gamePostDraw() {
+    void allPostDraw() {
         DWORD fontnum = 8, height, width;
         D2::SetFont(fontnum);
         if (State["drawSwatch"]) {

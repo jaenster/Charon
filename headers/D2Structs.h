@@ -11,6 +11,8 @@
 #pragma warning(disable : 4201)
 #pragma optimize("", off)
 
+typedef void(*VOIDFUNC)();
+
 namespace D2 {
     enum UnitType : int {
         UNIT_PLAYER = 0,
@@ -975,6 +977,64 @@ namespace D2 {
             DWORD	strLength;
             DWORD	offset;
             void* lookup;
+        };
+
+        // Exported from Ghidra
+        struct RendererFunctionsStrc {
+            VOIDFUNC field_0x0;
+            VOIDFUNC fpAllocCoreStrc;
+            VOIDFUNC fpRelease;
+            VOIDFUNC field_0xc;
+            VOIDFUNC field_0x10;
+            VOIDFUNC field_0x14;
+            VOIDFUNC fpBeginScene;
+            VOIDFUNC fpEndScene;
+            VOIDFUNC fpFlipBufferProbably;
+            VOIDFUNC fpResizeWindow;
+            VOIDFUNC fpGetBackBuffer;
+            VOIDFUNC fpActivateWindow;
+            VOIDFUNC fpSetOption;
+            VOIDFUNC fpBeginCutScene;
+            VOIDFUNC fpPlayCutScene;
+            VOIDFUNC fpCheckCutScene;
+            VOIDFUNC fpDecodeSmacker;
+            VOIDFUNC fpPlayerSmacker;
+            VOIDFUNC fpCloseSmacker;
+            VOIDFUNC fpGetRenderStatistics;
+            VOIDFUNC fpGetScreenSize;
+            VOIDFUNC fpUpdateScaleFactorScaleFactor;
+            VOIDFUNC fpSetGamma;
+            VOIDFUNC fpCheckGamma;
+            VOIDFUNC fpSetPerspectiveScale;
+            VOIDFUNC fpAdjustPerspectivePosition;
+            VOIDFUNC fpPerspecitveScalePosition;
+            VOIDFUNC fpSetDefaultPerspectiveFactor;
+            VOIDFUNC fpSetPalette;
+            VOIDFUNC fpSetPaletteTable;
+            VOIDFUNC fpSetGlobalLight;
+            VOIDFUNC field_0x7c;
+            VOIDFUNC field_0x80;
+            VOIDFUNC fpDrawSprite;
+            VOIDFUNC field_0x88;
+            VOIDFUNC field_0x8c;
+            VOIDFUNC field_0x90;
+            VOIDFUNC field_0x94;
+            VOIDFUNC field_0x98;
+            VOIDFUNC field_0x9c;
+            VOIDFUNC field_0xa0;
+            VOIDFUNC field_0xa4;
+            VOIDFUNC fpDrawRect;
+            VOIDFUNC fpDrawRectEx;
+            VOIDFUNC fpDrawSolidRect;
+            VOIDFUNC fpDrawSolidSquare;
+            VOIDFUNC fpDrawSolidRectEx;
+            VOIDFUNC fpDrawSolidRectAlpha;
+            VOIDFUNC fpDrawLine;
+            VOIDFUNC fpClearScreen;
+            VOIDFUNC fpDrawString;
+            VOIDFUNC fpDrawLight;
+            VOIDFUNC fpDebugFillBackBuffer;
+            VOIDFUNC fpClearCaches;
         };
     }
 }

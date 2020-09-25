@@ -2,27 +2,13 @@
 #include "headers/common.h"
 #include "headers/hook.h"
 #include "headers/remote.h"
-#include "resource.h"
+#include "headers/dialog.h"
 #include <unordered_map>
 #include <functional>
 #include <fstream>
 #include <string>
 
-std::unordered_map<UINT, std::function<BOOL CALLBACK(HWND, WPARAM, LPARAM)>> WindowMessageHandlers;
-
-HWND hwndSettings = nullptr;
 wchar_t settingsPath[512] = { 0 };
-
-BOOL CALLBACK SettingsWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    return WindowMessageHandlers[uMsg] ? WindowMessageHandlers[uMsg](hwnd, wParam, lParam) : FALSE;
-}
-
-void __stdcall TranslateDispatchIntercept(MSG* lpMsg) {
-    if (!IsWindow(hwndSettings) || !IsDialogMessage(hwndSettings, lpMsg)) {
-        TranslateMessage(lpMsg);
-        DispatchMessage(lpMsg);
-    }
-}
 
 void LoadSettings() {
     std::ifstream file(settingsPath);
@@ -49,102 +35,271 @@ void SaveSettings() {
     }
 }
 
+struct DialogToggleInfo {
+    std::wstring label;
+    std::function<std::wstring()> valuecallback;
+    std::function<void(MouseButton button, bool down)> clickhandler;
+    DialogToggleInfo(std::wstring label, std::function<std::wstring()> valuecallback, std::function<void(MouseButton button, bool down)> clickhandler) {
+        this->label = label;
+        this->valuecallback = valuecallback;
+        this->clickhandler = clickhandler;
+    }
+};
+
+std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
+    { // First Column
+        new DialogToggleInfo(L"Reveal Map",
+            []() -> std::wstring {
+                return Settings["revealLevel"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["revealLevel"] = !Settings["revealLevel"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Show Monsters",
+            []() -> std::wstring {
+                return Settings["showMonsters"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["showMonsters"] = !Settings["showMonsters"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Show Items",
+            []() -> std::wstring {
+                return Settings["showItems"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["showItems"] = !Settings["showItems"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Show Missiles",
+            []() -> std::wstring {
+                return Settings["showMissiles"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["showMissiles"] = !Settings["showMissiles"];
+                SaveSettings();
+            }),
+        nullptr, // Empty Gap
+        nullptr, // Empty Gap
+        new DialogToggleInfo(L"Show Extra Item Info",
+            []() -> std::wstring {
+                return Settings["itemInfo"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["itemInfo"] = !Settings["itemInfo"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Default /nopickup",
+            []() -> std::wstring {
+                return Settings["noPickup"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["noPickup"] = !Settings["noPickup"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Repeatable Respec Quest",
+            []() -> std::wstring {
+                return Settings["respecOverride"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["respecOverride"] = !Settings["respecOverride"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Repeatable Imbue Quest",
+            []() -> std::wstring {
+                return Settings["imbueOverride"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["imbueOverride"] = !Settings["imbueOverride"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Repeatable Socket Quest",
+            []() -> std::wstring {
+                return Settings["socketOverride"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["socketOverride"] = !Settings["socketOverride"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Repeatable Cow Portal",
+            []() -> std::wstring {
+                return Settings["cowsOverride"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["cowsOverride"] = !Settings["cowsOverride"];
+                SaveSettings();
+            }),
+    }, { // Second Column
+        new DialogToggleInfo(L"\u00FFc3*\u00FFc4Enable Ladder Items",
+            []() -> std::wstring {
+                return Settings["ladderItems"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["ladderItems"] = !Settings["ladderItems"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"\u00FFc3*\u00FFc4Tweak Drops for Solo",
+            []() -> std::wstring {
+                return Settings["rebalanceDrops"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["rebalanceDrops"] = !Settings["rebalanceDrops"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Better Players XP Scaling",
+            []() -> std::wstring {
+                return Settings["xpMultiplier"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["xpMultiplier"] = !Settings["xpMultiplier"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Report XP Gains",
+            []() -> std::wstring {
+                return Settings["reportXP"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["reportXP"] = !Settings["reportXP"];
+                SaveSettings();
+            }),
+        nullptr, // Empty Gap
+        new DialogToggleInfo(L"Draw Color Swatch",
+            []() -> std::wstring {
+                return State["drawSwatch"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                State["drawSwatch"] = !State["drawSwatch"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Disable Weather Effects",
+            []() -> std::wstring {
+                return Settings["disableWeather"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["disableWeather"] = !Settings["disableWeather"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Lighting Test",
+            []() -> std::wstring {
+                return Settings["useColors"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["useColors"] = !Settings["useColors"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Debug Mode",
+            []() -> std::wstring {
+                return Settings["debugMode"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["debugMode"] = !Settings["debugMode"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"\u00FFc;*\u00FFc4Always D3D Mode",
+            []() -> std::wstring {
+                return Settings["alwaysD3D"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["alwaysD3D"] = !Settings["alwaysD3D"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"AD3D Filter",
+            []() -> std::wstring {
+                std::wstring ret = Settings["alwaysD3DFilter"] ? L"\u00FFc8" : L"\u00FFc5";
+                ret += filterParams[Settings["alwaysD3DFilter"]];
+                return ret;
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["alwaysD3DFilter"] = (Settings["alwaysD3DFilter"] + 1) % 6;
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"AD3D Start Fullscreen",
+            []() -> std::wstring {
+                return Settings["alwaysD3DStartFull"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["alwaysD3DStartFull"] = !Settings["alwaysD3DStartFull"];
+                SaveSettings();
+            }),
+    },
+};
+
 class : public Feature {
+    Element *dialog;
 public:
     void init() {
-        MemoryPatch(0x4202eb) << CALL(TranslateDispatchIntercept) << NOP_TO(0x4202fb);
-        MemoryPatch(0x431821) << CALL(TranslateDispatchIntercept) << NOP_TO(0x431829);
-        MemoryPatch(0x451c0a) << CALL(TranslateDispatchIntercept) << NOP_TO(0x451c1a);
-        MemoryPatch(0x4fa5f4) << CALL(TranslateDispatchIntercept) << NOP_TO(0x4fa604);
-        MemoryPatch(0x50ff9a) << CALL(TranslateDispatchIntercept) << NOP_TO(0x50ffaa);
-        MemoryPatch(0x513991) << CALL(TranslateDispatchIntercept) << NOP_TO(0x5139a1);
-        MemoryPatch(0x6bbe91) << CALL(TranslateDispatchIntercept) << NOP_TO(0x6bbea1);
+        int inset = 5, width = 200, height = 15, top = 28, font = 0, dialogWidth = 0, dialogHeight = top + 2 * height;
 
-        WindowMessageHandlers[WM_INITDIALOG] = [](HWND hwnd, WPARAM wParam, LPARAM lParam) -> BOOL {
-            ShowCursor(true);
+        for (std::vector<DialogToggleInfo*>& SettingsColumn : SettingsColumns) {
+            dialogHeight = max(dialogHeight, top + ((int)SettingsColumn.size() + 2) * height);
+            dialogWidth += width;
+        }
 
-            CheckDlgButton(hwnd, IDC_LIGHTING_TEST, Settings["useColors"]);
-            CheckDlgButton(hwnd, IDC_DEBUG_MODE, Settings["debugMode"]);
-            CheckDlgButton(hwnd, IDC_DRAW_SWATCH, State["drawSwatch"]);
-            CheckDlgButton(hwnd, IDC_XP_MULTIPLIER, Settings["xpMultiplier"]);
-            CheckDlgButton(hwnd, IDC_REPORT_XP, Settings["reportXP"]);
-            CheckDlgButton(hwnd, IDC_REVEAL_LEVEL, Settings["revealLevel"]);
-            CheckDlgButton(hwnd, IDC_SHOW_MONSTERS, Settings["showMonsters"]);
-            CheckDlgButton(hwnd, IDC_SHOW_ITEMS, Settings["showItems"]);
-            CheckDlgButton(hwnd, IDC_SHOW_MISSILES, Settings["showMissiles"]);
-            CheckDlgButton(hwnd, IDC_LADDER_ITEMS, Settings["ladderItems"]);
-            CheckDlgButton(hwnd, IDC_REBALANCE_DROPS, Settings["rebalanceDrops"]);
-            CheckDlgButton(hwnd, IDC_ALWAYS_D3D, Settings["alwaysD3D"]);
-            CheckDlgButton(hwnd, IDC_ITEM_INFO, Settings["itemInfo"]);
-            CheckDlgButton(hwnd, IDC_COWS_OVERRIDE, Settings["cowsOverride"]);
-            CheckDlgButton(hwnd, IDC_RESPEC_OVERRIDE, Settings["respecOverride"]);
-            CheckDlgButton(hwnd, IDC_IMBUE_OVERRIDE, Settings["imbueOverride"]);
-            CheckDlgButton(hwnd, IDC_SOCKET_OVERRIDE, Settings["socketOverride"]);
-            CheckDlgButton(hwnd, IDC_NO_PICKUP, D2::NoPickUp);
-            CheckDlgButton(hwnd, IDC_DISABLE_WEATHER, Settings["disableWeather"]);
+        dialog = new Dialog();
+        dialog->setPos(-dialogWidth / 2, -dialogHeight / 2);
+        dialog->setDimensions(dialogWidth, dialogHeight);
 
-            HWND hFilters = GetDlgItem(hwnd, IDC_ALWAYS_D3D_FILTER);
+        TextElement* dlabel = new TextElement();
+        dlabel->setPos(0, 0); dlabel->setTextOffset(0, -6); dlabel->setDimensions(dialogWidth, 25); dlabel->setFrame(0x2, 0xFF, 0xD); dlabel->setFont(5); dlabel->setOrientation(Orientation::CENTER); dlabel->setText(L"Charon Settings"); dlabel->show(); dialog->addChild(dlabel);
 
-            for (int c = 0, pos = 0; c < 6; c++) {
-                pos = SendMessage(hFilters, CB_ADDSTRING, 0, (LPARAM)filterParams[c].c_str());
+        Element* close = new Element();
+        int xsize = 13, xinset = 6;
+        close->setPos(dialogWidth - xinset - xsize, xinset); close->setDimensions(xsize, xsize); close->setFrame(0, 0xFF, 0xD); close->show(); dialog->addChild(close);
+        close->addLine({ 0, 0 }, { xsize, xsize }, 0xD);
+        close->addLine({ 0, xsize }, { xsize, 0 }, 0xD);
+        close->getLinesCallback([&](std::vector<LineInfo> lines) -> std::vector<LineInfo> {
+            // Example callback; Since 'lines' contains all the data from addLine,
+            // we can modify it or return a completely new vector here.
+            return lines;
+        });
+
+        close->onClick([&](MouseButton button, bool down) -> void {
+            dialog->hide();
+        });
+
+        TextElement* caption = new TextElement();
+        caption->setPos(0, dialogHeight - height); caption->setDimensions(400, height); caption->setTextOffset(0, -4); caption->setFont(font); caption->setText(L"\u00FFc3*\u00FFc4Requires New Game, \u00FFc;*\u00FFc4Requires Restart"); caption->setOrientation(Orientation::CENTER); caption->show(); dialog->addChild(caption);
+
+        int x = inset, y;
+
+        for (std::vector<DialogToggleInfo*>& SettingsColumn : SettingsColumns) {
+            y = top;
+            for (DialogToggleInfo* setting : SettingsColumn) {
+                if (setting != nullptr) {
+                    TextElement* elem;
+                    Element* group = new Element();
+                    group->setPos(x, y); group->setDimensions(width - inset * 2, height); group->show(); dialog->addChild(group);
+                    elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width - inset * 2, height); elem->setFont(font); elem->setText(setting->label); elem->show(); group->addChild(elem);
+                    elem = new TextElement(); elem->setTextOffset(0, -4); elem->setDimensions(width - inset * 2, height); elem->setFont(font); elem->setOrientation(Orientation::RIGHT); elem->show(); group->addChild(elem);
+                    elem->setText(setting->valuecallback);
+                    group->onClick(setting->clickhandler);
+                }
+                y += height;
             }
+            x += width;
+        }
 
-            SendMessage(hFilters, CB_SETCURSEL, Settings["alwaysD3DFilter"], 0);
-
-            return TRUE;
-        };
-
-        WindowMessageHandlers[WM_COMMAND] = [](HWND hwnd, WPARAM wParam, LPARAM lParam) -> BOOL {
-            if (LOWORD(wParam) == IDOK) {
-                PostMessage(hwnd, WM_CLOSE, 0, 0);
-                return TRUE;
-            }
-
-            return FALSE;
-        };
-
-        WindowMessageHandlers[WM_CLOSE] = [](HWND hwnd, WPARAM wParam, LPARAM lParam) -> BOOL {
-            Settings["useColors"] = IsDlgButtonChecked(hwnd, IDC_LIGHTING_TEST);
-            Settings["debugMode"] = IsDlgButtonChecked(hwnd, IDC_DEBUG_MODE);
-            State["drawSwatch"] = IsDlgButtonChecked(hwnd, IDC_DRAW_SWATCH);
-            Settings["xpMultiplier"] = IsDlgButtonChecked(hwnd, IDC_XP_MULTIPLIER);
-            Settings["reportXP"] = IsDlgButtonChecked(hwnd, IDC_REPORT_XP);
-            Settings["revealLevel"] = IsDlgButtonChecked(hwnd, IDC_REVEAL_LEVEL);
-            Settings["showMonsters"] = IsDlgButtonChecked(hwnd, IDC_SHOW_MONSTERS);
-            Settings["showItems"] = IsDlgButtonChecked(hwnd, IDC_SHOW_ITEMS);
-            Settings["showMissiles"] = IsDlgButtonChecked(hwnd, IDC_SHOW_MISSILES);
-            Settings["ladderItems"] = IsDlgButtonChecked(hwnd, IDC_LADDER_ITEMS);
-            Settings["rebalanceDrops"] = IsDlgButtonChecked(hwnd, IDC_REBALANCE_DROPS);
-            Settings["alwaysD3D"] = IsDlgButtonChecked(hwnd, IDC_ALWAYS_D3D);
-            Settings["itemInfo"] = IsDlgButtonChecked(hwnd, IDC_ITEM_INFO);
-            Settings["cowsOverride"] = IsDlgButtonChecked(hwnd, IDC_COWS_OVERRIDE);
-            Settings["respecOverride"] = IsDlgButtonChecked(hwnd, IDC_RESPEC_OVERRIDE);
-            Settings["imbueOverride"] = IsDlgButtonChecked(hwnd, IDC_IMBUE_OVERRIDE);
-            Settings["socketOverride"] = IsDlgButtonChecked(hwnd, IDC_SOCKET_OVERRIDE);
-            D2::NoPickUp = Settings["noPickup"] = IsDlgButtonChecked(hwnd, IDC_NO_PICKUP);
-            Settings["disableWeather"] = IsDlgButtonChecked(hwnd, IDC_DISABLE_WEATHER);
-
-            HWND hFilters = GetDlgItem(hwnd, IDC_ALWAYS_D3D_FILTER);
-            Settings["alwaysD3DFilter"] = SendMessage(hFilters, CB_GETCURSEL, 0, 0);
-
-            SaveSettings();
-
-            DestroyWindow(hwnd);
-            ShowCursor(false);
-            hwndSettings = nullptr;
-            return TRUE;
-        };
-
-        HotkeyCallbacks[VK_F11] = [](LPARAM options) -> BOOL {
-            if (hwndSettings == nullptr) {
-                hwndSettings = CreateDialog(hInst, MAKEINTRESOURCE(IDD_SETTINGS), D2::hWnd, SettingsWindowProc);
-                ShowWindow(hwndSettings, SW_SHOW);
-            }
-            else {
-                PostMessage(hwndSettings, WM_CLOSE, 0, 0);
-            }
-
-            return FALSE;
-        };
+        D2::NoPickUp = Settings["noPickup"];
     }
+
+    bool keyEvent(DWORD keyCode, bool down, DWORD flags) {
+        switch (keyCode) {
+        case VK_ESCAPE:
+            if (dialog->isVisible()) {
+                if (down) {
+                    dialog->hide();
+                    return false;
+                }
+            }
+
+            break;
+        case VK_F11:
+            dialog->setVisibile(!dialog->isVisible());
+            return false;
+        }
+
+        return true;
+    }
+
 } feature;

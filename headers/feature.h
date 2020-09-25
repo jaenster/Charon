@@ -33,12 +33,17 @@ public:
 	virtual void deinit();
 	virtual void gameLoop();
 	virtual void oogLoop();
+	virtual bool windowMessage(HWND, UINT, WPARAM, LPARAM);
+	virtual bool keyEvent(DWORD, bool, DWORD);
+	virtual bool chatInput(InputStream);
 	virtual void gameUnitPreDraw();
 	virtual void gameUnitPostDraw();
 	virtual void gameAutomapPreDraw();
 	virtual void gameAutomapPostDraw();
 	virtual void gamePostDraw();
 	virtual void oogPostDraw();
+	virtual void allPostDraw();
+	virtual void allFinalDraw();
 };
 
 extern Feature* Features;

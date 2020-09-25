@@ -15,7 +15,6 @@ const DWORD SuccessfulCommandAddress = 0x47ca4f;
 WNDPROC OldWndProc;
 
 BOOL keyPressEvent(WPARAM wparam, LPARAM lparam) {
-
     BOOL chatBox = D2::GetUiFlag(0x05);
     BOOL escMenu = D2::GetUiFlag(0x09);
 
@@ -36,18 +35,41 @@ BOOL keyPressEvent(WPARAM wparam, LPARAM lparam) {
 }
 
 LRESULT CALLBACK WindowProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam) {
+    for (Feature* f = Features; f; f = f->next) {
+        if (!f->windowMessage(hwnd, uMsg, wParam, lParam)) {
+            return false;
+        }
+    }
+
     switch (uMsg) {
     case WM_KEYDOWN:
-        if (!(lParam & 0x40000000) && !keyPressEvent(wParam, lParam)) {
-            return 0;
+        if (!(lParam & 0x40000000)) {
+            for (Feature* f = Features; f; f = f->next) {
+                if (!f->keyEvent(wParam, true, lParam)) {
+                    return false;
+                }
+            }
+
+            if (!keyPressEvent(wParam, lParam)) {
+                return false;
+            }
         }
         break;
     case WM_SYSKEYDOWN:
-        if (!(lParam & 0x40000000) && !keyPressEvent(wParam, lParam)) {
-            return 0;
+        if (!(lParam & 0x40000000)) {
+            for (Feature* f = Features; f; f = f->next) {
+                if (!f->keyEvent(wParam, false, lParam)) {
+                    return false;
+                }
+            }
+
+            if (!keyPressEvent(wParam, lParam)) {
+                return false;
+            }
         }
         break;
     }
+
     return OldWndProc(hwnd, uMsg, wParam, lParam);
 }
 ATOM __stdcall RegisterClassAHook(WNDCLASSA* lpWndClass) {
@@ -62,14 +84,24 @@ REMOTEFUNC(void, SoundChaosDebug, (), 0x4BABC0);
 bool __fastcall ChatCommandProcessor(char* msg) {
     std::string tmp(msg);
     std::wstring wMsg(tmp.begin(), tmp.end());
+
+    for (Feature* f = Features; f; f = f->next) {
+        std::wstringstream msg(wMsg);
+
+        if (!f->chatInput(msg)) {
+            return false;
+        }
+    }
+
     try {
         std::wstringstream msg(wMsg);
         std::wstring cmd;
         msg >> cmd;
+
         return ChatInputCallbacks.at(cmd)(cmd, msg); // Find the callback, and then call it.
     }
     catch (...) {
-        return TRUE; // Ignore the exception. Command not found.
+        return true; // Ignore the exception. Command not found.
     }
 }
 
@@ -85,11 +117,18 @@ public:
             << NOP_TO(SoundChaosCheckEnd);
 
         MemoryPatch(0x4f5379) << CALL(RegisterClassAHook) << ASM::NOP;
+    }
 
-        // Since we patched this out, we should probably re-implement it
-        ChatInputCallbacks[L"soundchaosdebug"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
+    bool chatInput(InputStream msg) {
+        std::wstring cmd;
+        msg >> cmd;
+
+        // Since we patched this out we should probably reimplement it.
+        if (cmd == L"soundchaosdebug") {
             SoundChaosDebug();
-            return FALSE;
-        };
+            return false;
+        }
+
+        return true;
     }
 } feature;
