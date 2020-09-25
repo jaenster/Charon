@@ -32,6 +32,7 @@ protected:
     bool visible = false;
     std::vector<Element*> children;
     std::vector<LineInfo> lines;
+    std::function<std::vector<LineInfo>(std::vector<LineInfo> lines)> drawLinesCallback;
 
 public:
     Element();
@@ -42,6 +43,7 @@ public:
     void setDimensions(int width, int height);
     void setFrame(int backgroundColor, int backgroundOpacity, int borderColor);
     void addLine(POINT a, POINT b, int color, int opacity = 0xFF);
+    void getLinesCallback(std::function<std::vector<LineInfo>(std::vector<LineInfo> lines)> drawLinesCallback);
     void show();
     void hide();
     void setVisibile(bool value);

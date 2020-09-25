@@ -47,6 +47,10 @@ void Element::addLine(POINT a, POINT b, int color, int opacity) {
     lines.push_back({ a, b, color, opacity });
 }
 
+void Element::getLinesCallback(std::function<std::vector<LineInfo>(std::vector<LineInfo> lines)> drawLinesCallback) {
+    this->drawLinesCallback = drawLinesCallback;
+}
+
 void Element::show() {
     visible = true;
 }
@@ -83,7 +87,7 @@ void Element::drawFrame(int ox, int oy) {
         D2::DrawRect(&b, borderColor);
     }
 
-    for (LineInfo& line : lines) {
+    for (LineInfo line : (drawLinesCallback ? drawLinesCallback(lines) : lines)) {
         D2::DrawLine(ox + pos.left + line.a.x, oy + pos.top + line.a.y, ox + pos.left + line.b.x, oy + pos.top + line.b.y, line.color, line.opacity);
     }
 }

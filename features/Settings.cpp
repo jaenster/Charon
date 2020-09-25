@@ -245,7 +245,14 @@ public:
 
         Element* close = new Element();
         int xsize = 13, xinset = 6;
-        close->setPos(dialogWidth - xinset - xsize, xinset); close->setDimensions(xsize, xsize); close->addLine({ 0, 0 }, { xsize, xsize }, 0xD); close->addLine({ 0, xsize }, { xsize, 0 }, 0xD); close->setFrame(0, 0xFF, 0xD); close->show(); dialog->addChild(close);
+        close->setPos(dialogWidth - xinset - xsize, xinset); close->setDimensions(xsize, xsize); close->setFrame(0, 0xFF, 0xD); close->show(); dialog->addChild(close);
+        close->addLine({ 0, 0 }, { xsize, xsize }, 0xD);
+        close->addLine({ 0, xsize }, { xsize, 0 }, 0xD);
+        close->getLinesCallback([&](std::vector<LineInfo> lines) -> std::vector<LineInfo> {
+            // Example callback; Since 'lines' contains all the data from addLine,
+            // we can modify it or return a completely new vector here.
+            return lines;
+        });
 
         close->onClick([&](MouseButton button, bool down) -> void {
             dialog->hide();
