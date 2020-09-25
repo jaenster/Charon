@@ -6,6 +6,7 @@
 #include "headers/common.h"
 #include "headers/hook.h"
 #include "headers/remote.h"
+#include "headers/dialog.h"
 #include <iostream>
 #include <cwchar>
 #include <vector>
@@ -15,16 +16,132 @@ REMOTEREF(int, DrawAutoMapStatsOffsetY, 0x7A51BC);
 REMOTEREF(D2::Types::UnitAny*, CurrentTooltipItem, 0x7BCBF4);
 REMOTEFUNC(BYTE __stdcall, GetMaxSocketCount, (D2::Types::UnitAny *pItem), 0x62BC20);
 
+Dialog splashDialog;
+
+void SplashScreenDialogSetup() {
+    int width = 375, top = 0, height = 15;
+    {
+        TextElement* elem = new TextElement();
+        elem->setPos(0, top);
+        elem->setDimensions(width, 25);
+        elem->setFont(5);
+        elem->setText(L"Charon");
+        elem->setOrientation(Orientation::CENTER);
+        elem->setFrame(0x2, 0xFF, 0xD);
+        elem->setTextOffset(0, -6);
+        elem->show();
+        splashDialog.addChild(elem);
+
+        top += 25 + height;
+    }
+
+    {
+        TextElement* elem = new TextElement();
+        elem->setPos(0, top);
+        elem->setDimensions(width, height);
+        elem->setFont(0);
+        elem->setText(L"This is an experiment and utility for Diablo II.");
+        elem->setOrientation(Orientation::CENTER);
+        elem->setTextOffset(0, -5);
+        elem->show();
+        splashDialog.addChild(elem);
+        top += height;
+    }
+
+    {
+        TextElement* elem = new TextElement();
+        elem->setPos(0, top);
+        elem->setDimensions(width, height);
+        elem->setFont(0);
+        elem->setText(L"It is intended for single player and TCP/IP game");
+        elem->setOrientation(Orientation::CENTER);
+        elem->setTextOffset(0, -5);
+        elem->show();
+        splashDialog.addChild(elem);
+        top += height;
+    }
+
+    {
+        TextElement* elem = new TextElement();
+        elem->setPos(0, top);
+        elem->setDimensions(width, height);
+        elem->setFont(0);
+        elem->setText(L"use, so connections to Battle.net are disabled.");
+        elem->setOrientation(Orientation::CENTER);
+        elem->setTextOffset(0, -5);
+        elem->show();
+        splashDialog.addChild(elem);
+        top += height;
+    }
+
+    int height2 = 12;
+    top += height2;
+ 
+    {
+        TextElement* elem = new TextElement();
+        elem->setPos(0, top);
+        elem->setDimensions(width, height);
+        elem->setFont(12);
+        elem->setText(L"\"\u00FFc5I see him there at the oars of his little boat in the lake,");
+        elem->setOrientation(Orientation::CENTER);
+        elem->setTextOffset(0, -3);
+        elem->show();
+        splashDialog.addChild(elem);
+        top += height2;
+    }
+
+    {
+        TextElement* elem = new TextElement();
+        elem->setPos(0, top);
+        elem->setDimensions(width, height);
+        elem->setFont(12);
+        elem->setText(L"\u00FFc5the ferryman of the dead, Charon, with his hand upon the oar");
+        elem->setOrientation(Orientation::CENTER);
+        elem->setTextOffset(0, -3);
+        elem->show();
+        splashDialog.addChild(elem);
+        top += height2;
+    }
+
+    {
+        TextElement* elem = new TextElement();
+        elem->setPos(0, top);
+        elem->setDimensions(width, height);
+        elem->setFont(12);
+        elem->setText(L"\u00FFc5and he calls me now.\" ~Alcestis(from Alcestis by Euripides)");
+        elem->setOrientation(Orientation::CENTER);
+        elem->setTextOffset(0, -3);
+        elem->show();
+        splashDialog.addChild(elem);
+        top += height;
+    }
+
+    {
+        int w = 30, h = 24;
+        TextElement* elem = new TextElement();
+        elem->setPos((width - w) / 2, top + 4);
+        elem->setDimensions(w, h);
+        elem->setFont(0);
+        elem->setText(L"OK");
+        elem->setOrientation(Orientation::CENTER);
+        elem->setTextOffset(1, -3);
+        elem->setFrame(0x3, 0xFF, 0xD);
+        elem->show();
+        elem->onClick([](MouseButton button, bool down) -> void {
+            splashDialog.hide();
+            D2::MainMenuForm();
+        });
+        splashDialog.addChild(elem);
+        top += h + height;
+    }
+
+    splashDialog.setDimensions(width, top);
+    splashDialog.setPos(-width / 2, -top / 2);
+}
+
 // Replaces the automatic splash screen timeout
 void SplashScreenHook() {
-    D2::OkDialog(
-        version.c_str(),
-        L"This is an experiment and utility for Diablo 2. It is intended for single player and TCP/IP game use, so connections to Battle.net are disabled.",
-        L"I see him there at the oars of his little boat in the lake, the ferryman of the dead, Charon, with his hand upon the oar and he calls me now. \n~Alcestis (from Alcestis by Euripides)",
-        []() -> void {
-            D2::MainMenuForm();
-        }
-    );
+    splashDialog.show();
 }
 
 void _drawAutoMapInfo(DWORD size) {
@@ -196,6 +313,7 @@ void __stdcall GetGlobalLight(void* pAct, BYTE &red, BYTE &green, BYTE &blue) {
 class : public Feature {
 public:
     void init() {
+        SplashScreenDialogSetup();
         MemoryPatch(0x42fb40) << CALL(SplashScreenHook);
 
 		MemoryPatch(0x4F5623) << CALL(multi) << ASM::NOP; // Allow multiple windows open

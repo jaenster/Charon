@@ -35,9 +35,10 @@ BOOL keyPressEvent(WPARAM wparam, LPARAM lparam) {
 }
 
 LRESULT CALLBACK WindowProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam) {
+    bool allowDefault = true;
     for (Feature* f = Features; f; f = f->next) {
         if (!f->windowMessage(hwnd, uMsg, wParam, lParam)) {
-            return false;
+            allowDefault = false;
         }
     }
 
@@ -46,12 +47,12 @@ LRESULT CALLBACK WindowProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, 
         if (!(lParam & 0x40000000)) {
             for (Feature* f = Features; f; f = f->next) {
                 if (!f->keyEvent(wParam, true, lParam)) {
-                    return false;
+                    allowDefault = false;
                 }
             }
 
             if (!keyPressEvent(wParam, lParam)) {
-                return false;
+                allowDefault = false;
             }
         }
         break;
@@ -59,18 +60,18 @@ LRESULT CALLBACK WindowProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, 
         if (!(lParam & 0x40000000)) {
             for (Feature* f = Features; f; f = f->next) {
                 if (!f->keyEvent(wParam, false, lParam)) {
-                    return false;
+                    allowDefault = false;
                 }
             }
 
             if (!keyPressEvent(wParam, lParam)) {
-                return false;
+                allowDefault = false;
             }
         }
         break;
     }
 
-    return OldWndProc(hwnd, uMsg, wParam, lParam);
+    return allowDefault ? OldWndProc(hwnd, uMsg, wParam, lParam) : false;
 }
 ATOM __stdcall RegisterClassAHook(WNDCLASSA* lpWndClass) {
     OldWndProc = lpWndClass->lpfnWndProc;
