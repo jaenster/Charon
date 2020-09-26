@@ -81,7 +81,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 SaveSettings();
             }),
         nullptr, // Empty Gap
-        nullptr, // Empty Gap
+        new DialogToggleInfo(L"Bnet style map rotation",
+                    []() -> std::wstring {
+                        return Settings["bnetstyle"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                    }, [](MouseButton button, bool down) -> void {
+                    if (down) return;
+                    Settings["bnetstyle"] = !Settings["bnetstyle"];
+                    SaveSettings();
+                }),
         new DialogToggleInfo(L"Show Extra Item Info",
             []() -> std::wstring {
                 return Settings["itemInfo"] ? L"\u00FFc2On" : L"\u00FFc1Off";
