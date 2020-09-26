@@ -241,6 +241,17 @@ public:
 
     void oogLoop() {
         gamestart = 0;
+
+        if (Settings["bnetstyle"] && !State["bnetstyle"]) {
+            gamelog << "Patching it in out" << std::endl;
+            MemoryPatch(0x56A200) << BYTE(0xEB);
+            State["bnetstyle"] = true;
+        }
+        else if (!Settings["bnetstyle"] && State["bnetstyle"]) {
+            gamelog << "Patching it back out" << std::endl;
+            MemoryPatch(0x56A200) << REVERT(1);
+            State["bnetstyle"] = false;
+        }
     }
 
     void oogPostDraw() {
