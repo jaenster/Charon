@@ -13,6 +13,12 @@ bool inRect(int x, int y, RECT r) {
 
 Element::Element() {}
 
+Element::~Element() {
+    for (Element* child : children) {
+        delete child;
+    }
+}
+
 RECT Element::getRect() {
     return { pos.left, pos.top, pos.right, pos.bottom };
 }
