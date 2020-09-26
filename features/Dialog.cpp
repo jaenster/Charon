@@ -81,6 +81,10 @@ void Element::onClick(std::function<void(MouseButton button, bool down)> handler
     clickCallback = handler;
 }
 
+void Element::onKey(std::function<void(DWORD keyCode, bool down, DWORD flags)> handler) {
+    keyHandler = handler;
+}
+
 void Element::drawFrame(int ox, int oy) {
     if (!visible) return;
 
@@ -133,6 +137,16 @@ bool Element::interact(int x, int y, bool down, MouseButton button) {
     }
 
     return false;
+};
+
+void Element::interactKey(DWORD keyCode, bool down, DWORD flags){
+    for (Element* child : children) {
+        child->interactKey(keyCode, down, flags);
+    }
+
+    if (keyHandler) {
+        keyHandler(keyCode, down, flags);
+    }
 };
 
 void TextElement::setFont(int value) {
@@ -233,6 +247,14 @@ namespace Template {
                         allowDefault = allowDefault && !dialog->isVisible();
                     }
                 }
+
+                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
+                    Dialog* dialog = *rit;
+                    if (dialog->isVisible()) {
+                        dialog->interactKey(wParam, uMsg == WM_KEYDOWN, lParam);
+                    }
+                }
+
                 break;
             case WM_XBUTTONDBLCLK:
             case WM_XBUTTONDOWN:
