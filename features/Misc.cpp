@@ -360,13 +360,13 @@ public:
     void oogLoop() {
         gamestart = 0;
 
-        if (Settings["bnetstyle"] && !State["bnetstyle"]) {
+        if (Settings["regenMap"] && !State["regenMap"]) {
             MemoryPatch(0x56A200) << BYTE(0xEB);
-            State["bnetstyle"] = true;
+            State["regenMap"] = true;
         }
-        else if (!Settings["bnetstyle"] && State["bnetstyle"]) {
+        else if (!Settings["regenMap"] && State["regenMap"]) {
             MemoryPatch(0x56A200) << REVERT(1);
-            State["bnetstyle"] = false;
+            State["regenMap"] = false;
         }
     }
 
