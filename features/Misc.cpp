@@ -130,7 +130,7 @@ void SplashScreenDialogSetup() {
 
         // bind the enter key to the OK button
         elem->onKey([](DWORD keyCode, bool down, DWORD flags) -> void {
-            if (splashDialog.isVisible() && keyCode == 0x0D /* enter */) {
+            if (keyCode == 0x0D /* enter */) {
                 splashDialog.hide();
                 D2::MainMenuForm();
             }
