@@ -15,6 +15,7 @@ Feature::Feature() {
 
 Feature::~Feature() { }
 void Feature::init() { }
+void Feature::postInit() { }
 void Feature::deinit() { }
 void Feature::gameLoop() { }
 void Feature::oogLoop() { }

@@ -36,6 +36,7 @@ protected:
 
 public:
     Element();
+    ~Element();
     RECT getRect();
 
     RECT getRect(int ox, int oy);

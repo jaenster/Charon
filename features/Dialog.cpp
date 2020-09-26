@@ -13,6 +13,12 @@ bool inRect(int x, int y, RECT r) {
 
 Element::Element() {}
 
+Element::~Element() {
+    for (Element* child : children) {
+        delete child;
+    }
+}
+
 RECT Element::getRect() {
     return { pos.left, pos.top, pos.right, pos.bottom };
 }
@@ -134,7 +140,7 @@ void TextElement::setFont(int value) {
 }
 
 void TextElement::setColor(int value) {
-    color = color;
+    color = value;
 }
 
 void TextElement::setText(std::wstring value) {
@@ -216,71 +222,103 @@ namespace Template {
         }
 
         bool windowMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+            bool allowDefault = true;
+
             switch (uMsg) {
+            case WM_KEYDOWN:
+            case WM_SYSKEYDOWN:
+                if (!(lParam & 0x40000000) && wParam != VK_F4) {
+                    for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
+                        Dialog* dialog = *rit;
+                        allowDefault = allowDefault && !dialog->isVisible();
+                    }
+                }
+                break;
             case WM_XBUTTONDBLCLK:
             case WM_XBUTTONDOWN:
             case WM_XBUTTONUP:
-                for (Dialog* dialog : dialogs) {
+                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
+                    Dialog* dialog = *rit;
                     if (dialog->inArea(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2)) {
                         return false;
                     }
+
+                    allowDefault = allowDefault && !dialog->isVisible();
                 }
 
                 break;
             case WM_RBUTTONDBLCLK:
             case WM_RBUTTONDOWN:
-                for (Dialog* dialog : dialogs) {
+                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
+                    Dialog* dialog = *rit;
                     if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, true, MouseButton::RIGHT)) {
                         return false;
                     }
+
+                    allowDefault = allowDefault && !dialog->isVisible();
                 }
 
                 break;
             case WM_LBUTTONDBLCLK:
             case WM_LBUTTONDOWN:
-                for (Dialog* dialog : dialogs) {
+                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
+                    Dialog* dialog = *rit;
                     if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, true, MouseButton::LEFT)) {
                         return false;
                     }
+
+                    allowDefault = allowDefault && !dialog->isVisible();
                 }
 
                 break;
             case WM_MBUTTONDBLCLK:
             case WM_MBUTTONDOWN:
-                for (Dialog* dialog : dialogs) {
+                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
+                    Dialog* dialog = *rit;
                     if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, true, MouseButton::MIDDLE)) {
                         return false;
                     }
+
+                    allowDefault = allowDefault && !dialog->isVisible();
                 }
 
                 break;
             case WM_RBUTTONUP:
-                for (Dialog* dialog : dialogs) {
+                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
+                    Dialog* dialog = *rit;
                     if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, false, MouseButton::RIGHT)) {
                         return false;
                     }
+
+                    allowDefault = allowDefault && !dialog->isVisible();
                 }
 
                 break;
             case WM_LBUTTONUP:
-                for (Dialog* dialog : dialogs) {
+                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
+                    Dialog* dialog = *rit;
                     if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, false, MouseButton::LEFT)) {
                         return false;
                     }
+
+                    allowDefault = allowDefault && !dialog->isVisible();
                 }
 
                 break;
             case WM_MBUTTONUP:
-                for (Dialog* dialog : dialogs) {
+                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
+                    Dialog* dialog = *rit;
                     if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, false, MouseButton::MIDDLE)) {
                         return false;
                     }
+
+                    allowDefault = allowDefault && !dialog->isVisible();
                 }
 
                 break;
             }
 
-            return true;
+            return allowDefault;
         }
     } feature;
 

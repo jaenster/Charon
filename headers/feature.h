@@ -30,6 +30,7 @@ public:
 	Feature();
 	~Feature();
 	virtual void init();
+	virtual void postInit();
 	virtual void deinit();
 	virtual void gameLoop();
 	virtual void oogLoop();
