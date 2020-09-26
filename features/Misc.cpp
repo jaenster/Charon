@@ -127,6 +127,14 @@ void SplashScreenDialogSetup() {
         elem->setTextOffset(1, -3);
         elem->setFrame(0x3, 0xFF, 0xD);
         elem->show();
+
+        // bind the enter key to the OK button
+        elem->onKey([](DWORD keyCode, bool down, DWORD flags) -> void {
+            if (splashDialog.isVisible() && keyCode == 0x0D /* enter */) {
+                splashDialog.hide();
+                D2::MainMenuForm();
+            }
+        });
         elem->onClick([](MouseButton button, bool down) -> void {
             splashDialog.hide();
             D2::MainMenuForm();
