@@ -250,7 +250,7 @@ namespace Template {
         }
 
         bool windowMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-            bool allowDefault = true;
+            bool allowDefault = true, down = false;
 
             switch (uMsg) {
             case WM_KEYDOWN:
@@ -282,14 +282,15 @@ namespace Template {
 
                 break;
             case WM_RBUTTONDOWN:
-            case WM_RBUTTONUP:
             case WM_LBUTTONDOWN:
-            case WM_LBUTTONUP:
             case WM_MBUTTONDOWN:
+                down = true;
+            case WM_RBUTTONUP:
+            case WM_LBUTTONUP:
             case WM_MBUTTONUP:
                 for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
                     Dialog* dialog = *rit;
-                    if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, uMsg == WM_MBUTTONDOWN, messageButtonMap[uMsg])) {
+                    if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, down, messageButtonMap[uMsg])) {
                         return false;
                     }
 
