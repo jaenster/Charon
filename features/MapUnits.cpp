@@ -41,6 +41,14 @@ public:
             }
         }
 
+        if (Settings["debugMode"]) {
+            for (D2::Types::Room2* room = D2::PlayerUnit->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room != NULL; room = room->pRoom2Next) {
+                for (D2::Types::PresetUnit* unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
+                    DrawDot(WorldToAutomap({ (double)room->dwPosX * 5 + (double)unit->dwPosX, (double)room->dwPosY * 5 + (double)unit->dwPosY }), 0x84);
+                }
+            }
+        }
+
         if (Settings["showItems"]) {
             // Server side tracks items
             d = 4;
