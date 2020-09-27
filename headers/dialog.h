@@ -29,6 +29,7 @@ protected:
     RECT pos = { 0, 0, 0, 0 };
     int width = 0, height = 0, backgroundColor = -1, backgroundOpacity = 192, borderColor = -1;
     std::function<void(MouseButton button, bool down)> clickCallback;
+    std::function<void(DWORD keyCode, bool down, DWORD flags)> keyHandler;
     bool visible = false;
     std::vector<Element*> children;
     std::vector<LineInfo> lines;
@@ -51,11 +52,13 @@ public:
     bool isVisible();
     void addChild(Element* child);
     void onClick(std::function<void(MouseButton button, bool down)> handler);
+    void onKey(std::function<void(DWORD keyCode, bool down, DWORD flags)> handler);
     virtual void drawFrame(int ox, int oy);
     virtual void drawChildren(int ox, int oy);
     virtual void draw(int ox, int oy);
     bool inArea(int x, int y);
     virtual bool interact(int x, int y, bool down, MouseButton button);
+    virtual void interactKey(DWORD keyCode, bool down, DWORD flags);
 };
 
 class TextElement : public Element {
