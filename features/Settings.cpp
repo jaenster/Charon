@@ -105,6 +105,7 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["noPickup"] = !Settings["noPickup"];
                 SaveSettings();
             }),
+        nullptr, // Empty Gap
         new DialogToggleInfo(L"Repeatable Respec Quest",
             []() -> std::wstring {
                 return Settings["respecOverride"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -171,6 +172,33 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 SaveSettings();
             }),
         nullptr, // Empty Gap
+        new DialogToggleInfo(L"\u00FFc;*\u00FFc4Always D3D Mode",
+            []() -> std::wstring {
+                return Settings["alwaysD3D"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["alwaysD3D"] = !Settings["alwaysD3D"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"AD3D Filter",
+            []() -> std::wstring {
+                std::wstring ret = Settings["alwaysD3DFilter"] ? L"\u00FFc8" : L"\u00FFc5";
+                ret += filterParams[Settings["alwaysD3DFilter"]];
+                return ret;
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["alwaysD3DFilter"] = (Settings["alwaysD3DFilter"] + 1) % 6;
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"AD3D Start Fullscreen",
+            []() -> std::wstring {
+                return Settings["alwaysD3DStartFull"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["alwaysD3DStartFull"] = !Settings["alwaysD3DStartFull"];
+                SaveSettings();
+            }),
+        nullptr, // Empty Gap
         new DialogToggleInfo(L"Draw Color Swatch",
             []() -> std::wstring {
                 return State["drawSwatch"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -203,32 +231,6 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["debugMode"] = !Settings["debugMode"];
                 SaveSettings();
             }),
-        new DialogToggleInfo(L"\u00FFc;*\u00FFc4Always D3D Mode",
-            []() -> std::wstring {
-                return Settings["alwaysD3D"] ? L"\u00FFc2On" : L"\u00FFc1Off";
-            }, [](MouseButton button, bool down) -> void {
-                if (down) return;
-                Settings["alwaysD3D"] = !Settings["alwaysD3D"];
-                SaveSettings();
-            }),
-        new DialogToggleInfo(L"AD3D Filter",
-            []() -> std::wstring {
-                std::wstring ret = Settings["alwaysD3DFilter"] ? L"\u00FFc8" : L"\u00FFc5";
-                ret += filterParams[Settings["alwaysD3DFilter"]];
-                return ret;
-            }, [](MouseButton button, bool down) -> void {
-                if (down) return;
-                Settings["alwaysD3DFilter"] = (Settings["alwaysD3DFilter"] + 1) % 6;
-                SaveSettings();
-            }),
-        new DialogToggleInfo(L"AD3D Start Fullscreen",
-            []() -> std::wstring {
-                return Settings["alwaysD3DStartFull"] ? L"\u00FFc2On" : L"\u00FFc1Off";
-            }, [](MouseButton button, bool down) -> void {
-                if (down) return;
-                Settings["alwaysD3DStartFull"] = !Settings["alwaysD3DStartFull"];
-                SaveSettings();
-            }),
     },
 };
 
@@ -246,6 +248,10 @@ public:
         dialog = new Dialog();
         dialog->setPos(-dialogWidth / 2, -dialogHeight / 2);
         dialog->setDimensions(dialogWidth, dialogHeight);
+        // bind the enter key to the OK button
+        dialog->onKey([](DWORD keyCode, bool down, DWORD flags) -> bool {
+            return false; // Block keypresses to D2 and dialogs behind this one (windowMessage and keyEvent still work regardless)
+        });
 
         TextElement* dlabel = new TextElement();
         dlabel->setPos(0, 0); dlabel->setTextOffset(0, -6); dlabel->setDimensions(dialogWidth, 25); dlabel->setFrame(0x2, 0xFF, 0xD); dlabel->setFont(5); dlabel->setOrientation(Orientation::CENTER); dlabel->setText(L"Charon Settings"); dlabel->show(); dialog->addChild(dlabel);
