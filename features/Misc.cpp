@@ -160,6 +160,7 @@ void SplashScreenHook() {
     splashDialog.show();
 }
 
+static DWORD automapTextOffset = 0;
 void _drawAutoMapInfo(DWORD size) {
     DWORD width = 0, height = 0, fileno = 1;
     height = D2::GetTextSize(L"test", &width, &fileno);
@@ -169,6 +170,17 @@ void _drawAutoMapInfo(DWORD size) {
         bottom += D2::GetTextSize(msg.c_str(), &width, &fileno);
         D2::DrawGameText(msg.c_str(), D2::ScreenWidth - 16 - width, bottom, 4, 0);
     }
+    automapTextOffset = bottom;
+}
+
+__declspec(naked) void _calculateDrawNeedToRepairOffset() {
+    static const ASMPTR jmpback = 0x497d9b;
+    __asm {
+        ADD  EDI, 75
+        ADD  EDI, automapTextOffset
+        JMP jmpback
+    }
+
 }
 
 HMODULE __stdcall multi(LPSTR Class, LPSTR Window) {
@@ -367,6 +379,7 @@ public:
         MemoryPatch(0x65C34E) << JUMP(GetQuestState_Intercept);
         MemoryPatch(0x45ADE8) << CALL(_drawAutoMapInfo);
         MemoryPatch(0x454ba8) << CALL(UnitVisualname);
+        MemoryPatch(0x497d95) << JUMP(_calculateDrawNeedToRepairOffset) << BYTE(0x90);
 
         AutomapInfoHooks.push_back([]() -> std::wstring {
             return version;
