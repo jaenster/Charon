@@ -4,6 +4,7 @@
 #include "headers/feature.h"
 #include "headers/dialog.h"
 #include "headers/remote.h"
+#include <unordered_map>
 
 std::vector<Dialog*> dialogs;
 
@@ -81,7 +82,7 @@ void Element::onClick(std::function<void(MouseButton button, bool down)> handler
     clickCallback = handler;
 }
 
-void Element::onKey(std::function<void(DWORD keyCode, bool down, DWORD flags)> handler) {
+void Element::onKey(std::function<bool(DWORD keyCode, bool down, DWORD flags)> handler) {
     keyHandler = handler;
 }
 
@@ -139,14 +140,20 @@ bool Element::interact(int x, int y, bool down, MouseButton button) {
     return false;
 };
 
-void Element::interactKey(DWORD keyCode, bool down, DWORD flags){
+bool Element::interactKey(DWORD keyCode, bool down, DWORD flags){
+    if (!visible) return false;
+
     for (Element* child : children) {
-        child->interactKey(keyCode, down, flags);
+        if (child->interactKey(keyCode, down, flags)) {
+            return true;
+        }
     }
 
-    if (keyHandler) {
-        keyHandler(keyCode, down, flags);
+    if (keyHandler && !keyHandler(keyCode, down, flags)) {
+        return true;
     }
+
+    return false;
 };
 
 void TextElement::setFont(int value) {
@@ -226,8 +233,15 @@ bool Dialog::interact(int x, int y, bool down, MouseButton button) {
 };
 
 namespace Template {
-
     class : public Feature {
+        std::unordered_map<DWORD, MouseButton> messageButtonMap = {
+            { WM_RBUTTONDOWN, MouseButton::RIGHT },
+            { WM_RBUTTONUP, MouseButton::RIGHT },
+            { WM_LBUTTONDOWN, MouseButton::LEFT },
+            { WM_LBUTTONUP, MouseButton::LEFT },
+            { WM_MBUTTONDOWN, MouseButton::MIDDLE },
+            { WM_MBUTTONUP, MouseButton::MIDDLE },
+        };
     public:
         void allPostDraw() {
             for (Dialog* dialog : dialogs) {
@@ -236,7 +250,7 @@ namespace Template {
         }
 
         bool windowMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-            bool allowDefault = true;
+            bool allowDefault = true, down = false;
 
             switch (uMsg) {
             case WM_KEYDOWN:
@@ -244,14 +258,9 @@ namespace Template {
                 if (!(lParam & 0x40000000) && wParam != VK_F4) {
                     for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
                         Dialog* dialog = *rit;
-                        allowDefault = allowDefault && !dialog->isVisible();
-                    }
-                }
-
-                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
-                    Dialog* dialog = *rit;
-                    if (dialog->isVisible()) {
-                        dialog->interactKey(wParam, uMsg == WM_KEYDOWN, lParam);
+                        if (dialog->interactKey(wParam, uMsg == WM_KEYDOWN, lParam)) {
+                            return false;
+                        }
                     }
                 }
 
@@ -259,6 +268,9 @@ namespace Template {
             case WM_XBUTTONDBLCLK:
             case WM_XBUTTONDOWN:
             case WM_XBUTTONUP:
+            case WM_RBUTTONDBLCLK:
+            case WM_LBUTTONDBLCLK:
+            case WM_MBUTTONDBLCLK:
                 for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
                     Dialog* dialog = *rit;
                     if (dialog->inArea(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2)) {
@@ -269,68 +281,16 @@ namespace Template {
                 }
 
                 break;
-            case WM_RBUTTONDBLCLK:
             case WM_RBUTTONDOWN:
-                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
-                    Dialog* dialog = *rit;
-                    if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, true, MouseButton::RIGHT)) {
-                        return false;
-                    }
-
-                    allowDefault = allowDefault && !dialog->isVisible();
-                }
-
-                break;
-            case WM_LBUTTONDBLCLK:
             case WM_LBUTTONDOWN:
-                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
-                    Dialog* dialog = *rit;
-                    if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, true, MouseButton::LEFT)) {
-                        return false;
-                    }
-
-                    allowDefault = allowDefault && !dialog->isVisible();
-                }
-
-                break;
-            case WM_MBUTTONDBLCLK:
             case WM_MBUTTONDOWN:
-                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
-                    Dialog* dialog = *rit;
-                    if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, true, MouseButton::MIDDLE)) {
-                        return false;
-                    }
-
-                    allowDefault = allowDefault && !dialog->isVisible();
-                }
-
-                break;
+                down = true;
             case WM_RBUTTONUP:
-                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
-                    Dialog* dialog = *rit;
-                    if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, false, MouseButton::RIGHT)) {
-                        return false;
-                    }
-
-                    allowDefault = allowDefault && !dialog->isVisible();
-                }
-
-                break;
             case WM_LBUTTONUP:
-                for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
-                    Dialog* dialog = *rit;
-                    if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, false, MouseButton::LEFT)) {
-                        return false;
-                    }
-
-                    allowDefault = allowDefault && !dialog->isVisible();
-                }
-
-                break;
             case WM_MBUTTONUP:
                 for (auto rit = dialogs.rbegin(); rit != dialogs.rend(); ++rit) {
                     Dialog* dialog = *rit;
-                    if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, false, MouseButton::MIDDLE)) {
+                    if (dialog->interact(GET_X_LPARAM(lParam) - D2::ScreenWidth / 2, GET_Y_LPARAM(lParam) - D2::ScreenHeight / 2, down, messageButtonMap[uMsg])) {
                         return false;
                     }
 

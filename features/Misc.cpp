@@ -18,6 +18,11 @@ REMOTEFUNC(BYTE __stdcall, GetMaxSocketCount, (D2::Types::UnitAny *pItem), 0x62B
 
 Dialog splashDialog;
 
+void ClearSplash() {
+    splashDialog.hide();
+    D2::MainMenuForm();
+}
+
 void SplashScreenDialogSetup() {
     int width = 375, top = 0, height = 15;
     {
@@ -128,23 +133,26 @@ void SplashScreenDialogSetup() {
         elem->setFrame(0x3, 0xFF, 0xD);
         elem->show();
 
-        // bind the enter key to the OK button
-        elem->onKey([](DWORD keyCode, bool down, DWORD flags) -> void {
-            if (keyCode == 0x0D /* enter */) {
-                splashDialog.hide();
-                D2::MainMenuForm();
-            }
-        });
         elem->onClick([](MouseButton button, bool down) -> void {
-            splashDialog.hide();
-            D2::MainMenuForm();
+            ClearSplash();
         });
+
         splashDialog.addChild(elem);
         top += h + height;
     }
 
     splashDialog.setDimensions(width, top);
     splashDialog.setPos(-width / 2, -top / 2);
+
+    // bind the enter key to the dialog
+    splashDialog.onKey([](DWORD keyCode, bool down, DWORD flags) -> bool {
+        if (keyCode == 0x0D /* enter */) {
+            ClearSplash();
+        }
+
+        return false; // Block keypresses to D2 and dialogs behind this one (windowMessage and keyEvent still work regardless)
+    });
+
 }
 
 // Replaces the automatic splash screen timeout
@@ -341,8 +349,6 @@ public:
         MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
         MemoryPatch(0x43BF60) << ASM::RET; // Prevent battle.net connections
         MemoryPatch(0x61C0B0) << JUMP(GetGlobalLight);
-        //MemoryPatch(0x660E50) << JUMP(OverrideWaypoints);
-        //MemoryPatch(0x56A200) << BYTE(0xEB); // Always regenerate map even in single player
         MemoryPatch(0x515FB1) << BYTE(0x01); // Delay of 1 on cleaning up sounds after quiting game
         MemoryPatch(0x4781AC) << BYTESEQ{ 0x6A, 0x05, 0x90, 0x90, 0x90 }; // Hyperjoin for TCP/IP games
         MemoryPatch(GetItemName_Original) << JUMP(GetItemName_Intercept);
