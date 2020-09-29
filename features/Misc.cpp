@@ -325,6 +325,19 @@ void __stdcall GetGlobalLight(void* pAct, BYTE &red, BYTE &green, BYTE &blue) {
     GetGlobalLight_Original(pAct, &red, &green, &blue);
 }
 
+wchar_t* __fastcall UnitVisualname(D2::Types::UnitAny *pUnit) {
+    // For now it falls under item info, as it is as item/unit level
+    if (!Settings["itemInfo"]) return D2::GetUnitName(pUnit);
+
+    const size_t dwSize = 1024;
+    wchar_t* wBuffer = D2::GetUnitName(pUnit);
+    wchar_t tmpBuffer[dwSize];
+
+    swprintf(tmpBuffer, 1024, L"%ls (%d)", wBuffer, D2::GetUnitStat(pUnit, 12/*level*/, 0));
+
+    return tmpBuffer;
+}
+
 // This feature class registers itself.
 class : public Feature {
 public:
@@ -353,6 +366,7 @@ public:
 
         MemoryPatch(0x65C34E) << JUMP(GetQuestState_Intercept);
         MemoryPatch(0x45ADE8) << CALL(_drawAutoMapInfo);
+        MemoryPatch(0x454ba8) << CALL(UnitVisualname);
 
         AutomapInfoHooks.push_back([]() -> std::wstring {
             return version;
