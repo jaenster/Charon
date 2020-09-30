@@ -160,6 +160,7 @@ void SplashScreenHook() {
     splashDialog.show();
 }
 
+static DWORD automapTextOffset = 0;
 void _drawAutoMapInfo(DWORD size) {
     DWORD width = 0, height = 0, fileno = 1;
     height = D2::GetTextSize(L"test", &width, &fileno);
@@ -168,6 +169,37 @@ void _drawAutoMapInfo(DWORD size) {
         std::wstring msg = func();
         bottom += D2::GetTextSize(msg.c_str(), &width, &fileno);
         D2::DrawGameText(msg.c_str(), D2::ScreenWidth - 16 - width, bottom, 4, 0);
+    }
+    automapTextOffset = bottom;
+}
+
+__declspec(naked) void _calculateDrawNeedToRepairOffset() {
+    static const ASMPTR jmpback = 0x497d9b;
+    __asm {
+        ADD  EDI, 75
+        ADD  EDI, automapTextOffset
+        JMP jmpback
+    }
+}
+
+__declspec(naked) void _calculateDrawNeedToGetArrowOffset() {
+    static const ASMPTR jmpback = 0x497cd4;
+    static const ASMPTR FUN_0047a560 = 0x47a560;
+
+    __asm {  
+        // Original code: // EDI = nPosX
+        CALL       FUN_0047a560     // eax = FUN_0047a560() // is Repair body thing needed
+        TEST       EAX,EAX          // if (eax != 0)
+        JZ         Skip             // {
+        MOV        EDI,0xc6         //    nPosY = 0xc6 // Add extra offset for 
+            Skip:                   // }
+        ADD        EDI,0x1e         // nPosY += 0x1e
+     
+        // Added code
+        ADD  EDI, automapTextOffset // Add extra offset for automapText
+        SUB  EDI, 0x45              // this window is allot less high as the body, so subtract the difference
+
+        JMP jmpback
     }
 }
 
@@ -325,6 +357,19 @@ void __stdcall GetGlobalLight(void* pAct, BYTE &red, BYTE &green, BYTE &blue) {
     GetGlobalLight_Original(pAct, &red, &green, &blue);
 }
 
+wchar_t* __fastcall UnitVisualname(D2::Types::UnitAny *pUnit) {
+    // For now it falls under item info, as it is as item/unit level
+    if (!Settings["itemInfo"]) return D2::GetUnitName(pUnit);
+
+    const size_t dwSize = 1024;
+    wchar_t* wBuffer = D2::GetUnitName(pUnit);
+    wchar_t tmpBuffer[dwSize];
+
+    swprintf(tmpBuffer, 1024, L"%ls (%d)", wBuffer, D2::GetUnitStat(pUnit, 12/*level*/, 0));
+
+    return tmpBuffer;
+}
+
 // This feature class registers itself.
 class : public Feature {
 public:
@@ -353,6 +398,12 @@ public:
 
         MemoryPatch(0x65C34E) << JUMP(GetQuestState_Intercept);
         MemoryPatch(0x45ADE8) << CALL(_drawAutoMapInfo);
+        MemoryPatch(0x454ba8) << CALL(UnitVisualname);
+
+        MemoryPatch(0x497d95) << JUMP(_calculateDrawNeedToRepairOffset) << BYTE(0x90);
+
+        // fix that running out of arrows is over drawn mini body to repair
+        MemoryPatch(0x497cc3) << JUMP(_calculateDrawNeedToGetArrowOffset);
 
         AutomapInfoHooks.push_back([]() -> std::wstring {
             return version;
