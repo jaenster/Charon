@@ -15,6 +15,7 @@
 REMOTEREF(int, DrawAutoMapStatsOffsetY, 0x7A51BC);
 REMOTEREF(D2::Types::UnitAny*, CurrentTooltipItem, 0x7BCBF4);
 REMOTEFUNC(BYTE __stdcall, GetMaxSocketCount, (D2::Types::UnitAny *pItem), 0x62BC20);
+REMOTEFUNC(int, FUN_0047a560, (), 0x47a560);
 
 Dialog splashDialog;
 
@@ -173,38 +174,21 @@ void _drawAutoMapInfo(DWORD size) {
     automapTextOffset = bottom;
 }
 
-__declspec(naked) void _calculateDrawNeedToRepairOffset() {
-    static const ASMPTR jmpback = 0x497d9b;
-    __asm {
-        ADD  EDI, 75
-        ADD  EDI, automapTextOffset
-        JMP jmpback
+void __fastcall DrawRepairImageAlertIntercept(void *pImage, bool isArrow) {
+    int x = D2::ScreenWidth - (isArrow ? 0x38 : 0x3C), y = 0;
+
+    if (D2::GetUiFlag(0xA)) {
+        y = (FUN_0047a560() ? 0x2B : 0) + DrawAutoMapStatsOffsetY + automapTextOffset;
     }
-}
-
-__declspec(naked) void _calculateDrawNeedToGetArrowOffset() {
-    static const ASMPTR jmpback = 0x497cd4;
-    static const ASMPTR FUN_0047a560 = 0x47a560;
-
-    __asm {  
-        // Original code: // EDI = nPosX
-        CALL       FUN_0047a560     // eax = FUN_0047a560() // is Repair body thing needed
-        TEST       EAX,EAX          // if (eax != 0)
-        JZ         Skip             // {
-        MOV        EDI,0xc6         //    nPosY = 0xc6 // Add extra offset for 
-            Skip:                   // }
-        ADD        EDI,0x1e         // nPosY += 0x1e
-     
-        // Added code
-        ADD  EDI, automapTextOffset // Add extra offset for automapText
-        SUB  EDI, 0x45              // this window is allot less high as the body, so subtract the difference
-
-        JMP jmpback
+    else {
+        y = 0x6E;
     }
-}
 
-HMODULE __stdcall multi(LPSTR Class, LPSTR Window) {
-    return 0;
+    if (isArrow) {
+        y += 0x2D;
+    }
+
+    D2::DrawImage(pImage, x, y, -1, isArrow ? 5 : 1, nullptr);
 }
 
 ASMPTR GetItemName_Original = 0x48C060;
@@ -362,11 +346,12 @@ wchar_t* __fastcall UnitVisualname(D2::Types::UnitAny *pUnit) {
     if (!Settings["itemInfo"]) return D2::GetUnitName(pUnit);
 
     const size_t dwSize = 1024;
-    wchar_t* wBuffer = D2::GetUnitName(pUnit);
-    wchar_t tmpBuffer[dwSize];
+    // Since it returns directly to an append function we just need one static
+    // buffer here to reuse, because there's no guarantee that the stack will be
+    // preserved. Also Visual Studio complains about returning a temporary variable.
+    static wchar_t tmpBuffer[dwSize];
 
-    swprintf(tmpBuffer, 1024, L"%ls (%d)", wBuffer, D2::GetUnitStat(pUnit, 12/*level*/, 0));
-
+    swprintf(tmpBuffer, 1024, L"%ls (%d)", D2::GetUnitName(pUnit), D2::GetUnitStat(pUnit, 12/*level*/, 0));
     return tmpBuffer;
 }
 
@@ -377,7 +362,7 @@ public:
         SplashScreenDialogSetup();
         MemoryPatch(0x42fb40) << CALL(SplashScreenHook);
 
-		MemoryPatch(0x4F5623) << CALL(multi) << ASM::NOP; // Allow multiple windows open
+        MemoryPatch(0x4F5623) << BYTESEQ{ 0xC7, 0xC0, 0, 0, 0, 0 }; // Allow multiple windows open
         MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
         MemoryPatch(0x43BF60) << ASM::RET; // Prevent battle.net connections
         MemoryPatch(0x61C0B0) << JUMP(GetGlobalLight);
@@ -400,10 +385,9 @@ public:
         MemoryPatch(0x45ADE8) << CALL(_drawAutoMapInfo);
         MemoryPatch(0x454ba8) << CALL(UnitVisualname);
 
-        MemoryPatch(0x497d95) << JUMP(_calculateDrawNeedToRepairOffset) << BYTE(0x90);
-
-        // fix that running out of arrows is over drawn mini body to repair
-        MemoryPatch(0x497cc3) << JUMP(_calculateDrawNeedToGetArrowOffset);
+        // Repair/Arrow adjustments modified from jaenster's code
+        MemoryPatch(0x497D72) << BYTESEQ{ 0x8D, 0x4D, 0xB8, 0xBA } << DWORD(0) << CALL(DrawRepairImageAlertIntercept) << BYTESEQ{ 0x5F, 0x5E, 0x8B, 0xE5, 0x5D, 0xC2, 0x04, 0 };
+        MemoryPatch(0x497CBA) << BYTESEQ{ 0x8D, 0x4D, 0xB8, 0xBA } << DWORD(1) << CALL(DrawRepairImageAlertIntercept) << BYTESEQ{ 0x5F, 0x5E, 0x8B, 0xE5, 0x5D, 0xC2, 0x04, 0 };
 
         AutomapInfoHooks.push_back([]() -> std::wstring {
             return version;
