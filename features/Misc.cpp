@@ -192,9 +192,9 @@ void __fastcall DrawRepairImageAlertIntercept(void *pImage, bool isArrow) {
 }
 
 ASMPTR GetItemName_Original = 0x48C060;
-ASMPTR GetItemName_Rejoin = 0x48C068;
 
 __declspec(naked) BOOL __fastcall GetItemName_Relocated(D2::Types::UnitAny* item, wchar_t* wBuffer, DWORD dwSize) {
+    static ASMPTR GetItemName_Rejoin = 0x48C068;
     __asm {
         push ebp
         mov ebp, esp
@@ -351,7 +351,7 @@ wchar_t* __fastcall UnitVisualname(D2::Types::UnitAny *pUnit) {
     // preserved. Also Visual Studio complains about returning a temporary variable.
     static wchar_t tmpBuffer[dwSize];
 
-    swprintf(tmpBuffer, 1024, L"%ls (%d)", D2::GetUnitName(pUnit), D2::GetUnitStat(pUnit, 12/*level*/, 0));
+    swprintf(tmpBuffer, dwSize, L"%ls (%d)", D2::GetUnitName(pUnit), D2::GetUnitStat(pUnit, 12/*level*/, 0));
     return tmpBuffer;
 }
 
