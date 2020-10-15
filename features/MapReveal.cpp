@@ -180,6 +180,9 @@ public:
                 case 268: // Wirt's Body
                     GenerateMarkerCell(pRoom2, pUnit, layer);
                     continue;
+                case 310: // shrines
+                    GenerateCell(pRoom2, pUnit, 310, layer);
+                    continue;
                 case 376: // Hellforge gets double rendered.
                     if (pRoom2->pLevel->dwLevelNo == 107) {
                         continue;
