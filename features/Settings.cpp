@@ -105,6 +105,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["noPickup"] = !Settings["noPickup"];
                 SaveSettings();
             }),
+        new DialogToggleInfo(L"Prevent socketing",
+            []() -> std::wstring {
+                return Settings["preventSockets"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["preventSockets"] = !Settings["preventSockets"];
+                SaveSettings();
+            }),
         nullptr, // Empty Gap
         new DialogToggleInfo(L"Repeatable Respec Quest",
             []() -> std::wstring {
@@ -198,6 +206,7 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["alwaysD3DStartFull"] = !Settings["alwaysD3DStartFull"];
                 SaveSettings();
             }),
+        nullptr, // Empty Gap
         nullptr, // Empty Gap
         new DialogToggleInfo(L"Draw Color Swatch",
             []() -> std::wstring {
