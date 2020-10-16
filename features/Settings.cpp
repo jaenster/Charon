@@ -105,6 +105,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["noPickup"] = !Settings["noPickup"];
                 SaveSettings();
             }),
+        new DialogToggleInfo(L"Prevent socketing",
+            []() -> std::wstring {
+                return Settings["preventSockets"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["preventSockets"] = !Settings["preventSockets"];
+                SaveSettings();
+            }),
         nullptr, // Empty Gap
         new DialogToggleInfo(L"Repeatable Respec Quest",
             []() -> std::wstring {
@@ -199,6 +207,7 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 SaveSettings();
             }),
         nullptr, // Empty Gap
+        nullptr, // Empty Gap
         new DialogToggleInfo(L"Draw Color Swatch",
             []() -> std::wstring {
                 return State["drawSwatch"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -250,15 +259,15 @@ namespace SettingsFeature {
         return dialog->isVisible();
     }
 
-    int __declspec(naked) pauseGameIntercept() {    
+    int __declspec(naked) pauseGameIntercept() {
         const static ASMPTR GetUiFlagWrapper = 0x453a90;
         const static ASMPTR Continue = 0x44efed;
         const static ASMPTR PauseGame = 0x44f00a;
         __asm {
-                
-                
-                CALL isVisibleWrapper 
-                CMP EAX, 1    
+
+
+                CALL isVisibleWrapper
+                CMP EAX, 1
                 JNE original
                 JMP PauseGame
 
