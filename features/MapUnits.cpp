@@ -26,6 +26,14 @@ public:
         }
 
         if (Settings["debugMode"]) {
+            forUnits(2, [&](D2::Types::UnitAny* unit) -> void {
+                DrawDot(WorldToAutomap(getPosition(unit)), 0x69);
+            });
+
+            forUnits(5, [&](D2::Types::UnitAny* unit) -> void {
+                DrawDot(WorldToAutomap(getPosition(unit)), 0x9B);
+            });
+
             for (D2::Types::Room2* room = D2::PlayerUnit->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room != NULL; room = room->pRoom2Next) {
                 for (D2::Types::PresetUnit* unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
                     DrawDot(WorldToAutomap({ (double)room->dwPosX * 5 + (double)unit->dwPosX, (double)room->dwPosY * 5 + (double)unit->dwPosY }), 0x84);
@@ -58,7 +66,7 @@ public:
             forUnits(1, [&](D2::Types::UnitAny* unit) -> void {
                 if (isHostile(unit) && unitHP(unit) > 0) {
                     if (isAttackable(unit)) {
-                        if (unit->pMonsterData->fBoss || unit->pMonsterData->fChamp) {
+                        if (unit->pMonsterData->fUnique || unit->pMonsterData->fChamp) {
                             DrawAutomapX(unit->pPath, 0x0C);
                         }
                         else if (unit->pMonsterData->fMinion) {

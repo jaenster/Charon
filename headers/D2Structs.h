@@ -831,14 +831,20 @@ namespace D2 {
 
         struct MonsterData {
             BYTE _1[22]; // 0x00
-            struct {
-                BYTE fUnk : 1;
-                BYTE fNormal : 1;
-                BYTE fChamp : 1;
-                BYTE fBoss : 1;
-                BYTE fMinion : 1;
+            union {
+                struct {
+                    bool fOther     : 1;
+                    bool fSuper     : 1;
+                    bool fChamp     : 1;
+                    bool fUnique    : 1;
+                    bool fMinion    : 1;
+                    bool fPossessed : 1;
+                    bool fGhostly   : 1;
+                    bool fMultishot : 1;
+                }; // 0x16
+                BYTE typeFlags;
             }; // 0x16
-            BYTE _2[5];
+            BYTE _2[5]; // 0x17
             BYTE anEnchants[9]; // 0x1C
             WORD wUniqueNo;     // 0x26
             DWORD _5;           // 0x28

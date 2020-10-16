@@ -26,13 +26,25 @@ namespace D2 {
 
 DPOINT xvector = { 16.0, 8.0 }, yvector = { -16.0, 8.0 };
 
+DPOINT getPosition(D2::Types::UnitAny* pUnit) {
+    if (pUnit->dwType == 2 || pUnit->dwType == 5) {
+        return { (double)pUnit->pObjectPath->dwPosX, (double)pUnit->pObjectPath->dwPosY };
+    }
+
+    if (pUnit->dwType == 4) {
+        return { (double)pUnit->pItemPath->dwPosX, (double)pUnit->pItemPath->dwPosY };
+    }
+
+    return { (double)pUnit->pPath->xPos + (double)pUnit->pPath->xOffset / 65536.0, (double)pUnit->pPath->yPos + (double)pUnit->pPath->yOffset / 65536.0 };
+}
+
 void DrawRectangle(POINT a, POINT b, DWORD dwColor) {
     if (
         a.x >= 0 && a.x < D2::ScreenWidth ||
         b.x >= 0 && b.x < D2::ScreenWidth ||
         a.y >= 0 && a.y < D2::ScreenHeight ||
         b.y >= 0 && b.y < D2::ScreenHeight
-        ) {
+    ) {
         D2DrawRectangle(a.x, a.y, b.x, b.y, dwColor, 0xFF);
     }
 }
@@ -99,6 +111,20 @@ void DrawAutomapX(D2::Types::ItemPath* arg, DWORD dwColor, double size) {
 }
 
 void DrawWorldX(D2::Types::ItemPath* arg, DWORD dwColor, double size) {
+    POINT a = WorldToScreen({ (double)arg->dwPosX - size, (double)arg->dwPosY }), b = WorldToScreen({ (double)arg->dwPosX + size, (double)arg->dwPosY });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+    a = WorldToScreen({ (double)arg->dwPosX, (double)arg->dwPosY - size }), b = WorldToScreen({ (double)arg->dwPosX, (double)arg->dwPosY + size });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+}
+
+void DrawAutomapX(D2::Types::ObjectPath* arg, DWORD dwColor, double size) {
+    POINT a = WorldToAutomap({ (double)arg->dwPosX - size, (double)arg->dwPosY }), b = WorldToAutomap({ (double)arg->dwPosX + size, (double)arg->dwPosY });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+    a = WorldToAutomap({ (double)arg->dwPosX, (double)arg->dwPosY - size }), b = WorldToAutomap({ (double)arg->dwPosX, (double)arg->dwPosY + size });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+}
+
+void DrawWorldX(D2::Types::ObjectPath* arg, DWORD dwColor, double size) {
     POINT a = WorldToScreen({ (double)arg->dwPosX - size, (double)arg->dwPosY }), b = WorldToScreen({ (double)arg->dwPosX + size, (double)arg->dwPosY });
     DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
     a = WorldToScreen({ (double)arg->dwPosX, (double)arg->dwPosY - size }), b = WorldToScreen({ (double)arg->dwPosX, (double)arg->dwPosY + size });
@@ -227,11 +253,11 @@ double DPOINT::length() {
     return sqrt(x * x + y + y);
 }
 
-DPOINT getPosition(D2::Types::UnitAny* pUnit) {
-    return { (double)pUnit->pPath->xPos + (double)pUnit->pPath->xOffset / 65536.0, (double)pUnit->pPath->yPos + (double)pUnit->pPath->yOffset / 65536.0 };
-}
-
 DPOINT getTargetPosition(D2::Types::UnitAny* pUnit) {
+    if (pUnit->dwType == 2 || pUnit->dwType == 4) {
+        return getPosition(pUnit);
+    }
+
     return { (double)pUnit->pPath->xTarget, (double)pUnit->pPath->yTarget };
 }
 

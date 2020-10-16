@@ -27,6 +27,8 @@ void DrawAutomapX(DPOINT arg, DWORD dwColor = 30, double size = 5);
 void DrawWorldX(DPOINT arg, DWORD dwColor = 30, double size = 1);
 void DrawAutomapX(D2::Types::ItemPath* arg, DWORD dwColor = 30, double size = 5);
 void DrawWorldX(D2::Types::ItemPath* arg, DWORD dwColor = 30, double size = 1);
+void DrawAutomapX(D2::Types::ObjectPath* arg, DWORD dwColor = 30, double size = 5);
+void DrawWorldX(D2::Types::ObjectPath* arg, DWORD dwColor = 30, double size = 1);
 void DrawAutomapX(D2::Types::Path* arg, DWORD dwColor = 30, double size = 5);
 void DrawWorldX(D2::Types::Path* arg, DWORD dwColor = 30, double size = 1);
 template <int len> void DrawAutomapShape(DPOINT points[len], DWORD dwColor = 30);

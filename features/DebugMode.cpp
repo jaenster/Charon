@@ -10,6 +10,7 @@
 #include <iostream>
 
 const wchar_t* align[] = { L"Hostile", L"Neutral", L"Friendly" };
+const DWORD alignColors[] = { 1, 5, 2 };
 
 ASMPTR EnableDebugPrint = 0x8846DC;
 REMOTEFUNC(void __fastcall, DrawFloor, (void* unknown), 0x4DED10);
@@ -94,17 +95,17 @@ public:
                         DrawLine(pos, target, 0x99);
                     }
                 }
-            }, D2::ServerSideUnitHashTables);
+            });
 
             // Client side tracks missiles
             forUnits(3, [&](D2::Types::UnitAny* unit) -> void {
-                DrawWorldX(unit->pPath, 0x99);
+                DrawWorldX(unit->pPath, 0x99, 0.5);
                 POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
 
                 if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight && target.x >= 0 && target.y >= 0 && target.x < D2::ScreenWidth && target.y < D2::ScreenHeight) {
                     DrawLine(pos, target, 0x83);
                 }
-            }, D2::ClientSideUnitHashTables);
+            });
         }
     }
 
@@ -115,27 +116,62 @@ public:
             POINT pos;
             D2::SetFont(fontNum);
 
+            forUnits(2, [&](D2::Types::UnitAny* unit) -> void {
+                DPOINT dpos = getPosition(unit);
+                DrawWorldX(dpos, 0x69);
+                pos = WorldToScreen(dpos);
+                swprintf_s(msg, L"%d", unit->dwTxtFileNo);
+                height = D2::GetTextSize(msg, &width, &fontNum);
+                D2::DrawGameText(msg, pos.x - (width >> 1) - 4, pos.y - height + 8, 8, 1);
+            });
+
+            forUnits(5, [&](D2::Types::UnitAny* unit) -> void {
+                DrawWorldX(getPosition(unit), 0x9B);
+            });
+
             // Server side tracks enemies
             forUnits(1, [&](D2::Types::UnitAny* unit) -> void {
                 if (unit->pPath) {
+                    if (isAttackable(unit)) {
+                        switch (D2::GetUnitStat(unit, 172, 0)) {
+                        case 0: // hostile
+                            if (unit->pMonsterData->fUnique || unit->pMonsterData->fChamp) {
+                                DrawWorldX(unit->pPath, 0x0C);
+                            }
+                            else if (unit->pMonsterData->fMinion) {
+                                DrawWorldX(unit->pPath, 0x0B);
+                            }
+                            else {
+                                DrawWorldX(unit->pPath, 0x0A);
+                            }
+                            break;
+                        case 2: // friendly
+                            DrawWorldX(unit->pPath, 0x84);
+                            break;
+                        default: // neutral
+                            DrawWorldX(unit->pPath, 0x99);
+                        }
+                    }
+                    else {
+                        DrawWorldX(unit->pPath, 0x1B);
+                    }
+
                     POINT pos = WorldToScreen(unit->pPath);
 
                     if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
-                        swprintf_s(msg, L"%s\n%s\n%s\ndwTxtFileNo: %d", (isAttackable(unit) ? L"Combat" : L"Non-Combat"), align[D2::GetUnitStat(unit, 172, 0)], D2::GetUnitName(unit), unit->dwTxtFileNo);
+                        swprintf_s(msg, L"%d", unit->dwTxtFileNo);
                         height = D2::GetTextSize(msg, &width, &fontNum);
-                        D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height, 0, 1);
+                        D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height + 2, alignColors[D2::GetUnitStat(unit, 172, 0)], 0);
+
+                        if (unit->pMonsterData->fSuper) {
+                            swprintf_s(msg, L"%d", unit->pMonsterData->wUniqueNo);
+                            height = D2::GetTextSize(msg, &width, &fontNum);
+                            D2::DrawGameText(msg, pos.x + 8, pos.y + 5, 3, 0);
+                        }
                     }
                 }
-            }, D2::ServerSideUnitHashTables);
+            });
 
-            // Client side tracks missiles
-            forUnits(3, [&](D2::Types::UnitAny* unit) -> void {
-                pos = WorldToScreen(unit->pPath);
-                swprintf_s(msg, L"dwOwnerType: %d", unit->dwOwnerType);
-                height = D2::GetTextSize(msg, &width, &fontNum);
-                D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height, 0, 1);
-            }, D2::ClientSideUnitHashTables);
-            
             for (D2::Types::Room2* room = D2::PlayerUnit->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room != NULL; room = room->pRoom2Next) {
                 for (D2::Types::PresetUnit* unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
                     DPOINT dpos = { (double)room->dwPosX * 5 + (double)unit->dwPosX, (double)room->dwPosY * 5 + (double)unit->dwPosY };
