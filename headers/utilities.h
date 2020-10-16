@@ -9,6 +9,10 @@
 class DPOINT {
 public:
     double x, y;
+    DPOINT operator +(const DPOINT& p);
+    DPOINT operator -(const DPOINT& p);
+    DPOINT operator /(const double d);
+    double length();
 };
 
 extern DPOINT xvector, yvector;
@@ -36,3 +40,8 @@ bool isFriendly(D2::Types::UnitAny* unit);
 bool isHostile(D2::Types::UnitAny* unit);
 bool isAttackable(D2::Types::UnitAny* unit);
 bool isEnemy(D2::Types::UnitAny* unit);
+DPOINT getPosition(D2::Types::UnitAny* pUnit);
+void forUnits(int type, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable* tables = nullptr);
+std::vector<D2::Types::UnitAny*> getUnits(int type, D2::Types::UnitHashTable* tables = nullptr, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback = [](D2::Types::UnitAny*) -> bool { return true; });
+void forUnitsInRange(int type, DPOINT source, double radius, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable* tables = nullptr);
+std::vector<D2::Types::UnitAny*> getUnitsInRange(int type, DPOINT source, double radius, D2::Types::UnitHashTable* tables = nullptr, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback = [](D2::Types::UnitAny*) -> bool { return true; });
