@@ -15,12 +15,12 @@ typedef void(*VOIDFUNC)();
 
 namespace D2 {
     enum class UnitType : DWORD {
-        UNIT_PLAYER = 0,
-        UNIT_MONSTER = 1,
-        UNIT_OBJECT = 2,
-        UNIT_MISSILE = 3,
-        UNIT_ITEM = 4,
-        UNIT_ROOMTILE = 5,
+        PLAYER = 0,
+        MONSTER = 1,
+        OBJECT = 2,
+        MISSILE = 3,
+        ITEM = 4,
+        ROOMTILE = 5,
     };
 
     enum class ItemQuality : DWORD {

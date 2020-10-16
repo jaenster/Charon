@@ -87,7 +87,7 @@ public:
             }
 
             // Server side tracks enemies
-            forUnits(1, [&](D2::Types::UnitAny* unit) -> void {
+            forUnits(D2::UnitType::MONSTER, [&](D2::Types::UnitAny* unit) -> void {
                 if (unit->pPath && unitHP(unit) > 0) {
                     POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
 
@@ -98,7 +98,7 @@ public:
             });
 
             // Client side tracks missiles
-            forUnits(3, [&](D2::Types::UnitAny* unit) -> void {
+            forUnits(D2::UnitType::MISSILE, [&](D2::Types::UnitAny* unit) -> void {
                 DrawWorldX(unit->pPath, 0x99, 0.5);
                 POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
 
@@ -116,7 +116,7 @@ public:
             POINT pos;
             D2::SetFont(fontNum);
 
-            forUnits(2, [&](D2::Types::UnitAny* unit) -> void {
+            forUnits(D2::UnitType::OBJECT, [&](D2::Types::UnitAny* unit) -> void {
                 DPOINT dpos = getPosition(unit);
                 DrawWorldX(dpos, 0x69);
                 pos = WorldToScreen(dpos);
@@ -125,12 +125,12 @@ public:
                 D2::DrawGameText(msg, pos.x - (width >> 1) - 4, pos.y - height + 8, 8, 1);
             });
 
-            forUnits(5, [&](D2::Types::UnitAny* unit) -> void {
+            forUnits(D2::UnitType::ROOMTILE, [&](D2::Types::UnitAny* unit) -> void {
                 DrawWorldX(getPosition(unit), 0x9B);
             });
 
             // Server side tracks enemies
-            forUnits(1, [&](D2::Types::UnitAny* unit) -> void {
+            forUnits(D2::UnitType::MONSTER, [&](D2::Types::UnitAny* unit) -> void {
                 if (unit->pPath) {
                     if (isAttackable(unit)) {
                         switch (D2::GetUnitStat(unit, 172, 0)) {

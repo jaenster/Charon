@@ -262,23 +262,23 @@ DPOINT getTargetPosition(D2::Types::UnitAny* pUnit) {
 }
 
 // Based on work from Jaenster
-void forUnits(int type, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable *tables) {
+void forUnits(D2::UnitType type, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable *tables) {
     if (tables != nullptr) {
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = tables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 callback(pUnit);
             }
         }
     }
     else {
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 callback(pUnit);
             }
         }
 
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 callback(pUnit);
             }
         }
@@ -286,12 +286,12 @@ void forUnits(int type, std::function<void(D2::Types::UnitAny* pUnit)> callback,
 }
 
 // Based on work from Jaenster
-std::vector<D2::Types::UnitAny*> getUnits(int type, D2::Types::UnitHashTable* tables, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback) {
+std::vector<D2::Types::UnitAny*> getUnits(D2::UnitType type, D2::Types::UnitHashTable* tables, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback) {
     std::vector<D2::Types::UnitAny*> ret;
 
     if (tables != nullptr) {
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = tables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 if (filterCallback(pUnit)) {
                     ret.push_back(pUnit);
                 }
@@ -300,7 +300,7 @@ std::vector<D2::Types::UnitAny*> getUnits(int type, D2::Types::UnitHashTable* ta
     }
     else {
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 if (filterCallback(pUnit)) {
                     ret.push_back(pUnit);
                 }
@@ -308,7 +308,7 @@ std::vector<D2::Types::UnitAny*> getUnits(int type, D2::Types::UnitHashTable* ta
         }
 
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 if (filterCallback(pUnit)) {
                     ret.push_back(pUnit);
                 }
@@ -320,10 +320,10 @@ std::vector<D2::Types::UnitAny*> getUnits(int type, D2::Types::UnitHashTable* ta
 }
 
 // Based on work from Jaenster
-void forUnitsInRange(int type, DPOINT source, double radius, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable* tables) {
+void forUnitsInRange(D2::UnitType type, DPOINT source, double radius, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable* tables) {
     if (tables != nullptr) {
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = tables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 if ((getPosition(pUnit) - source).length() <= radius) {
                     callback(pUnit);
                 }
@@ -332,7 +332,7 @@ void forUnitsInRange(int type, DPOINT source, double radius, std::function<void(
     }
     else {
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 if ((getPosition(pUnit) - source).length() <= radius) {
                     callback(pUnit);
                 }
@@ -340,7 +340,7 @@ void forUnitsInRange(int type, DPOINT source, double radius, std::function<void(
         }
 
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 if ((getPosition(pUnit) - source).length() <= radius) {
                     callback(pUnit);
                 }
@@ -350,12 +350,12 @@ void forUnitsInRange(int type, DPOINT source, double radius, std::function<void(
 }
 
 // Based on work from Jaenster
-std::vector<D2::Types::UnitAny*> getUnitsInRange(int type, DPOINT source, double radius, D2::Types::UnitHashTable* tables, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback) {
+std::vector<D2::Types::UnitAny*> getUnitsInRange(D2::UnitType type, DPOINT source, double radius, D2::Types::UnitHashTable* tables, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback) {
     std::vector<D2::Types::UnitAny*> ret;
 
     if (tables != nullptr) {
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = tables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 if ((getPosition(pUnit) - source).length() <= radius && filterCallback(pUnit)) {
                     ret.push_back(pUnit);
                 }
@@ -364,7 +364,7 @@ std::vector<D2::Types::UnitAny*> getUnitsInRange(int type, DPOINT source, double
     }
     else {
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 if ((getPosition(pUnit) - source).length() <= radius && filterCallback(pUnit)) {
                     ret.push_back(pUnit);
                 }
@@ -372,7 +372,7 @@ std::vector<D2::Types::UnitAny*> getUnitsInRange(int type, DPOINT source, double
         }
 
         for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
+            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
                 if ((getPosition(pUnit) - source).length() <= radius && filterCallback(pUnit)) {
                     ret.push_back(pUnit);
                 }

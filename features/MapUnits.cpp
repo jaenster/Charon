@@ -20,17 +20,17 @@ public:
     void gameAutomapPostDraw() {
         if (Settings["showMissiles"]) {
             // Client side tracks missiles
-            forUnits(3, [&](D2::Types::UnitAny* unit) -> void {
+            forUnits(D2::UnitType::MISSILE, [&](D2::Types::UnitAny* unit) -> void {
                 DrawDot(WorldToAutomap(unit->pPath), 0x99);
             }, D2::ClientSideUnitHashTables);
         }
 
         if (Settings["debugMode"]) {
-            forUnits(2, [&](D2::Types::UnitAny* unit) -> void {
+            forUnits(D2::UnitType::OBJECT, [&](D2::Types::UnitAny* unit) -> void {
                 DrawDot(WorldToAutomap(getPosition(unit)), 0x69);
             });
 
-            forUnits(5, [&](D2::Types::UnitAny* unit) -> void {
+            forUnits(D2::UnitType::ROOMTILE, [&](D2::Types::UnitAny* unit) -> void {
                 DrawDot(WorldToAutomap(getPosition(unit)), 0x9B);
             });
 
@@ -43,7 +43,7 @@ public:
 
         if (Settings["showItems"]) {
             // Server side tracks items
-            forUnits(4, [&](D2::Types::UnitAny* unit) -> void {
+            forUnits(D2::UnitType::ITEM, [&](D2::Types::UnitAny* unit) -> void {
                 if (unit->dwMode == 3 || unit->dwMode == 5) {
                     if (unit->pItemData->dwFlags & 0x4000000) {
                         DrawAutomapX(unit->pItemPath, ItemRarityColor[7], 3);
@@ -63,7 +63,7 @@ public:
 
         if (Settings["showMonsters"]) {
             // Server side tracks enemies
-            forUnits(1, [&](D2::Types::UnitAny* unit) -> void {
+            forUnits(D2::UnitType::MONSTER, [&](D2::Types::UnitAny* unit) -> void {
                 if (isHostile(unit) && unitHP(unit) > 0) {
                     if (isAttackable(unit)) {
                         if (unit->pMonsterData->fUnique || unit->pMonsterData->fChamp) {
