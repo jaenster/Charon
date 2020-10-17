@@ -66,8 +66,7 @@ public:
         MemoryPatch(0x476CDC) << CALL(_drawFloor); // Allow disabling the floor.
         MemoryPatch(0x51A480) << JUMP(printf_newline); // Enable even more console debug prints
 
-        // Disable the drawing under the floor. I have found no side effect changing this pernamently
-        //MemoryPatch(0x476cd5) << NOP_TO(0x476cd5 + 5);
+        // Redirect the drawing of the background behind the floor
         MemoryPatch(0x476cd5) << CALL(DRAW_UnderFloor_Intercept);
 
         HotkeyCallbacks[VK_F10] = [&](LPARAM options) -> BOOL {
