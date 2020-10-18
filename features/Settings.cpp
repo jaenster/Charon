@@ -188,7 +188,6 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 SaveSettings();
             }),
         nullptr, // Empty Gap
-        nullptr, // Empty Gap
         new DialogToggleInfo(L"Omnivision",
             []() -> std::wstring {
                 return Settings["omnivision"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -262,6 +261,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
                 Settings["debugModeType"] = (Settings["debugModeType"] + 1) % 3;
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Show Walls in Debug",
+            []() -> std::wstring {
+                return Settings["debugModeWalls"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["debugModeWalls"] = !Settings["debugModeWalls"];
                 SaveSettings();
             }),
         new DialogToggleInfo(L"Debug Packets",

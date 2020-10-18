@@ -72,6 +72,18 @@ BOOL CanDraw() {
     return !Settings["debugMode"] || Settings["debugModeType"] != DebugMode::HIDDEN;
 }
 
+BOOL CanDrawWalls() {
+    return !Settings["debugMode"] || Settings["debugModeWalls"];
+}
+
+BOOL CanDrawShadows() {
+    return !Settings["debugMode"];
+}
+
+BOOL CanDrawRoofs() {
+    return !Settings["disableRoofs"] && CanDrawWalls();
+}
+
 __declspec(naked) void DrawUnit_intercept() {
     static const ASMPTR DrawUnit_rejoin = 0x471ec6;
     __asm {
@@ -98,7 +110,7 @@ _declspec(naked) void DrawWalls_intercept() {
     static const ASMPTR DrawWalls_rejoin = 0x4df3aa, DrawWalls_jump = 0x4df3c3, DrawWalls_skip = 0x4df3d6;
     __asm {
         pushad
-        call CanDraw
+        call CanDrawWalls
         test eax, eax
         popad
         jz skip
@@ -119,7 +131,7 @@ __declspec(naked) void DrawShadows_intercept() {
     static const ASMPTR DrawShadows_original = 0x4df510;
     __asm {
         pushad
-        call CanDraw
+        call CanDrawShadows
         test eax, eax
         popad
         jz skip
@@ -129,10 +141,6 @@ __declspec(naked) void DrawShadows_intercept() {
         skip:
         ret
     }
-}
-
-BOOL CanDrawRoofs() {
-    return !Settings["disableRoofs"] && !Settings["debugMode"];
 }
 
 __declspec(naked) void DrawRoofs_intercept() {
