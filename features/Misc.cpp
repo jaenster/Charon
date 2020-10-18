@@ -424,4 +424,21 @@ public:
         height = D2::GetTextSize(version.c_str(), &width, &fileno);
         D2::DrawGameText(version.c_str(), D2::ScreenWidth - width - 5, D2::ScreenHeight - 5, 4, 0);
     }
+
+    bool keyEvent(DWORD keyCode, bool down, DWORD flags) {
+        switch (keyCode) {
+        case VK_PAUSE:
+            State["paused"] = !State["paused"];
+            if (State["paused"]) {
+                gamelog << COLOR(2) << "Game paused." << std::endl;
+            }
+            else {
+                gamelog << COLOR(1) << "Game unpaused." << std::endl;
+            }
+            return false;
+        }
+
+        return true;
+    }
+
 } feature;

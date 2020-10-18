@@ -254,9 +254,8 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
 namespace SettingsFeature {
     Element* dialog;
 
-
-    const static int __fastcall isVisibleWrapper() {
-        return dialog->isVisible();
+    const static int __fastcall shouldPause() {
+        return dialog->isVisible() || State["paused"];
     }
 
     int __declspec(naked) pauseGameIntercept() {
@@ -266,7 +265,7 @@ namespace SettingsFeature {
         __asm {
 
 
-                CALL isVisibleWrapper
+                CALL shouldPause
                 CMP EAX, 1
                 JNE original
                 JMP PauseGame
