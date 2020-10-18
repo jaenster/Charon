@@ -80,6 +80,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["showMissiles"] = !Settings["showMissiles"];
                 SaveSettings();
             }),
+        new DialogToggleInfo(L"Disable Rooftops",
+            []() -> std::wstring {
+                return Settings["disableRoofs"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["disableRoofs"] = !Settings["disableRoofs"];
+                SaveSettings();
+            }),
         nullptr, // Empty Gap
         new DialogToggleInfo(L"Regen Single Player Maps",
             []() -> std::wstring {
@@ -180,6 +188,7 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 SaveSettings();
             }),
         nullptr, // Empty Gap
+        nullptr, // Empty Gap
         new DialogToggleInfo(L"Omnivision",
             []() -> std::wstring {
                 return Settings["omnivision"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -231,14 +240,6 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["disableWeather"] = !Settings["disableWeather"];
                 SaveSettings();
             }),
-        new DialogToggleInfo(L"Lighting Test",
-            []() -> std::wstring {
-                return Settings["useColors"] ? L"\u00FFc2On" : L"\u00FFc1Off";
-            }, [](MouseButton button, bool down) -> void {
-                if (down) return;
-                Settings["useColors"] = !Settings["useColors"];
-                SaveSettings();
-            }),
         new DialogToggleInfo(L"Debug Mode",
             []() -> std::wstring {
                 return Settings["debugMode"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -247,12 +248,20 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["debugMode"] = !Settings["debugMode"];
                 SaveSettings();
             }),
-        new DialogToggleInfo(L"Dark Mode for Debug",
+        new DialogToggleInfo(L"Debug Mode Type",
             []() -> std::wstring {
-                return Settings["debugDarkMode"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                switch (Settings["debugModeType"]) {
+                case DebugMode::NORMAL:
+                    return L"\u00FFc5Normal";
+                case DebugMode::DARK:
+                    return L"\u00FFc3Dark";
+                case DebugMode::HIDDEN:
+                default:
+                    return L"\u00FFc1Hidden";
+                }
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
-                Settings["debugDarkMode"] = !Settings["debugDarkMode"];
+                Settings["debugModeType"] = (Settings["debugModeType"] + 1) % 3;
                 SaveSettings();
             }),
         new DialogToggleInfo(L"Debug Packets",

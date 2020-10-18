@@ -31,7 +31,7 @@ public:
             });
 
             forUnits(D2::UnitType::ROOMTILE, [&](D2::Types::UnitAny* unit) -> void {
-                DrawDot(WorldToAutomap(getPosition(unit)), 0x9B);
+                DrawDot(WorldToAutomap(getPosition(unit)), 0xA4);
             });
 
             for (D2::Types::Room2* room = D2::PlayerUnit->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room != NULL; room = room->pRoom2Next) {

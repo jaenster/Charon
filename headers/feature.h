@@ -58,3 +58,11 @@ extern StateMap State;
 extern StateMap Settings;
 void LoadSettings();
 void SaveSettings();
+
+namespace DebugMode {
+	enum DebugModeTypes {
+		NORMAL = 0,
+		DARK = 1,
+		HIDDEN = 2,
+	};
+}

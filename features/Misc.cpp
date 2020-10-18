@@ -330,17 +330,6 @@ __declspec(naked) void __stdcall GetGlobalLight_Original(void* pAct, BYTE* red, 
     }
 }
 
-void __stdcall GetGlobalLight(void* pAct, BYTE &red, BYTE &green, BYTE &blue) {
-    if (Settings["useColors"]) {
-        red = (BYTE)(sin(flashy) * 127.5 + 127.5);
-        green = (BYTE)(sin(flashy * 2) * 127.5 + 127.5);
-        blue = (BYTE)(sin(flashy * 3) * 127.5 + 127.5);
-        return;
-    }
-
-    GetGlobalLight_Original(pAct, &red, &green, &blue);
-}
-
 wchar_t* __fastcall UnitVisualname(D2::Types::UnitAny *pUnit) {
     // For now it falls under item info, as it is as item/unit level
     if (!Settings["itemInfo"]) return D2::GetUnitName(pUnit);
@@ -365,7 +354,6 @@ public:
         MemoryPatch(0x4F5623) << BYTESEQ{ 0xC7, 0xC0, 0, 0, 0, 0 }; // Allow multiple windows open
         MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
         MemoryPatch(0x43BF60) << ASM::RET; // Prevent battle.net connections
-        MemoryPatch(0x61C0B0) << JUMP(GetGlobalLight);
         MemoryPatch(0x515FB1) << BYTE(0x01); // Delay of 1 on cleaning up sounds after quiting game
         MemoryPatch(0x4781AC) << BYTESEQ{ 0x6A, 0x05, 0x90, 0x90, 0x90 }; // Hyperjoin for TCP/IP games
         MemoryPatch(GetItemName_Original) << JUMP(GetItemName_Intercept);

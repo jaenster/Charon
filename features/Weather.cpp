@@ -13,7 +13,7 @@ REMOTEFUNC(void, DrawWeather, (), 0x473910);
 namespace Weather {
 
     void drawWeatherIntercept() {
-        if (!Settings["disableWeather"]) DrawWeather();
+        if (!Settings["disableWeather"] && !Settings["debugMode"]) DrawWeather();
     }
 
     class : public Feature {

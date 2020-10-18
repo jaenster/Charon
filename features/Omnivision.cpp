@@ -21,7 +21,7 @@ namespace Omnivision {
     }
 
     void __fastcall GetRoomColors_override(D2::Types::Room1* pRoom, BYTE* gamma, BYTE* red, BYTE* green, BYTE* blue) {
-        if (Settings["debugMode"] && Settings["debugDarkMode"]) {
+        if (Settings["debugMode"] && Settings["debugModeType"] == DebugMode::DARK) {
             *gamma = *red = *green = *blue = 1;
             return;
         }
@@ -52,7 +52,7 @@ namespace Omnivision {
     }
 
     BOOL useLightRadius() {
-        return !Settings["debugMode"] || !Settings["debugDarkMode"];
+        return !Settings["debugMode"] || Settings["debugModeType"] != DebugMode::DARK;
     }
 
     __declspec(naked) void lightUnitsOverride() {
