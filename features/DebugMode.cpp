@@ -36,6 +36,18 @@ int __stdcall printf_newline(const char* format, ...) {
     return done;
 }
 
+REMOTEFUNC(void __fastcall, DRAW_UnderFloor, (void* param1), 0x4df480)
+void __fastcall DRAW_UnderFloor_Intercept(void* param1) {
+
+    // ToDo; only visiable background behind floor is in baals chamber, as it has some floating floors
+    // It draws some weird white backgrounds in act 5, that are not visable as the floor draws over it
+    // Should only draw when in chamber, and disable for the rest of the levels. Waste of resource
+
+    if (!Settings["debugMode"]) {
+        DRAW_UnderFloor(param1);
+    }
+}
+
 // This feature class registers itself.
 class : public Feature {
 public:
@@ -54,6 +66,9 @@ public:
     void init() {
         MemoryPatch(0x476CDC) << CALL(_drawFloor); // Allow disabling the floor.
         MemoryPatch(0x51A480) << JUMP(printf_newline); // Enable even more console debug prints
+
+        // Redirect the drawing of the background behind the floor
+        MemoryPatch(0x476cd5) << CALL(DRAW_UnderFloor_Intercept);
 
         HotkeyCallbacks[VK_F10] = [&](LPARAM options) -> BOOL {
             toggleDebug();
