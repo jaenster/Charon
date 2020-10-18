@@ -48,6 +48,26 @@ void __fastcall DRAW_UnderFloor_Intercept(void* param1) {
     }
 }
 
+BOOL ShouldDrawAncientsBackground() {
+    return !Settings["debugMode"];
+}
+
+REMOTEFUNC(void, DRAW_Background_Ancients, (), 0x476460);
+__declspec(naked) void DRAW_Background_Ancients_Intercept() {
+    __asm {
+        pushad
+        call ShouldDrawAncientsBackground
+        test eax, eax
+        popad
+
+        jz skip
+        jmp DRAW_Background_Ancients
+
+        skip:
+        ret
+    }
+}
+
 // This feature class registers itself.
 class : public Feature {
 public:
@@ -69,6 +89,9 @@ public:
 
         // Redirect the drawing of the background behind the floor
         MemoryPatch(0x476cd5) << CALL(DRAW_UnderFloor_Intercept);
+
+        // Intercept drawing ancient's background
+        MemoryPatch(0x476c93) << CALL(DRAW_Background_Ancients_Intercept);
 
         HotkeyCallbacks[VK_F10] = [&](LPARAM options) -> BOOL {
             toggleDebug();
