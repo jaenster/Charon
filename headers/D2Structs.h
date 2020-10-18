@@ -113,7 +113,7 @@ namespace D2 {
 
         struct AutomapCell {
             DWORD fSaved;       // 0x00
-            WORD nCellNo;       // 0x04
+            short nCellNo;      // 0x04
             WORD xPixel;        // 0x06
             WORD yPixel;        // 0x08
             WORD wWeight;       // 0x0A
@@ -1319,7 +1319,7 @@ namespace D2 {
             char nTerm[4];
             int nDirections;
             int nFrames;
-            struct DC6Block pBlocks;
+            DC6Block *pBlocks;
         };
 
         struct DC6Context {
