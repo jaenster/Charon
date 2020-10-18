@@ -24,6 +24,43 @@ struct RevealData {
     D2::Types::AutomapLayer* layer = nullptr;
 };
 
+D2::Types::Room2* GetFirstTileOtherRoom(D2::Types::Room2* room2, int num)
+{
+    D2::Types::RoomTile* roomtile = room2->pRoomTiles;
+    while (roomtile) {
+        if (*roomtile->nNum == num) {
+            return roomtile->pRoom2;
+        }
+        roomtile = roomtile->pNext;
+    }
+    return 0;
+}
+
+REMOTEFUNC(void __stdcall, D2GFX_DrawSprite6, (D2::Types::DC6Context *pDC6Context,DWORD x,DWORD y,RECT *clipRect,DWORD bright), 0x4f6510);
+void __stdcall D2GFX_DrawSprite6_override(D2::Types::DC6Context *pDC6Context,DWORD x,DWORD y,RECT *clipRect,DWORD bright) {
+    int cellno = pDC6Context->nFrameNumberMaybe;
+    bool draw = true;
+
+    // We use the cell number below 0 to set the text of a cellno
+    if (cellno < 0) {
+        if (Settings["revealLevel"]) {
+            DWORD width = 0, fontNum;
+            wchar_t* levelNameUnicode = D2::GetLevelText(-cellno)->wName;
+            D2::GetTextSize(levelNameUnicode, &width, &fontNum);
+
+            D2::SetFont(6);
+            D2::DrawGameText(levelNameUnicode, x - (width / 5 * 2), y - 10, 0x00, false);
+        }
+        draw = false;
+    }
+
+    // Call original function
+    if (draw) {
+        D2GFX_DrawSprite6(pDC6Context, x, y, clipRect, bright);
+    }
+    
+}
+
 // This feature class registers itself.
 class : public Feature {
     DWORD currentLevel = 0;
@@ -35,6 +72,8 @@ class : public Feature {
 public:
     void init() {
         MemoryPatch(0x4DC000) << ASM::RET; // Disable fade effects from switching areas (so we can reveal sooner)
+
+        MemoryPatch(0x4596d9) << CALL(D2GFX_DrawSprite6_override);
     }
 
     void gameLoop() {
@@ -192,7 +231,8 @@ public:
                 break;
 
             case 5:
-                if (pRoom2->pLevel && pRoom2->pLevel->pMisc && pRoom2->pLevel->pMisc->dwStaffTombLevel) {
+                DWORD correctTomb = pRoom2->pLevel && pRoom2->pLevel->pMisc && pRoom2->pLevel->pMisc->dwStaffTombLevel ? pRoom2->pLevel->pMisc->dwStaffTombLevel : 0;
+                if (correctTomb) {
                     for (D2::Types::RoomTile* pRoomTile = pRoom2->pRoomTiles; pRoomTile; pRoomTile = pRoomTile->pNext) {
                         if (*(pRoomTile->nNum) == pUnit->dwTxtFileNo && pRoomTile->pRoom2->pLevel->dwLevelNo == pRoom2->pLevel->pMisc->dwStaffTombLevel) {
                             GenerateMegaMarkerCell(pRoom2, pUnit, layer);
@@ -200,6 +240,22 @@ public:
                     }
                 }
 
+                // If we can find a room on the otherside of this exit
+                D2::Types::Room2* other = GetFirstTileOtherRoom(pRoom2, pUnit->dwTxtFileNo);
+                if (other) {
+                    // If so, make a new cell with a negative number
+                    D2::Types::AutomapCell* pCell = NewAutomapCell();
+                    pCell->nCellNo = (-(int)(other->pLevel->dwLevelNo));
+                    int pX = (pUnit->dwPosX + (pRoom2->dwPosX * 5));
+                    int pY = (pUnit->dwPosY + (pRoom2->dwPosY * 5));
+                    pCell->xPixel = (WORD)((((pX - pY) * 16) / 10) + 1);
+                    pCell->yPixel = (WORD)((((pY + pX) * 8) / 10) - 3);
+
+                    // fake the talrasha's chamber instead of the correct tomb
+                    if (other->pLevel->dwLevelNo == correctTomb) pCell->nCellNo = -73; 
+
+                    AddAutomapCell(pCell, &(layer->pExtras));
+                }
                 break;
             }
         }

@@ -1298,6 +1298,50 @@ namespace D2 {
             VOIDFUNC fpDebugFillBackBuffer;
             VOIDFUNC fpClearCaches;
         };
+
+        // exported from ghidra
+        struct DC6Block {
+            int nFlip;
+            int nWidth;
+            int nHeight;
+            int nOffsetX;
+            int nOffsetY;
+            int nAllocSize;
+            int nNextBlock;
+            int nLength;
+            char data;
+        };
+
+        struct DC6 {
+            int nVersion;
+            int nFlags;
+            int nFormat;
+            char nTerm[4];
+            int nDirections;
+            int nFrames;
+            struct DC6Block pBlocks;
+        };
+
+        struct DC6Context {
+            int nFrameNumberMaybe;
+            int field_0x4;
+            DWORD field_0x8;
+            DWORD field_0xc;
+            DWORD field_0x10;
+            DWORD field_0x14;
+            DWORD field_0x18;
+            DWORD field_0x1c;
+            DWORD field_0x20;
+            DWORD field_0x24;
+            DWORD field_0x28;
+            DWORD field_0x2c;
+            DWORD field_0x30;
+            struct DC6 * pDC6;
+            DWORD field_0x38;
+            DWORD field_0x3c;
+            int field_0x40;
+            DWORD field_0x44;
+        };
     }
 }
 
