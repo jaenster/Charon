@@ -180,6 +180,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 SaveSettings();
             }),
         nullptr, // Empty Gap
+        new DialogToggleInfo(L"Omnivision",
+            []() -> std::wstring {
+                return Settings["omnivision"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["omnivision"] = !Settings["omnivision"];
+                SaveSettings();
+            }),
         new DialogToggleInfo(L"\u00FFc;*\u00FFc4Always D3D Mode",
             []() -> std::wstring {
                 return Settings["alwaysD3D"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -206,7 +214,6 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["alwaysD3DStartFull"] = !Settings["alwaysD3DStartFull"];
                 SaveSettings();
             }),
-        nullptr, // Empty Gap
         nullptr, // Empty Gap
         new DialogToggleInfo(L"Draw Color Swatch",
             []() -> std::wstring {
@@ -238,6 +245,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
                 Settings["debugMode"] = !Settings["debugMode"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Dark Mode for Debug",
+            []() -> std::wstring {
+                return Settings["debugDarkMode"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["debugDarkMode"] = !Settings["debugDarkMode"];
                 SaveSettings();
             }),
         new DialogToggleInfo(L"Debug Packets",
