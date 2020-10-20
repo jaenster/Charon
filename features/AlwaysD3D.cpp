@@ -33,7 +33,7 @@ DWORD dwOldStyleEx = 0;
 void D3D_DirectDrawScreenSetup() {
     InternalWidth = 800;
     InternalHeight = 600;
-    IDirectDraw->SetCooperativeLevel(D2::hWnd, DDSCL_NORMAL);
+    IDirectDraw->SetCooperativeLevel(D2::hWnd, DDSCL_NORMAL | DDSCL_NOWINDOWCHANGES);
     if (!dwOldStyle) {
         dwOldStyle = GetWindowLong(D2::hWnd, GWL_STYLE);
         dwOldStyleEx = GetWindowLong(D2::hWnd, GWL_EXSTYLE);
