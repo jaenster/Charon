@@ -198,7 +198,7 @@ namespace DebugMode {
 
         void gameUnitPreDraw() {
             if (Settings["debugMode"]) {
-                D2::Types::Room1* current = D2::PlayerUnit->pPath->pRoom1;
+                D2::Types::Room1* current = D2::PlayerUnit->getRoom1();
                 D2::Types::CollMap* coll = current->Coll;
                 WORD* p = coll->pMapStart;
                 DWORD color, x, y;
@@ -206,7 +206,7 @@ namespace DebugMode {
                 for (x = 0; x < coll->dwSizeGameX; x++) {
                     for (y = 0; y < coll->dwSizeGameY; y++) {
                         color = coll->getCollision(x, y, 0x4) ? 0x62 : coll->getCollision(x, y, 0xC09) ? 0x4B : coll->getCollision(x, y, 0x180) ? 0x8E : coll->getCollision(x, y, 0x10) ? 0x4 : 0x18;
-                        DrawWorldX({ (double)coll->dwPosGameX + (double)x + 0.5, (double)coll->dwPosGameY + (double)y + 0.5 }, color, 0.5);
+                        DPOINT( (double)coll->dwPosGameX + (double)x + 0.5, (double)coll->dwPosGameY + (double)y + 0.5 ).DrawWorldX(color, 0.5);
                     }
                 }
 
@@ -216,7 +216,7 @@ namespace DebugMode {
                     for (x = 0; x < coll->dwSizeGameX; x++) {
                         for (y = 0; y < coll->dwSizeGameY; y++) {
                             color = coll->getCollision(x, y, 0x4) ? 0x62 : coll->getCollision(x, y, 0xC09) ? 0x4B : coll->getCollision(x, y, 0x180) ? 0x8E : coll->getCollision(x, y, 0x10) ? 0x4 : 0x18;
-                            DrawWorldX({ (double)coll->dwPosGameX + (double)x + 0.5, (double)coll->dwPosGameY + (double)y + 0.5 }, color, 0.5);
+                            DPOINT( (double)coll->dwPosGameX + (double)x + 0.5, (double)coll->dwPosGameY + (double)y + 0.5 ).DrawWorldX(color, 0.5);
                         }
                     }
                 }
@@ -224,7 +224,7 @@ namespace DebugMode {
                 // Server side tracks enemies
                 for (D2::Types::NonPlayerUnit* unit : D2::ServerSideUnits.nonplayers.all()) {
                     if (unit->pPath && unit->unitHP() > 0) {
-                        POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen(unit->getTargetPosition());
+                        POINT pos = unit->pos().toScreen(), target = unit->getTargetPos().toScreen();
 
                         if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight && target.x >= 0 && target.y >= 0 && target.x < D2::ScreenWidth && target.y < D2::ScreenHeight) {
                             DrawLine(pos, target, 0x99);
@@ -234,8 +234,8 @@ namespace DebugMode {
 
                 // Client side tracks missiles
                 for (D2::Types::MissileUnit* unit : D2::ClientSideUnits.missiles.all()) {
-                    DrawWorldX(unit->pPath, 0x99, 0.5);
-                    POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
+                    unit->DrawWorldX(0x99, 0.5);
+                    POINT pos = unit->pos().toScreen(), target = unit->getTargetPos().toScreen();
 
                     if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight && target.x >= 0 && target.y >= 0 && target.x < D2::ScreenWidth && target.y < D2::ScreenHeight) {
                         DrawLine(pos, target, 0x83);
@@ -252,14 +252,14 @@ namespace DebugMode {
                 D2::SetFont(fontNum);
 
                 for (D2::Types::PlayerUnit* unit : D2::ServerSideUnits.players.all()) {
-                    DrawWorldX(unit->getPosition(), 0x9B);
+                    unit->DrawWorldX(0x9B);
                 }
 
                 // Server side tracks objects
                 for (D2::Types::ObjectUnit* unit : D2::ServerSideUnits.objects.all()) {
-                    DPOINT dpos = unit->getPosition();
-                    DrawWorldX(dpos, 0x69);
-                    pos = WorldToScreen(dpos);
+                    DPOINT dpos = unit->pos();
+                    dpos.DrawWorldX(0x69);
+                    pos = dpos.toScreen();
                     swprintf_s(msg, L"%d", unit->dwTxtFileNo);
                     height = D2::GetTextSize(msg, &width, &fontNum);
                     D2::DrawGameText(msg, pos.x - (width >> 1) - 4, pos.y - height + 8, 8, 1);
@@ -272,27 +272,27 @@ namespace DebugMode {
                             switch (D2::GetUnitStat(unit, 172, 0)) {
                             case 0: // hostile
                                 if (unit->pMonsterData->fUnique || unit->pMonsterData->fChamp) {
-                                    DrawWorldX(unit->pPath, 0x0C);
+                                    unit->DrawWorldX(0x0C);
                                 }
                                 else if (unit->pMonsterData->fMinion) {
-                                    DrawWorldX(unit->pPath, 0x0B);
+                                    unit->DrawWorldX(0x0B);
                                 }
                                 else {
-                                    DrawWorldX(unit->pPath, 0x0A);
+                                    unit->DrawWorldX(0x0A);
                                 }
                                 break;
                             case 2: // friendly
-                                DrawWorldX(unit->pPath, 0x84);
+                                unit->DrawWorldX(0x84);
                                 break;
                             default: // neutral
-                                DrawWorldX(unit->pPath, 0x99);
+                                unit->DrawWorldX(0x99);
                             }
                         }
                         else {
-                            DrawWorldX(unit->pPath, 0x1B);
+                            unit->DrawWorldX(0x1B);
                         }
 
-                        pos = WorldToScreen(unit->pPath);
+                        pos = unit->pos().toScreen();
 
                         if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
                             swprintf_s(msg, L"%d", unit->dwTxtFileNo);
@@ -308,14 +308,16 @@ namespace DebugMode {
                     }
                 }
 
-                for (D2::Types::Room2* room = D2::PlayerUnit->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room != NULL; room = room->pRoom2Next) {
-                    for (D2::Types::PresetUnit* unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
-                        DPOINT dpos = { (double)room->dwPosX * 5 + (double)unit->dwPosX, (double)room->dwPosY * 5 + (double)unit->dwPosY };
-                        DrawWorldX(dpos, 0x84);
-                        POINT wpos = WorldToScreen(dpos);
-                        swprintf_s(msg, L"%d", unit->dwTxtFileNo);
-                        height = D2::GetTextSize(msg, &width, &fontNum);
-                        D2::DrawGameText(msg, wpos.x - (width >> 1) - 4, wpos.y + height + 2, 2, 1);
+                if (D2::PlayerUnit->getLevel() != nullptr) {
+                    for (D2::Types::Room2* room : D2::PlayerUnit->getLevel()->getAllRoom2()) {
+                        for (D2::Types::PresetUnit* unit : room->getAllPresetUnits()) {
+                            DPOINT dpos = unit->pos(room);
+                            dpos.DrawWorldX(0x84);
+                            POINT wpos = dpos.toScreen();
+                            swprintf_s(msg, L"%d", unit->dwTxtFileNo);
+                            height = D2::GetTextSize(msg, &width, &fontNum);
+                            D2::DrawGameText(msg, wpos.x - (width >> 1) - 4, wpos.y + height + 2, 2, 1);
+                        }
                     }
                 }
             }

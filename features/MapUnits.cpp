@@ -21,7 +21,7 @@ public:
         if (Settings["showMissiles"]) {
             // Client side tracks missiles
             for (D2::Types::MissileUnit* unit : D2::ClientSideUnits.missiles.all()) {
-                DrawDot(WorldToAutomap(unit->pPath), 0x99);
+                unit->DrawAutomapDot(0x99);
             }
         }
 
@@ -29,12 +29,14 @@ public:
 
             // Server side tracks objects
             for (D2::Types::ObjectUnit* unit : D2::ServerSideUnits.objects.all()) {
-                DrawDot(WorldToAutomap(unit->getPosition()), 0x69);
+                unit->DrawAutomapDot(0x69);
             }
 
-            for (D2::Types::Room2* room = D2::PlayerUnit->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room != NULL; room = room->pRoom2Next) {
-                for (D2::Types::PresetUnit* unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
-                    DrawDot(WorldToAutomap({ (double)room->dwPosX * 5 + (double)unit->dwPosX, (double)room->dwPosY * 5 + (double)unit->dwPosY }), 0x84);
+            if (D2::PlayerUnit->getLevel() != nullptr) {
+                for (D2::Types::Room2* room : D2::PlayerUnit->getLevel()->getAllRoom2()) {
+                    for (D2::Types::PresetUnit* unit : room->getAllPresetUnits()) {
+                        unit->pos(room).DrawAutomapDot(0x84);
+                    }
                 }
             }
         }
@@ -44,15 +46,15 @@ public:
             for (D2::Types::ItemUnit* unit : D2::ServerSideUnits.items.all()) {
                 if (unit->dwMode == 3 || unit->dwMode == 5) {
                     if (unit->pItemData->dwFlags & 0x4000000) {
-                        DrawAutomapX(unit->pItemPath, ItemRarityColor[7], 3);
+                        unit->DrawAutomapX(ItemRarityColor[7], 3);
                     }
                     else if (unit->pItemData->dwQuality > 3 || (unit->pItemData->dwFlags & 0x400800 && unit->pItemData->dwQuality > 2 && D2::GetUnitStat(unit, 194, 0) >= 2)) { // @todo check number of sockets
-                        DrawAutomapX(unit->pItemPath, ItemRarityColor[unit->pItemData->dwQuality], 3);
+                        unit->DrawAutomapX(ItemRarityColor[unit->pItemData->dwQuality], 3);
                     }
                     else {
                         D2::Types::ItemTxt* txt = D2::GetItemText(unit->dwTxtFileNo);
                         if (txt->nType >= 96 && txt->nType <= 102 || txt->nType == 74) {
-                            DrawAutomapX(unit->pItemPath, 169, 3);
+                            unit->DrawAutomapX(169, 3);
                         }
                     }
                 }
@@ -65,17 +67,17 @@ public:
                 if (unit->isPlayerHostile() && unit->unitHP() > 0) {
                     if (unit->isAttackable()) {
                         if (unit->pMonsterData->fUnique || unit->pMonsterData->fChamp) {
-                            DrawAutomapX(unit->pPath, 0x0C);
+                            unit->DrawAutomapX(0x0C);
                         }
                         else if (unit->pMonsterData->fMinion) {
-                            DrawAutomapX(unit->pPath, 0x0B);
+                            unit->DrawAutomapX(0x0B);
                         }
                         else {
-                            DrawAutomapX(unit->pPath, 0x0A);
+                            unit->DrawAutomapX(0x0A);
                         }
                     }
                     else {
-                        DrawAutomapX(unit->pPath, 0x1B);
+                        unit->DrawAutomapX(0x1B);
                     }
                 }
             }

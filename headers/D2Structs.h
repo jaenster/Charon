@@ -8,11 +8,18 @@
 
 class DPOINT {
 public:
+    DPOINT(double x, double y);
     double x, y;
     DPOINT operator +(const DPOINT& p);
     DPOINT operator -(const DPOINT& p);
     DPOINT operator /(const double d);
-    double length();
+    double distanceTo(DPOINT target);
+    POINT toScreen(POINT screenadjust = { 0, 0 });
+    POINT toAutomap(POINT screenadjust = { 0, 0 });
+    void DrawAutomapX(DWORD dwColor, double size = 5.0);
+    void DrawWorldX(DWORD dwColor, double size = 1.0);
+    void DrawAutomapDot(DWORD dwColor);
+    void DrawWorldDot(DWORD dwColor);
 };
 
 #pragma warning(push)
@@ -374,6 +381,8 @@ namespace D2 {
             DWORD _3;                // 0x10
             DWORD dwType;            // 0x14
             DWORD dwPosY;            // 0x18
+
+            DPOINT pos(Room2* pRoom, DPOINT adjust = { 0, 0 });
         };
 
         struct Level {
@@ -400,6 +409,9 @@ namespace D2 {
                 DWORD WarpY[9];
             };                   // 0x204
             DWORD dwRoomEntries; // 0x228
+
+            std::vector<Room1*> getAllRoom1();
+            std::vector<Room2*> getAllRoom2();
         };
 
         struct Room2 {
@@ -430,6 +442,7 @@ namespace D2 {
             DWORD getWorldY();
             DWORD getWorldWidth();
             DWORD getWorldHeight();
+            std::vector<PresetUnit*> getAllPresetUnits();
         };
 
 #pragma pack(pop)
@@ -973,9 +986,16 @@ namespace D2 {
             void* pMsgFirst;          // 0xEC
             void* pMsgLast;           // 0xF0
 
-            DPOINT getPosition();
-            DPOINT getTargetPosition();
+            DPOINT pos(DPOINT adjust = { 0, 0 });
+            DPOINT getTargetPos(DPOINT adjust = { 0, 0 });
+            double distanceTo(UnitAny* pTarget);
+            void DrawAutomapX(DWORD dwColor, double size = 5.0);
+            void DrawWorldX(DWORD dwColor, double size = 1.0);
+            void DrawAutomapDot(DWORD dwColor);
+            void DrawWorldDot(DWORD dwColor);
         };
+
+        // Specific unit types inspired by Jaenster
 
         struct LivingUnit : UnitAny { // Players and Non-Players
             // Add any unit specific helpers here
@@ -984,6 +1004,9 @@ namespace D2 {
             bool isPlayerHostile();
             bool isAttackable();
             bool isPlayerEnemy();
+            Room1* getRoom1();
+            Room2* getRoom2();
+            Level* getLevel();
         };
 
         struct PlayerUnit : LivingUnit { // Players Only (type 0)
@@ -1034,7 +1057,7 @@ namespace D2 {
 
                 for (T* pUnit : table) {
                     while (pUnit != nullptr) {
-                        if ((getPosition(pUnit) - source).length() <= radius) {
+                        if (pUnit->pos().distanceTo(source) <= radius) {
                             ret.push_back(pUnit);
                         }
 
@@ -1435,5 +1458,4 @@ namespace D2 {
 
 namespace Offset {
     extern DWORD Base, D2CLIENT, D2COMMON, D2GAME, D2LANG, D2NET, D2MULTI, D2LAUNCH, D2WIN, D2GFX, D2CMP, BNCLIENT, STORM;
-    void DefineOffsets();
 }
