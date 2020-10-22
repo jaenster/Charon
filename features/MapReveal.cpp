@@ -81,7 +81,7 @@ public:
             revealdata.clear();
             inGame = true;
         }
-        D2::Types::PlayerUnit* me = D2::PlayerUnit;
+        D2::Types::CurrentPlayerUnit* me = D2::PlayerUnit;
 
         if (Settings["revealLevel"] && me && me->pPath && me->pPath->pRoom1 && me->pPath->pRoom1->pRoom2 && me->pPath->pRoom1->pRoom2->pLevel) {
             DWORD levelno = me->pPath->pRoom1->pRoom2->pLevel->dwLevelNo;
@@ -111,7 +111,7 @@ public:
     }
 
     void RevealCurrentLevel() {
-        D2::Types::PlayerUnit* me = D2::PlayerUnit;
+        D2::Types::CurrentPlayerUnit* me = D2::PlayerUnit;
         int c = 20;
 
         if (me) for (D2::Types::Level* level = me->pAct->pMisc->pLevelFirst; level != nullptr; level = level->pNextLevel) {

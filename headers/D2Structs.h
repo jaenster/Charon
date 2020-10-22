@@ -1013,6 +1013,10 @@ namespace D2 {
             // Add any unit specific helpers here
         };
 
+        struct CurrentPlayerUnit : PlayerUnit { // The current player
+            // Most of our player actions should probably go here
+        };
+
         struct NonPlayerUnit : LivingUnit { // Non-Players Only (type 1)
             // Add any unit specific helpers here
         };

@@ -28,7 +28,7 @@ namespace D2 {
 	GLOBALREF(Types::UnitHashTableCollection, ClientSideUnits, 0x7A5270);
 	GLOBALREF(Types::UnitHashTableCollection, ServerSideUnits, 0x7A5E70);
 	GLOBALPTR(Types::GameStructInfo, GameInfo, 0x7A0438);
-	GLOBALREF(Types::PlayerUnit*, PlayerUnit, 0x7A6A70);
+	GLOBALREF(Types::CurrentPlayerUnit*, PlayerUnit, 0x7A6A70);
 	GLOBALREF(DWORD, NoPickUp, 0x7A6A90);
 	GLOBALREF(HINSTANCE, hInst, 0x7C8CA8);
 	GLOBALREF(HWND, hWnd, 0x7C8CBC);
