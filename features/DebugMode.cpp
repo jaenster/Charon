@@ -222,7 +222,7 @@ namespace DebugMode {
                 }
 
                 // Server side tracks enemies
-                forUnits(D2::UnitType::MONSTER, [&](D2::Types::UnitAny* unit) -> void {
+                for (D2::Types::NonPlayerUnit* unit : D2::ServerSideUnits.nonplayers.all()) {
                     if (unit->pPath && unitHP(unit) > 0) {
                         POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
 
@@ -230,17 +230,17 @@ namespace DebugMode {
                             DrawLine(pos, target, 0x99);
                         }
                     }
-                    });
+                }
 
                 // Client side tracks missiles
-                forUnits(D2::UnitType::MISSILE, [&](D2::Types::UnitAny* unit) -> void {
+                for (D2::Types::MissileUnit* unit : D2::ClientSideUnits.missiles.all()) {
                     DrawWorldX(unit->pPath, 0x99, 0.5);
                     POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
 
                     if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight && target.x >= 0 && target.y >= 0 && target.x < D2::ScreenWidth && target.y < D2::ScreenHeight) {
                         DrawLine(pos, target, 0x83);
                     }
-                    });
+                }
             }
         }
 
@@ -251,25 +251,22 @@ namespace DebugMode {
                 POINT pos;
                 D2::SetFont(fontNum);
 
-                forUnits(D2::UnitType::PLAYER, [&](D2::Types::UnitAny* unit) -> void {
+                for (D2::Types::PlayerUnit* unit : D2::ServerSideUnits.players.all()) {
                     DrawWorldX(getPosition(unit), 0x9B);
-                });
+                }
 
-                forUnits(D2::UnitType::OBJECT, [&](D2::Types::UnitAny* unit) -> void {
+                // Server side tracks objects
+                for (D2::Types::ObjectUnit* unit : D2::ServerSideUnits.objects.all()) {
                     DPOINT dpos = getPosition(unit);
                     DrawWorldX(dpos, 0x69);
                     pos = WorldToScreen(dpos);
                     swprintf_s(msg, L"%d", unit->dwTxtFileNo);
                     height = D2::GetTextSize(msg, &width, &fontNum);
                     D2::DrawGameText(msg, pos.x - (width >> 1) - 4, pos.y - height + 8, 8, 1);
-                });
-
-                forUnits(D2::UnitType::ROOMTILE, [&](D2::Types::UnitAny* unit) -> void {
-                    DrawWorldX(getPosition(unit), 0xA4);
-                });
+                }
 
                 // Server side tracks enemies
-                forUnits(D2::UnitType::MONSTER, [&](D2::Types::UnitAny* unit) -> void {
+                for (D2::Types::NonPlayerUnit* unit : D2::ServerSideUnits.nonplayers.all()) {
                     if (unit->pPath) {
                         if (isAttackable(unit)) {
                             switch (D2::GetUnitStat(unit, 172, 0)) {
@@ -295,7 +292,7 @@ namespace DebugMode {
                             DrawWorldX(unit->pPath, 0x1B);
                         }
 
-                        POINT pos = WorldToScreen(unit->pPath);
+                        pos = WorldToScreen(unit->pPath);
 
                         if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
                             swprintf_s(msg, L"%d", unit->dwTxtFileNo);
@@ -309,7 +306,7 @@ namespace DebugMode {
                             }
                         }
                     }
-                });
+                }
 
                 for (D2::Types::Room2* room = D2::PlayerUnit->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room != NULL; room = room->pRoom2Next) {
                     for (D2::Types::PresetUnit* unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {

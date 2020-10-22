@@ -2,10 +2,18 @@
  * Borrowed this from d2bs. Thanks noah!
  */
 #pragma once
-#ifndef _D2STRUCTS_H
-#define _D2STRUCTS_H
 
 #include <windows.h>
+#include <vector>
+
+class DPOINT {
+public:
+    double x, y;
+    DPOINT operator +(const DPOINT& p);
+    DPOINT operator -(const DPOINT& p);
+    DPOINT operator /(const double d);
+    double length();
+};
 
 #pragma warning(push)
 #pragma warning(disable : 4201)
@@ -966,8 +974,77 @@ namespace D2 {
             void* pMsgLast;           // 0xF0
         };
 
+        struct CombatUnit : UnitAny { // Players and Non-Players
+            // Add any unit specific helpers here
+        };
+
+        struct PlayerUnit : CombatUnit { // Players Only (type 0)
+            // Add any unit specific helpers here
+        };
+
+        struct NonPlayerUnit : CombatUnit { // Non-Players Only (type 1)
+            // Add any unit specific helpers here
+        };
+
+        struct ObjectUnit : UnitAny { // Objects Only (type 2)
+            // Add any unit specific helpers here
+        };
+
+        struct MissileUnit : UnitAny { // Missiles Only (type 3)
+            // Add any unit specific helpers here
+        };
+
+        struct ItemUnit : UnitAny { // Items Only (type 4)
+            // Add any unit specific helpers here
+        };
+
+        struct RoomTileUnit : UnitAny { // Room Tiles Only (type 5)
+            // Add any unit specific helpers here
+        };
+
+        template <class T>
         struct UnitHashTable {
-            UnitAny* table[128];
+            T* table[128];
+
+            // Based on work from Jaenster
+            std::vector<T*> all() {
+                std::vector<T*> ret;
+
+                for (T* pUnit : table) {
+                    while (pUnit != nullptr) {
+                        ret.push_back(pUnit);
+                        pUnit = (T*)(pUnit->pListNext);
+                    }
+                }
+
+                return ret;
+            }
+
+            // Based on work from Jaenster
+            std::vector<T*> allInRange(DPOINT source, double radius) {
+                std::vector<T*> ret;
+
+                for (T* pUnit : table) {
+                    while (pUnit != nullptr) {
+                        if ((getPosition(pUnit) - source).length() <= radius) {
+                            ret.push_back(pUnit);
+                        }
+
+                        pUnit = (T*)(pUnit->pListNext);
+                    }
+                }
+
+                return ret;
+            }
+        };
+
+        struct UnitHashTableCollection {
+            UnitHashTable<PlayerUnit> players;
+            UnitHashTable<NonPlayerUnit> nonplayers;
+            UnitHashTable<ObjectUnit> objects;
+            UnitHashTable<MissileUnit> missiles;
+            UnitHashTable<ItemUnit> items;
+            UnitHashTable<RoomTileUnit> roomtiles;
         };
 
         struct WardenClientRegion_t {
@@ -1352,5 +1429,3 @@ namespace Offset {
     extern DWORD Base, D2CLIENT, D2COMMON, D2GAME, D2LANG, D2NET, D2MULTI, D2LAUNCH, D2WIN, D2GFX, D2CMP, BNCLIENT, STORM;
     void DefineOffsets();
 }
-
-#endif

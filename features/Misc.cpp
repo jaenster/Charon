@@ -13,8 +13,8 @@
 #include <string>
 
 REMOTEREF(int, DrawAutoMapStatsOffsetY, 0x7A51BC);
-REMOTEREF(D2::Types::UnitAny*, CurrentTooltipItem, 0x7BCBF4);
-REMOTEFUNC(BYTE __stdcall, GetMaxSocketCount, (D2::Types::UnitAny *pItem), 0x62BC20);
+REMOTEREF(D2::Types::ItemUnit*, CurrentTooltipItem, 0x7BCBF4);
+REMOTEFUNC(BYTE __stdcall, GetMaxSocketCount, (D2::Types::ItemUnit *pItem), 0x62BC20);
 REMOTEFUNC(int, FUN_0047a560, (), 0x47a560);
 
 Dialog splashDialog;
@@ -193,7 +193,7 @@ void __fastcall DrawRepairImageAlertIntercept(void *pImage, bool isArrow) {
 
 ASMPTR GetItemName_Original = 0x48C060;
 
-__declspec(naked) BOOL __fastcall GetItemName_Relocated(D2::Types::UnitAny* item, wchar_t* wBuffer, DWORD dwSize) {
+__declspec(naked) BOOL __fastcall GetItemName_Relocated(D2::Types::ItemUnit* item, wchar_t* wBuffer, DWORD dwSize) {
     static ASMPTR GetItemName_Rejoin = 0x48C068;
     __asm {
         push ebp
@@ -203,7 +203,7 @@ __declspec(naked) BOOL __fastcall GetItemName_Relocated(D2::Types::UnitAny* item
     }
 }
 
-BOOL __fastcall GetItemName_Intercept(D2::Types::UnitAny* item, wchar_t* wBuffer, DWORD dwSize) {
+BOOL __fastcall GetItemName_Intercept(D2::Types::ItemUnit* item, wchar_t* wBuffer, DWORD dwSize) {
     BOOL ret = GetItemName_Relocated(item, wBuffer, dwSize);
     DWORD sockets = D2::GetUnitStat(item, 194, 0);
 
@@ -330,7 +330,8 @@ __declspec(naked) void __stdcall GetGlobalLight_Original(void* pAct, BYTE* red, 
     }
 }
 
-wchar_t* __fastcall UnitVisualname(D2::Types::UnitAny *pUnit) {
+// Can this be even more specific? Maybe D2::Types::NonPlayerUnit?
+wchar_t* __fastcall UnitVisualname(D2::Types::CombatUnit *pUnit) {
     // For now it falls under item info, as it is as item/unit level
     if (!Settings["itemInfo"]) return D2::GetUnitName(pUnit);
 

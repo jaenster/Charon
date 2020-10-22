@@ -20,19 +20,17 @@ public:
     void gameAutomapPostDraw() {
         if (Settings["showMissiles"]) {
             // Client side tracks missiles
-            forUnits(D2::UnitType::MISSILE, [&](D2::Types::UnitAny* unit) -> void {
+            for (D2::Types::MissileUnit* unit : D2::ClientSideUnits.missiles.all()) {
                 DrawDot(WorldToAutomap(unit->pPath), 0x99);
-            }, D2::ClientSideUnitHashTables);
+            }
         }
 
         if (Settings["debugMode"]) {
-            forUnits(D2::UnitType::OBJECT, [&](D2::Types::UnitAny* unit) -> void {
-                DrawDot(WorldToAutomap(getPosition(unit)), 0x69);
-            });
 
-            forUnits(D2::UnitType::ROOMTILE, [&](D2::Types::UnitAny* unit) -> void {
-                DrawDot(WorldToAutomap(getPosition(unit)), 0xA4);
-            });
+            // Client side tracks missiles
+            for (D2::Types::MissileUnit* unit : D2::ClientSideUnits.missiles.all()) {
+                DrawDot(WorldToAutomap(getPosition(unit)), 0x69);
+            }
 
             for (D2::Types::Room2* room = D2::PlayerUnit->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room != NULL; room = room->pRoom2Next) {
                 for (D2::Types::PresetUnit* unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
@@ -43,7 +41,7 @@ public:
 
         if (Settings["showItems"]) {
             // Server side tracks items
-            forUnits(D2::UnitType::ITEM, [&](D2::Types::UnitAny* unit) -> void {
+            for (D2::Types::ItemUnit* unit : D2::ServerSideUnits.items.all()) {
                 if (unit->dwMode == 3 || unit->dwMode == 5) {
                     if (unit->pItemData->dwFlags & 0x4000000) {
                         DrawAutomapX(unit->pItemPath, ItemRarityColor[7], 3);
@@ -58,12 +56,12 @@ public:
                         }
                     }
                 }
-            }, D2::ServerSideUnitHashTables);
+            }
         }
 
         if (Settings["showMonsters"]) {
             // Server side tracks enemies
-            forUnits(D2::UnitType::MONSTER, [&](D2::Types::UnitAny* unit) -> void {
+            for (D2::Types::NonPlayerUnit* unit : D2::ServerSideUnits.nonplayers.all()) {
                 if (isHostile(unit) && unitHP(unit) > 0) {
                     if (isAttackable(unit)) {
                         if (unit->pMonsterData->fUnique || unit->pMonsterData->fChamp) {
@@ -80,7 +78,7 @@ public:
                         DrawAutomapX(unit->pPath, 0x1B);
                     }
                 }
-            }, D2::ServerSideUnitHashTables);
+            }
         }
     }
 } feature;

@@ -25,10 +25,10 @@ namespace D2 {
 
 	// Basically, if the address represents an array (not a pointer to an array) use this
 	// global pointer 'GLOBALPTR' macro, otherwise use global reference 'GLOBALREF' instead
-	GLOBALPTR(Types::UnitHashTable, ClientSideUnitHashTables, 0x7A5270);
-	GLOBALPTR(Types::UnitHashTable, ServerSideUnitHashTables, 0x7A5E70);
+	GLOBALREF(Types::UnitHashTableCollection, ClientSideUnits, 0x7A5270);
+	GLOBALREF(Types::UnitHashTableCollection, ServerSideUnits, 0x7A5E70);
 	GLOBALPTR(Types::GameStructInfo, GameInfo, 0x7A0438);
-	GLOBALREF(Types::UnitAny*, PlayerUnit, 0x7A6A70);
+	GLOBALREF(Types::PlayerUnit*, PlayerUnit, 0x7A6A70);
 	GLOBALREF(DWORD, NoPickUp, 0x7A6A90);
 	GLOBALREF(HINSTANCE, hInst, 0x7C8CA8);
 	GLOBALREF(HWND, hWnd, 0x7C8CBC);

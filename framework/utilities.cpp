@@ -217,23 +217,23 @@ void DrawWorldRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, D
     DrawWorldRadialShape(center, radius, sides, dwColor, atan2(target.y - center.y, target.x - center.x));
 }
 
-DWORD unitHP(D2::Types::UnitAny* unit) {
+DWORD unitHP(D2::Types::CombatUnit* unit) {
     return D2::GetUnitStat(unit, 6, 0) >> 8;
 }
 
-bool isFriendly(D2::Types::UnitAny* unit) {
+bool isFriendly(D2::Types::CombatUnit* unit) {
     return D2::GetUnitStat(unit, 172, 0) == 2;
 }
 
-bool isHostile(D2::Types::UnitAny* unit) {
+bool isHostile(D2::Types::CombatUnit* unit) {
     return D2::GetUnitStat(unit, 172, 0) == 0;
 }
 
-bool isAttackable(D2::Types::UnitAny* unit) {
+bool isAttackable(D2::Types::CombatUnit* unit) {
     return unit->dwFlags & 0x4;
 }
 
-bool isEnemy(D2::Types::UnitAny* unit) {
+bool isEnemy(D2::Types::CombatUnit* unit) {
     return unitHP(unit) > 0 && isHostile(unit) && isAttackable(unit);
 }
 
@@ -259,128 +259,6 @@ DPOINT getTargetPosition(D2::Types::UnitAny* pUnit) {
     }
 
     return { (double)pUnit->pPath->xTarget, (double)pUnit->pPath->yTarget };
-}
-
-// Based on work from Jaenster
-void forUnits(D2::UnitType type, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable *tables) {
-    if (tables != nullptr) {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                callback(pUnit);
-            }
-        }
-    }
-    else {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                callback(pUnit);
-            }
-        }
-
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                callback(pUnit);
-            }
-        }
-    }
-}
-
-// Based on work from Jaenster
-std::vector<D2::Types::UnitAny*> getUnits(D2::UnitType type, D2::Types::UnitHashTable* tables, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback) {
-    std::vector<D2::Types::UnitAny*> ret;
-
-    if (tables != nullptr) {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if (filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-    }
-    else {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if (filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if (filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-    }
-
-    return ret;
-}
-
-// Based on work from Jaenster
-void forUnitsInRange(D2::UnitType type, DPOINT source, double radius, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable* tables) {
-    if (tables != nullptr) {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius) {
-                    callback(pUnit);
-                }
-            }
-        }
-    }
-    else {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius) {
-                    callback(pUnit);
-                }
-            }
-        }
-
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius) {
-                    callback(pUnit);
-                }
-            }
-        }
-    }
-}
-
-// Based on work from Jaenster
-std::vector<D2::Types::UnitAny*> getUnitsInRange(D2::UnitType type, DPOINT source, double radius, D2::Types::UnitHashTable* tables, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback) {
-    std::vector<D2::Types::UnitAny*> ret;
-
-    if (tables != nullptr) {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius && filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-    }
-    else {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius && filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[(DWORD)type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius && filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-    }
-
-    return ret;
 }
 
 namespace D2 {

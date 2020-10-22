@@ -6,15 +6,6 @@
 #include <map>
 #include <cmath>
 
-class DPOINT {
-public:
-    double x, y;
-    DPOINT operator +(const DPOINT& p);
-    DPOINT operator -(const DPOINT& p);
-    DPOINT operator /(const double d);
-    double length();
-};
-
 extern DPOINT xvector, yvector;
 void DrawRectangle(POINT a, POINT b, DWORD dwColor);
 void DrawLine(POINT a, POINT b, DWORD dwColor);
@@ -37,13 +28,9 @@ void DrawAutomapRadialShape(DPOINT center, int radius, int sides, DWORD dwColor 
 void DrawAutomapRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, DPOINT target);
 void DrawWorldRadialShape(DPOINT center, int radius, int sides, DWORD dwColor = 30, double angle = 0);
 void DrawWorldRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, DPOINT target);
-DWORD unitHP(D2::Types::UnitAny* unit);
-bool isFriendly(D2::Types::UnitAny* unit);
-bool isHostile(D2::Types::UnitAny* unit);
-bool isAttackable(D2::Types::UnitAny* unit);
-bool isEnemy(D2::Types::UnitAny* unit);
+DWORD unitHP(D2::Types::CombatUnit* unit);
+bool isFriendly(D2::Types::CombatUnit* unit);
+bool isHostile(D2::Types::CombatUnit* unit);
+bool isAttackable(D2::Types::CombatUnit* unit);
+bool isEnemy(D2::Types::CombatUnit* unit);
 DPOINT getPosition(D2::Types::UnitAny* pUnit);
-void forUnits(D2::UnitType type, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable* tables = nullptr);
-std::vector<D2::Types::UnitAny*> getUnits(D2::UnitType type, D2::Types::UnitHashTable* tables = nullptr, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback = [](D2::Types::UnitAny*) -> bool { return true; });
-void forUnitsInRange(D2::UnitType type, DPOINT source, double radius, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable* tables = nullptr);
-std::vector<D2::Types::UnitAny*> getUnitsInRange(D2::UnitType type, DPOINT source, double radius, D2::Types::UnitHashTable* tables = nullptr, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback = [](D2::Types::UnitAny*) -> bool { return true; });
