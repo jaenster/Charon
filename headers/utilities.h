@@ -28,9 +28,3 @@ void DrawAutomapRadialShape(DPOINT center, int radius, int sides, DWORD dwColor 
 void DrawAutomapRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, DPOINT target);
 void DrawWorldRadialShape(DPOINT center, int radius, int sides, DWORD dwColor = 30, double angle = 0);
 void DrawWorldRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, DPOINT target);
-DWORD unitHP(D2::Types::CombatUnit* unit);
-bool isFriendly(D2::Types::CombatUnit* unit);
-bool isHostile(D2::Types::CombatUnit* unit);
-bool isAttackable(D2::Types::CombatUnit* unit);
-bool isEnemy(D2::Types::CombatUnit* unit);
-DPOINT getPosition(D2::Types::UnitAny* pUnit);

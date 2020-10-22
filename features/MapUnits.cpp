@@ -27,9 +27,9 @@ public:
 
         if (Settings["debugMode"]) {
 
-            // Client side tracks missiles
-            for (D2::Types::MissileUnit* unit : D2::ClientSideUnits.missiles.all()) {
-                DrawDot(WorldToAutomap(getPosition(unit)), 0x69);
+            // Server side tracks objects
+            for (D2::Types::ObjectUnit* unit : D2::ServerSideUnits.objects.all()) {
+                DrawDot(WorldToAutomap(unit->getPosition()), 0x69);
             }
 
             for (D2::Types::Room2* room = D2::PlayerUnit->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room != NULL; room = room->pRoom2Next) {
@@ -62,8 +62,8 @@ public:
         if (Settings["showMonsters"]) {
             // Server side tracks enemies
             for (D2::Types::NonPlayerUnit* unit : D2::ServerSideUnits.nonplayers.all()) {
-                if (isHostile(unit) && unitHP(unit) > 0) {
-                    if (isAttackable(unit)) {
+                if (unit->isPlayerHostile() && unit->unitHP() > 0) {
+                    if (unit->isAttackable()) {
                         if (unit->pMonsterData->fUnique || unit->pMonsterData->fChamp) {
                             DrawAutomapX(unit->pPath, 0x0C);
                         }

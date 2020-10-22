@@ -972,17 +972,25 @@ namespace D2 {
             UnitAny* pRoomNext;       // 0xE8
             void* pMsgFirst;          // 0xEC
             void* pMsgLast;           // 0xF0
+
+            DPOINT getPosition();
+            DPOINT getTargetPosition();
         };
 
-        struct CombatUnit : UnitAny { // Players and Non-Players
+        struct LivingUnit : UnitAny { // Players and Non-Players
+            // Add any unit specific helpers here
+            DWORD unitHP();
+            bool isPlayerFriendly();
+            bool isPlayerHostile();
+            bool isAttackable();
+            bool isPlayerEnemy();
+        };
+
+        struct PlayerUnit : LivingUnit { // Players Only (type 0)
             // Add any unit specific helpers here
         };
 
-        struct PlayerUnit : CombatUnit { // Players Only (type 0)
-            // Add any unit specific helpers here
-        };
-
-        struct NonPlayerUnit : CombatUnit { // Non-Players Only (type 1)
+        struct NonPlayerUnit : LivingUnit { // Non-Players Only (type 1)
             // Add any unit specific helpers here
         };
 

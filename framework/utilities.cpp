@@ -26,18 +26,6 @@ namespace D2 {
 
 DPOINT xvector = { 16.0, 8.0 }, yvector = { -16.0, 8.0 };
 
-DPOINT getPosition(D2::Types::UnitAny* pUnit) {
-    if (pUnit->dwType == 2 || pUnit->dwType == 5) {
-        return { (double)pUnit->pObjectPath->dwPosX, (double)pUnit->pObjectPath->dwPosY };
-    }
-
-    if (pUnit->dwType == 4) {
-        return { (double)pUnit->pItemPath->dwPosX, (double)pUnit->pItemPath->dwPosY };
-    }
-
-    return { (double)pUnit->pPath->xPos + (double)pUnit->pPath->xOffset / 65536.0, (double)pUnit->pPath->yPos + (double)pUnit->pPath->yOffset / 65536.0 };
-}
-
 void DrawRectangle(POINT a, POINT b, DWORD dwColor) {
     if (
         a.x >= 0 && a.x < D2::ScreenWidth ||
@@ -217,26 +205,6 @@ void DrawWorldRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, D
     DrawWorldRadialShape(center, radius, sides, dwColor, atan2(target.y - center.y, target.x - center.x));
 }
 
-DWORD unitHP(D2::Types::CombatUnit* unit) {
-    return D2::GetUnitStat(unit, 6, 0) >> 8;
-}
-
-bool isFriendly(D2::Types::CombatUnit* unit) {
-    return D2::GetUnitStat(unit, 172, 0) == 2;
-}
-
-bool isHostile(D2::Types::CombatUnit* unit) {
-    return D2::GetUnitStat(unit, 172, 0) == 0;
-}
-
-bool isAttackable(D2::Types::CombatUnit* unit) {
-    return unit->dwFlags & 0x4;
-}
-
-bool isEnemy(D2::Types::CombatUnit* unit) {
-    return unitHP(unit) > 0 && isHostile(unit) && isAttackable(unit);
-}
-
 DPOINT DPOINT::operator +(const DPOINT& p) {
     return { x + p.x, y + p.y };
 }
@@ -253,16 +221,49 @@ double DPOINT::length() {
     return sqrt(x * x + y + y);
 }
 
-DPOINT getTargetPosition(D2::Types::UnitAny* pUnit) {
-    if (pUnit->dwType == 2 || pUnit->dwType == 4) {
-        return getPosition(pUnit);
-    }
-
-    return { (double)pUnit->pPath->xTarget, (double)pUnit->pPath->yTarget };
-}
-
 namespace D2 {
     namespace Types {
+
+        DPOINT UnitAny::getPosition() {
+            if (this->dwType == 2 || this->dwType == 5) {
+                return { (double)this->pObjectPath->dwPosX, (double)this->pObjectPath->dwPosY };
+            }
+
+            if (this->dwType == 4) {
+                return { (double)this->pItemPath->dwPosX, (double)this->pItemPath->dwPosY };
+            }
+
+            return { (double)this->pPath->xPos + (double)this->pPath->xOffset / 65536.0, (double)this->pPath->yPos + (double)this->pPath->yOffset / 65536.0 };
+        }
+
+        DPOINT UnitAny::getTargetPosition() {
+            if (this->dwType == 2 || this->dwType == 4) {
+                return this->getPosition();
+            }
+
+            return { (double)this->pPath->xTarget, (double)this->pPath->yTarget };
+        }
+
+        DWORD LivingUnit::unitHP() {
+            return D2::GetUnitStat(this, 6, 0) >> 8;
+        }
+
+        bool LivingUnit::isPlayerFriendly() {
+            return D2::GetUnitStat(this, 172, 0) == 2;
+        }
+
+        bool LivingUnit::isPlayerHostile() {
+            return D2::GetUnitStat(this, 172, 0) == 0;
+        }
+
+        bool LivingUnit::isAttackable() {
+            return this->dwFlags & 0x4;
+        }
+
+        bool LivingUnit::isPlayerEnemy() {
+            return this->unitHP() > 0 && this->isPlayerHostile() && this->isAttackable();
+        }
+
         WORD CollMap::getCollision(DWORD localx, DWORD localy, WORD mask) {
             return pMapStart[localx + localy * dwSizeGameX] & mask;
         }

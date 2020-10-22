@@ -223,8 +223,8 @@ namespace DebugMode {
 
                 // Server side tracks enemies
                 for (D2::Types::NonPlayerUnit* unit : D2::ServerSideUnits.nonplayers.all()) {
-                    if (unit->pPath && unitHP(unit) > 0) {
-                        POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
+                    if (unit->pPath && unit->unitHP() > 0) {
+                        POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen(unit->getTargetPosition());
 
                         if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight && target.x >= 0 && target.y >= 0 && target.x < D2::ScreenWidth && target.y < D2::ScreenHeight) {
                             DrawLine(pos, target, 0x99);
@@ -252,12 +252,12 @@ namespace DebugMode {
                 D2::SetFont(fontNum);
 
                 for (D2::Types::PlayerUnit* unit : D2::ServerSideUnits.players.all()) {
-                    DrawWorldX(getPosition(unit), 0x9B);
+                    DrawWorldX(unit->getPosition(), 0x9B);
                 }
 
                 // Server side tracks objects
                 for (D2::Types::ObjectUnit* unit : D2::ServerSideUnits.objects.all()) {
-                    DPOINT dpos = getPosition(unit);
+                    DPOINT dpos = unit->getPosition();
                     DrawWorldX(dpos, 0x69);
                     pos = WorldToScreen(dpos);
                     swprintf_s(msg, L"%d", unit->dwTxtFileNo);
@@ -268,7 +268,7 @@ namespace DebugMode {
                 // Server side tracks enemies
                 for (D2::Types::NonPlayerUnit* unit : D2::ServerSideUnits.nonplayers.all()) {
                     if (unit->pPath) {
-                        if (isAttackable(unit)) {
+                        if (unit->isAttackable()) {
                             switch (D2::GetUnitStat(unit, 172, 0)) {
                             case 0: // hostile
                                 if (unit->pMonsterData->fUnique || unit->pMonsterData->fChamp) {

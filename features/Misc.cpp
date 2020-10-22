@@ -331,7 +331,7 @@ __declspec(naked) void __stdcall GetGlobalLight_Original(void* pAct, BYTE* red, 
 }
 
 // Can this be even more specific? Maybe D2::Types::NonPlayerUnit?
-wchar_t* __fastcall UnitVisualname(D2::Types::CombatUnit *pUnit) {
+wchar_t* __fastcall UnitVisualname(D2::Types::LivingUnit *pUnit) {
     // For now it falls under item info, as it is as item/unit level
     if (!Settings["itemInfo"]) return D2::GetUnitName(pUnit);
 
