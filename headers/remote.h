@@ -33,6 +33,14 @@ namespace D2 {
 	GLOBALREF(HINSTANCE, hInst, 0x7C8CA8);
 	GLOBALREF(HWND, hWnd, 0x7C8CBC);
 	GLOBALREF(int, CurrentGameType, 0x7A0610);
+	namespace Layout {
+        GLOBALREF(Types::InventoryLayout *, Trade, 0x7BCA30)
+        GLOBALREF(Types::InventoryLayout *, Stash, 0x7BCA78)
+        GLOBALREF(Types::InventoryLayout *, Store, 0x7BCB58)
+        GLOBALREF(Types::InventoryLayout *, Cube, 0x7BCB70)
+        GLOBALREF(Types::InventoryLayout *, Inventory, 0x7BCB88)
+        GLOBALREF(Types::InventoryLayout *, Merc, 0x7BCD4C)
+    }
 
 	// For referencing D2's functions use this specialized macro instead
 	GLOBALFUNC(DWORD __fastcall, SetFont, (DWORD dwFileNo), 0x502EF0);
@@ -59,6 +67,12 @@ namespace D2 {
 	GLOBALFUNC(void __fastcall, OkDialog, (const WCHAR* title, const WCHAR* primary, const WCHAR* secondary, void (*callback)()), 0x4331c0);
 	GLOBALFUNC(void, MainMenuForm, (), 0x4336c0); // No params, so calling convention doesn't matter
 	GLOBALFUNC(void __fastcall, CreateFormElementFromListExEx, (int idx), 0x42f430);
+    GLOBALFUNC(void __fastcall, ClickMap, (DWORD MouseFlag, DWORD x, DWORD y, DWORD type),0x462D00);
+    GLOBALFUNC(int __fastcall, GetUnitX, (Types::UnitAny * pUnit), 0x45ADF0)
+    GLOBALFUNC(int __fastcall, GetUnitY, (Types::UnitAny * pUnit), 0x45AE20)
+    GLOBALFUNC(Types::PoolManagerStrc *, ClickItemLeft, (Types::UnitAny *pPlayer,Types::Inventory *_pInventory,DWORD x,DWORD y,
+            Types::UnitAny *targetItem,Types::InventoryLayout *param_6),0x48ffe0)
+
 }
 
 #pragma warning( default : 4229 )

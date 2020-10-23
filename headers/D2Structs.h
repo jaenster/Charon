@@ -4,6 +4,7 @@
 #pragma once
 
 #include <windows.h>
+#include <type_traits>
 #include <vector>
 
 class DPOINT {
@@ -27,6 +28,26 @@ public:
 #pragma optimize("", off)
 
 typedef void(*VOIDFUNC)();
+
+struct Coord {
+    union {
+        struct { ;
+            unsigned short x;
+            unsigned short y;
+        };
+        unsigned int location = 0;
+    };
+
+    Coord(unsigned short x, unsigned short y) {
+        this->x = x;
+        this->y = y;
+    };
+
+    Coord(unsigned int location) {
+        this->location = location;
+    };
+    Coord()= default;
+};
 
 namespace D2 {
     enum class UnitType : DWORD {
@@ -92,6 +113,39 @@ namespace D2 {
         RITE_OF_PASSAGE = 39,
         KILL_BAAL = 40,
     };
+
+    namespace UiFlag {
+        enum UiFlag {
+            None = 0x00,
+            Inventory = 0x01,
+            StatsWindow = 0x02,
+            QuickSkill = 0x03,
+            SkillWindow = 0x04,
+            ChatBox = 0x05,
+            NPCMenu = 0x08,
+            EscMenu = 0x09,
+            AutoMap = 0x0A,
+            ConfigControls = 0x0B,
+            Shop = 0x0C,
+            ShowItem = 0x0D,
+            Cash = 0x0E,
+            Quest = 0x0F,
+            QuestLog = 0x11,
+            StatusArea = 0x12,
+            Waypoint = 0x14,
+            MiniPanel = 0x15,
+            Party = 0x16,
+            TradePrompt = 0x17,
+            Msgs = 0x18,
+            Stash = 0x19,
+            Cube = 0x1A,
+            ShowBelt = 0x1F,
+            Help = 0x21,
+            MercScreen = 0x24,
+            ScrollWindow = 0x25
+        };
+    }
+
 
     namespace Types {
         struct UnitAny;
@@ -914,7 +968,7 @@ namespace D2 {
         };
 
         struct UnitAny {
-            DWORD dwType;      // 0x00
+            D2::UnitType dwType;      // 0x00
             DWORD dwTxtFileNo; // 0x04
             DWORD _1;          // 0x08
             DWORD dwUnitId;    // 0x0C
@@ -985,6 +1039,16 @@ namespace D2 {
             UnitAny* pRoomNext;       // 0xE8
             void* pMsgFirst;          // 0xEC
             void* pMsgLast;           // 0xF0
+
+            Coord getCoord();
+
+            unsigned char getSizeX();
+            unsigned char getSizeY();
+
+            template<typename T, /*T extends UnitAny*/ typename std::enable_if<std::is_base_of<UnitAny, T>::value>::type* = nullptr>
+            inline T* Cast() {
+                return reinterpret_cast<T*>(this);
+            }
 
             DPOINT pos(DPOINT adjust = { 0, 0 });
             DPOINT getTargetPos(DPOINT adjust = { 0, 0 });
@@ -1454,6 +1518,45 @@ namespace D2 {
             int field_0x40;
             DWORD field_0x44;
         };
+
+        struct PoolStrc {
+            CRITICAL_SECTION pSync;
+            size_t nBlockSize;
+            size_t nBlocks;
+            size_t nSize;
+            size_t nAllocBlock;
+            struct PoolBlockStrc * pBlocks;
+            struct PoolBlockStrc * pTail;
+        };
+
+        struct PoolBlockStrc {
+            BYTE * pCommit;
+            DWORD * pUsage;
+            size_t nBlocks;
+            struct PoolBlockStrc * pPrev;
+            struct PoolBlockStrc * pNext;
+            struct PoolStrc * pPool;
+        };
+
+        struct PoolBlockEntryStrc {
+            struct PoolBlockStrc * pBlock;
+            void * pCommit;
+        };
+
+        struct PoolManagerStrc {
+            DWORD dw; /* related to pool count.. */
+            CRITICAL_SECTION pSync;
+            size_t nPools;
+            struct PoolStrc pPools[40];
+            size_t nBlocks;
+            size_t nTotalBlocks;
+            struct PoolBlockEntryStrc * pBlocks;
+            BYTE * pOverflow[1023];
+            DWORD dwMemory;
+            char szName[32];
+        };
+
+
     }
 }
 

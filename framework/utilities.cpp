@@ -31,6 +31,18 @@ DPOINT::DPOINT(double x, double y) {
     this->y = y;
 }
 
+DPOINT getPosition(D2::Types::UnitAny* pUnit) {
+    if (pUnit->dwType == D2::UnitType::OBJECT || pUnit->dwType == D2::UnitType::ROOMTILE) {
+        return { (double)pUnit->pObjectPath->dwPosX, (double)pUnit->pObjectPath->dwPosY };
+    }
+
+    if (pUnit->dwType == D2::UnitType::ITEM) {
+        return { (double)pUnit->pItemPath->dwPosX, (double)pUnit->pItemPath->dwPosY };
+    }
+
+    return { (double)pUnit->pPath->xPos + (double)pUnit->pPath->xOffset / 65536.0, (double)pUnit->pPath->yPos + (double)pUnit->pPath->yOffset / 65536.0 };
+}
+
 void DrawRectangle(POINT a, POINT b, DWORD dwColor) {
     if (
         a.x >= 0 && a.x < D2::ScreenWidth ||
@@ -75,6 +87,13 @@ double DPOINT::distanceTo(DPOINT target) {
     return sqrt(v.x * v.x + v.y + v.y);
 }
 
+DPOINT getTargetPosition(D2::Types::UnitAny* pUnit) {
+    if (pUnit->dwType == D2::UnitType::OBJECT || pUnit->dwType == D2::UnitType::ITEM) {
+        return getPosition(pUnit);
+    }
+
+    return { (double)pUnit->pPath->xTarget, (double)pUnit->pPath->yTarget };
+}
 
 POINT DPOINT::toScreen(POINT screenadjust) {
     return {
@@ -248,6 +267,42 @@ namespace D2 {
 
         DWORD Room2::getWorldHeight() {
             return pRoom1->dwYSize;
+        }
+
+        Coord UnitAny::getCoord() {
+            return Coord(GetUnitX(this), GetUnitY(this));
+        }
+
+        unsigned char UnitAny::getSizeX() {
+            unsigned char result = 0;
+            switch(this->dwType) { //TODo; fix for other types
+                case D2::UnitType::ITEM:
+                    result = GetItemText(this->dwTxtFileNo)->bInvWidth;
+                    break;
+                case UnitType::PLAYER:
+                case UnitType::MONSTER:
+                case UnitType::OBJECT:
+                case UnitType::MISSILE:
+                case UnitType::ROOMTILE:
+                    break;
+            }
+            return result;
+        }
+
+        unsigned char UnitAny::getSizeY() {
+            unsigned char result = 0;
+            switch(this->dwType) { //TODo; fix for other types
+                case D2::UnitType::ITEM: // Item
+                    result = GetItemText(this->dwTxtFileNo)->bInvWidth;
+                    break;
+                case UnitType::PLAYER:
+                case UnitType::MONSTER:
+                case UnitType::OBJECT:
+                case UnitType::MISSILE:
+                case UnitType::ROOMTILE:
+                    break;
+            }
+            return result;
         }
     }
 }
