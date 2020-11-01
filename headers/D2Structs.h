@@ -1454,6 +1454,30 @@ namespace D2 {
             int field_0x40;
             DWORD field_0x44;
         };
+
+        struct IncompleteGameData {
+            BYTE unk[4];                                // 0x0
+            DWORD seed;                                 // 0x4
+            BYTE unk2[0x20];                            // 0x8
+            WORD nServerToken;                          // 0x28
+            char szGameName[0x10];                      // 0x2A
+            char szGamePassword[0x10];                  // 0x3A
+            char szGameDescription[0x20];               // 0x4A
+            BYTE nGameType;                             // 0x6A
+            BYTE unk3[2];                               // 0x6B
+            BYTE nDifficulty;                           // 0x6D
+            BYTE unk4[2];                               // 0x6E
+            BOOL bExpansion;                            // 0x70
+            DWORD dwGameType;                           // 0x74
+            WORD wItemFormat;                           // 0x78
+            BYTE unk5[0x1CB6];                          // 0x7A
+            BYTE nBossFlagList[0x40];                   // 0x1D30
+            BYTE unk6[0x64];                            // 0x1D70
+            IncompleteGameData* pPrev;                  // 0x1DD4
+            IncompleteGameData* pNext;                  // 0x1DD8
+            BYTE unk7[0xC];                             // 0x1DDC
+        }; // Total Size: 0x1DE8
+
     }
 }
 
