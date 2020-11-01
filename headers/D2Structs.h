@@ -411,6 +411,7 @@ namespace D2 {
             DWORD dwRoomEntries; // 0x228
 
             std::vector<Room1*> getAllRoom1();
+            Room2* GetRoomByCoord(DWORD x, DWORD y);
             std::vector<Room2*> getAllRoom2();
         };
 
@@ -443,6 +444,9 @@ namespace D2 {
             DWORD getWorldWidth();
             DWORD getWorldHeight();
             std::vector<PresetUnit*> getAllPresetUnits();
+            inline bool isInCoord(unsigned short nX, unsigned short nY) {
+                return (nX >= this->dwPosX * 5 && nY >= this->dwPosY * 5 && nX < (this->dwPosX * 5 + this->dwSizeX * 5) && nY < (this->dwPosY * 5 + this->dwSizeY * 5));
+            }
         };
 
 #pragma pack(pop)
@@ -464,6 +468,14 @@ namespace D2 {
             DWORD _5;            // 0x78
             Room1* pRoomNext;    // 0x7C
             WORD getCollision(DWORD localx, DWORD localy, WORD mask);
+            inline bool isInCoord(unsigned short nX, unsigned short nY) {
+                for(auto pRoom = this->pRoom2; pRoom; pRoom = pRoom->pRoom2Next) {
+                    if (pRoom->isInCoord(nX, nY)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
         };
 
         struct ActMisc {

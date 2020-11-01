@@ -144,6 +144,15 @@ namespace D2 {
             return ret;
         }
 
+        Room2 *Level::GetRoomByCoord(DWORD x, DWORD y) {
+            for (D2::Types::Room2 *room = this->pRoom2First; room != NULL; room = room->pRoom2Next) {
+                if (room->isInCoord(x, y)) {
+                    return room;
+                };
+            }
+            return nullptr;
+        }
+
         std::vector<Room2*> Level::getAllRoom2() {
             std::vector<Room2*> ret;
 
