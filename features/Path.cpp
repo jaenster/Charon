@@ -28,22 +28,21 @@ namespace Path {
 
 
     void calcPathTo(D2::Types::Level *lvl, uint16 x, uint16 y, uint16 xx, uint16 yy) {
-        using D2::Types::Room1;
         struct Point {
         public:
             std::array<Point *, 8> getNeighbours(Point *end) {
                 std::array<Point *, 8> neighbours = {
                         // First row
-                        new Point(this->x - 1, this->y - 1, end, this),
-                        new Point(this->x - 1, this->y, end, this),
-                        new Point(this->x - 1, this->y + 1, end, this),
+                        new Point(this->lvl, this->x - 1, this->y - 1, end, this),
+                        new Point(this->lvl, this->x - 1, this->y, end, this),
+                        new Point(this->lvl, this->x - 1, this->y + 1, end, this),
                         // second row
-                        new Point(this->x, this->y - 1, end, this),
-                        new Point(this->x, this->y + 1, end, this),
+                        new Point(this->lvl, this->x, this->y - 1, end, this),
+                        new Point(this->lvl, this->x, this->y + 1, end, this),
                         // last row
-                        new Point(this->x + 1, this->y - 1, end, this),
-                        new Point(this->x + 1, this->y, end, this),
-                        new Point(this->x + 1, this->y + 1, end, this),
+                        new Point(this->lvl, this->x + 1, this->y - 1, end, this),
+                        new Point(this->lvl, this->x + 1, this->y, end, this),
+                        new Point(this->lvl, this->x + 1, this->y + 1, end, this),
 
                 };
 
@@ -57,32 +56,51 @@ namespace Path {
 
             uint16 x;
             uint16 y;
+            uint16 localx;
+            uint16 localy;
             long double g;
             long double h;
             DWORD hash;
             Point *parent = nullptr;
+            D2::Types::Level *lvl = nullptr;
+            D2::Types::Room1 *room1 = nullptr;
+            D2::Types::Room2 *room2 = nullptr;
+            int collision;
+
         private:
-            void calcHash() {
+            void setup() {
                 this->hash = (x << 16) + y;
+                for (D2::Types::Room2 *room2 = this->lvl->pRoom2First; room2; room2 = room2->pRoom2Next) {
+                    if (room2->isInCoord(this->x, this->y)) {
+                        this->room2 = room2;
+                        this->room1 = room2->pRoom1;
+                        this->localx = (this->x - this->room1->dwXStart);
+                        this->localy = (this->y - this->room1->dwYStart);
+                        this->collision = this->room1->Coll->pMapStart[this->localx +
+                                                                       this->localy * this->room1->Coll->dwSizeGameX];
+                    }
+                }
             }
 
         public:
 
-            Point(uint16 x, uint16 y, Point *end, Point *parent) {
+            Point(D2::Types::Level *lvl, uint16 x, uint16 y, Point *end, Point *parent) {
+                this->lvl = lvl;
                 this->x = x;
                 this->y = y;
                 this->g = getDistance(end);
                 this->h = 0;
-                this->calcHash();
                 this->parent = parent;
+                setup();
             }
 
-            Point(uint16 x, uint16 y) {
+            Point(D2::Types::Level *lvl, uint16 x, uint16 y) {
+                this->lvl = lvl;
                 this->x = x;
                 this->y = y;
                 this->g = 0;
                 this->h = 0;
-                this->calcHash();
+                setup();
             }
 
             bool operator==(const Point *other) const {
@@ -96,8 +114,8 @@ namespace Path {
         std::unordered_map<DWORD, Point *> open(128);
         std::unordered_map<DWORD, Point *> closed(128);
 
-        Point *start = new Point(x, y);
-        Point *end = new Point(xx, yy);
+        Point *start = new Point(lvl, x, y);
+        Point *end = new Point(lvl, xx, yy);
         start->g = start->getDistance(end);
 
         open[start->hash] = start;
@@ -128,15 +146,15 @@ namespace Path {
                     uint16 y;
 
                     SimplePoint(uint16 x, uint16 y) {
-                        this->x=x;
-                        this->y=y;
+                        this->x = x;
+                        this->y = y;
                     }
                 };
                 std::vector<SimplePoint> path;
 
-                Point* current = winner;
-                while(current) {
-                    path.push_back(SimplePoint(current->x,current->y));
+                Point *current = winner;
+                while (current) {
+                    path.push_back(SimplePoint(current->x, current->y));
                     current = current->parent;
                 }
 
@@ -150,11 +168,17 @@ namespace Path {
 
 
             // get all neighbours
-            std::array<Point*, 8> arr = winner->getNeighbours(end);
+            std::array<Point *, 8> arr = winner->getNeighbours(end);
             for (int i = 0; i < 8; i++) {
-                unsigned int hash = arr[i]->hash;
+                Point *neighbour = arr[i];
+                unsigned int hash = neighbour->hash;
                 if (closed.find(hash) == closed.end()) {
-                    open[arr[i]->hash] = arr[i];
+                    if (neighbour->collision & 0x4) {
+                        continue;
+                    } else {
+                        open[neighbour->hash] = neighbour;
+                    }
+
                 }
             }
         }
@@ -182,7 +206,7 @@ namespace Path {
             if (bTest) {
                 bTest = false;
                 std::cout << "calculate '" << std::endl;
-                calcPathTo(5095, 5024);
+                calcPathTo(5089, 5030);
 
             }
         }
