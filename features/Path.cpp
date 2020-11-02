@@ -20,27 +20,24 @@ namespace Path {
         }
     };
 
+    SimplePoint toLocation(5089, 5030);
+    struct Point;
+
+    struct PointCollection {
+        std::unordered_map<DWORD, Point *> maps;
+        Point *start;
+        Point *end;
+        D2::Types::Level *lvl;
+
+        PointCollection(D2::Types::Level *lvl) {
+            this->lvl = lvl;
+        }
+
+        void addPoint(Point *point);
+    };
+
     struct Point {
     public:
-        std::array<Point *, 8> getNeighbours(Point *end) {
-            std::array<Point *, 8> neighbours = {
-                    // First row
-                    new Point(this->lvl, this->x - 1, this->y - 1, end, this),
-                    new Point(this->lvl, this->x - 1, this->y, end, this),
-                    new Point(this->lvl, this->x - 1, this->y + 1, end, this),
-                    // second row
-                    new Point(this->lvl, this->x, this->y - 1, end, this),
-                    new Point(this->lvl, this->x, this->y + 1, end, this),
-                    // last row
-                    new Point(this->lvl, this->x + 1, this->y - 1, end, this),
-                    new Point(this->lvl, this->x + 1, this->y, end, this),
-                    new Point(this->lvl, this->x + 1, this->y + 1, end, this),
-
-            };
-
-
-            return neighbours;
-        }
 
         long double getDistance(const Point *other) {
             return hypot(other->x - this->x, other->y - this->y);
@@ -50,44 +47,43 @@ namespace Path {
         uint16 y;
         uint16 localx;
         uint16 localy;
+        PointCollection *collection;
         long double g;
         long double h;
+        long double total;
         DWORD hash;
         Point *parent = nullptr;
-        D2::Types::Level *lvl = nullptr;
-        D2::Types::Room1 *room1 = nullptr;
-        D2::Types::Room2 *room2 = nullptr;
         int collision;
 
     private:
         void setup() {
             this->hash = (x << 16) + y;
-            for (D2::Types::Room2 *room2 = this->lvl->pRoom2First; room2; room2 = room2->pRoom2Next) {
+            for (D2::Types::Room2 *room2 = this->collection->lvl->pRoom2First; room2; room2 = room2->pRoom2Next) {
                 if (room2->isInCoord(this->x, this->y)) {
-                    this->room2 = room2;
-                    this->room1 = room2->pRoom1;
-                    this->localx = (this->x - this->room1->dwXStart);
-                    this->localy = (this->y - this->room1->dwYStart);
-                    this->collision = this->room1->Coll->pMapStart[this->localx +
-                                                                   this->localy * this->room1->Coll->dwSizeGameX];
+                    auto room1 = room2->pRoom1;
+                    this->localx = (this->x - room1->dwXStart);
+                    this->localy = (this->y - room1->dwYStart);
+                    this->collision = room1->Coll->pMapStart[this->localx +
+                                                             this->localy * room1->Coll->dwSizeGameX];
                 }
             }
+            this->total = this->g + this->h;
+            this->collection->addPoint(this);
         }
 
     public:
-
-        Point(D2::Types::Level *lvl, uint16 x, uint16 y, Point *end, Point *parent) {
-            this->lvl = lvl;
+        Point(PointCollection *collection, uint16 x, uint16 y, Point *parent) {
             this->x = x;
             this->y = y;
-            this->g = getDistance(end);
-            this->h = 0;
+            this->collection = collection;
+            this->g = getDistance(this->collection->end);
+            this->h = getDistance(this->collection->start);
             this->parent = parent;
             setup();
         }
 
-        Point(D2::Types::Level *lvl, uint16 x, uint16 y) {
-            this->lvl = lvl;
+        Point(PointCollection *collection, uint16 x, uint16 y) {
+            this->collection = collection;
             this->x = x;
             this->y = y;
             this->g = 0;
@@ -98,25 +94,56 @@ namespace Path {
         bool operator==(const Point *other) const {
             return this && other && other->hash == this->hash;
         };
+
+        std::array<Point *, 8> getNeighbours() {
+            std::array<Point *, 8> neighbours = {
+                    // First row
+                    new Point(collection, this->x - 1, this->y - 1, this),
+                    new Point(collection, this->x - 1, this->y, this),
+                    new Point(collection, this->x - 1, this->y + 1, this),
+                    // second row
+                    new Point(collection, this->x, this->y - 1, this),
+                    new Point(collection, this->x, this->y + 1, this),
+                    // last row
+                    new Point(collection, this->x + 1, this->y - 1, this),
+                    new Point(collection, this->x + 1, this->y, this),
+                    new Point(collection, this->x + 1, this->y + 1, this),
+
+            };
+
+
+            return neighbours;
+        }
     };
 
-    std::vector<SimplePoint> path;
+    void PointCollection::addPoint(Point *point) {
+        maps[point->hash] = point;
+    }
 
-    void calcPathTo(D2::Types::Level *lvl, uint16 x, uint16 y, uint16 xx, uint16 yy) {
+    std::vector<SimplePoint> *_drawPath = nullptr;
 
+    std::vector<SimplePoint> *calcPathTo(D2::Types::Level *lvl, uint16 x, uint16 y, uint16 xx, uint16 yy) {
+        std::vector<SimplePoint> *path = new std::vector<SimplePoint>();
+
+        //ToDo; use hash/equal functions to speed up the process
         auto hash = [](const Point &n) { return n.hash; };
         auto equal = [](const Point &l, const Point &r) { return l.hash == r.hash; };
 
         std::unordered_map<DWORD, Point *> open(128);
         std::unordered_map<DWORD, Point *> closed(128);
 
-        Point *start = new Point(lvl, x, y);
-        Point *end = new Point(lvl, xx, yy);
+        PointCollection pc(lvl);
+        Point *start = new Point(&pc, x, y),
+                *end = new Point(&pc, xx, yy);
+
+        pc.start = start;
+        pc.end = end;
+
         start->g = start->getDistance(end);
 
         open[start->hash] = start;
 
-        uint16 loops = 10000;
+        uint16 loops = 3000;
         auto lowestG = [&]() {
             Point *winner = nullptr;
             for (auto it = open.begin(); it != open.end(); ++it) {
@@ -132,7 +159,7 @@ namespace Path {
             // search node that is nearest to the end point
             Point *winner = lowestG();
             if (!winner) {
-                return;
+                break;
             }
 
             if (*winner == end) {
@@ -141,12 +168,14 @@ namespace Path {
                 Point *current = winner;
 
                 // empty out the entire thing
-                path.clear();
+                int nodes = 0;
                 while (current) {
-                    path.emplace_back(current->x, current->y);
+                    nodes++;
+                    path->emplace_back(current->x, current->y);
                     current = current->parent;
                 }
 
+                std::cout << "path nodes # " << nodes << std::endl;
                 break;
             }
 
@@ -157,12 +186,12 @@ namespace Path {
 
 
             // get all neighbours
-            std::array<Point *, 8> arr = winner->getNeighbours(end);
+            std::array<Point *, 8> arr = winner->getNeighbours();
             for (int i = 0; i < 8; i++) {
                 Point *neighbour = arr[i];
                 unsigned int hash = neighbour->hash;
                 if (closed.find(hash) == closed.end()) {
-                    if (neighbour->collision & 0x4) {
+                    if (neighbour->collision & 0x4 || neighbour->collision & 0xC09) {
                         continue;
                     } else {
                         open[neighbour->hash] = neighbour;
@@ -173,16 +202,21 @@ namespace Path {
         }
 
         // delete points
-        for (auto it = open.begin(); it != open.end(); ++it) delete it->second;
-        for (auto it = closed.begin(); it != closed.end(); ++it) delete it->second;
+        //for (auto it = open.begin(); it != open.end(); ++it) delete it->second;
+        //for (auto it = closed.begin(); it != closed.end(); ++it) delete it->second;
+        return path;
     }
 
-    void calcPathTo(uint16 x, uint16 y, uint16 xx, uint16 yy) {
+    std::vector<SimplePoint> *calcPathTo(uint16 x, uint16 y, uint16 xx, uint16 yy) {
         return calcPathTo(D2::PlayerUnit->pPath->pRoom1->pRoom2->pLevel, x, y, xx, yy);
     }
 
-    void calcPathTo(uint16 x, uint16 y) {
+    std::vector<SimplePoint> *calcPathTo(uint16 x, uint16 y) {
         return calcPathTo(D2::PlayerUnit->pPath->xPos, D2::PlayerUnit->pPath->yPos, x, y);
+    }
+
+    std::vector<SimplePoint> *calcPathTo(SimplePoint coord) {
+        return calcPathTo(coord.x, coord.y);
     }
 
     class : public Feature {
@@ -194,18 +228,18 @@ namespace Path {
 
 
         void gamePostDraw() override {
-            for(auto const point : path) {
-                DrawLine(DPOINT(point.x - 3, point.y).toScreen(), DPOINT(point.x + 3, point.y).toScreen(), 0x99);
-                DrawLine(DPOINT(point.x, point.y - 3).toScreen(), DPOINT(point.x, point.y + 3).toScreen(), 0x99);
-            }
+            if (_drawPath)
+                for (auto const point : *_drawPath) {
+                    DrawLine(DPOINT(point.x - 1, point.y).toScreen(), DPOINT(point.x + 1, point.y).toScreen(), 0x99);
+                    DrawLine(DPOINT(point.x, point.y - 1).toScreen(), DPOINT(point.x, point.y + 1).toScreen(), 0x99);
+                }
         }
 
         void gameLoop() override {
             if (bTest) {
                 bTest = false;
                 std::cout << "calculate '" << std::endl;
-                calcPathTo(5089, 5030);
-
+                _drawPath = calcPathTo(toLocation);
             }
         }
 
@@ -221,6 +255,12 @@ namespace Path {
                                 bTest = true;
                                 std::cout << D2::PlayerUnit->pPath->xPos << "\t" << D2::PlayerUnit->pPath->yPos
                                           << std::endl;
+                                break;
+                            case VK_END:
+                                std::cout << "to location " << D2::PlayerUnit->pPath->xPos << "\t"
+                                          << D2::PlayerUnit->pPath->yPos << std::endl;
+                                toLocation.x = D2::PlayerUnit->pPath->xPos;
+                                toLocation.y = D2::PlayerUnit->pPath->yPos;
                                 break;
                         }
                     }
