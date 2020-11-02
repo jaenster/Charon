@@ -10,15 +10,9 @@ namespace Path {
     typedef unsigned short uint16;
     bool bTest = false;
 
-    struct SimplePoint {
-        uint16 x;
-        uint16 y;
-
-        SimplePoint(uint16 x, uint16 y) {
-            this->x = x;
-            this->y = y;
-        }
-    };
+    long double Path::SimplePoint::getDistance(const SimplePoint *other) {
+        return hypot(other->x - this->x, other->y - this->y);
+    }
 
     SimplePoint toLocation(5089, 5030);
     struct Point;

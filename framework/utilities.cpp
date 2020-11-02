@@ -163,6 +163,16 @@ namespace D2 {
             return ret;
         }
 
+        std::vector<PresetUnit*> Level::getAllPresetUnits() {
+            std::vector<PresetUnit*> ps;
+            for (Room2* room : this->getAllRoom2()) {
+                for (PresetUnit* unit : room->getAllPresetUnits()) {
+                    ps.push_back(unit);
+                }
+            }
+            return ps;
+        }
+
         DPOINT PresetUnit::pos(Room2* pRoom, DPOINT adjust) {
             return { adjust.x + (double)pRoom->dwPosX * 5 + (double)this->dwPosX, adjust.y + (double)pRoom->dwPosY * 5 + (double)this->dwPosY };
         }

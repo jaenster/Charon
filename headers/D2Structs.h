@@ -413,6 +413,7 @@ namespace D2 {
             std::vector<Room1*> getAllRoom1();
             Room2* GetRoomByCoord(DWORD x, DWORD y);
             std::vector<Room2*> getAllRoom2();
+            std::vector<PresetUnit*> getAllPresetUnits();
         };
 
         struct Room2 {
