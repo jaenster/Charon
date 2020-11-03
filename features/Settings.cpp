@@ -187,7 +187,6 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["reportXP"] = !Settings["reportXP"];
                 SaveSettings();
             }),
-        nullptr, // Empty Gap
         new DialogToggleInfo(L"Omnivision",
             []() -> std::wstring {
                 return Settings["omnivision"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -196,6 +195,7 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["omnivision"] = !Settings["omnivision"];
                 SaveSettings();
             }),
+        nullptr, // Empty Gap
         new DialogToggleInfo(L"\u00FFc;*\u00FFc4Always D3D Mode",
             []() -> std::wstring {
                 return Settings["alwaysD3D"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -220,6 +220,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
                 Settings["alwaysD3DStartFull"] = !Settings["alwaysD3DStartFull"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Draw all states",
+             []() -> std::wstring {
+                 return Settings["drawAllStates"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+             }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["drawAllStates"] = !Settings["drawAllStates"];
                 SaveSettings();
             }),
         nullptr, // Empty Gap
