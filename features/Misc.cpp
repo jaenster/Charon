@@ -255,6 +255,33 @@ void __fastcall ItemDescription_Hook(wchar_t* wBuffer, long *x, long *y) {
     CalcTextDimensions(wBuffer, x, y);
 }
 
+[[maybe_unused]] int
+__fastcall setItemColor(D2::Types::UnitAny *item, WCHAR *buffer, int nColor) {
+    if (Settings["itemInfo"]) {
+        D2::Types::ItemTxt *itemText = D2::GetItemText(item->dwTxtFileNo);
+        if (itemText->nType == 78) {
+            nColor = 11;
+        }
+    }
+    return nColor;
+}
+
+__declspec(naked) void ItemColor_Hook() {
+    static ASMPTR jmpBack = 0x452929;
+    static ASMPTR ITEM_GetTypeFromTxtTable = 0x62b400;
+    __asm {
+        mov ecx, esi              // Argument 1, item
+                                  // argument 2, buffer (already in edx
+        push  DWORD PTR[ebp-0x4]; // add argument 3,
+        call setItemColor
+        mov    DWORD PTR[ebp-0x4], eax // actual color is set @ setItemColor
+
+        // Original code
+        call ITEM_GetTypeFromTxtTable;
+        JMP jmpBack;
+    }
+}
+
 BOOL __fastcall OverrideQuestState(int questId, int questState, BOOL value) {
     switch (questId) {
     case 3: // Imbue quest
@@ -367,6 +394,9 @@ public:
         MemoryPatch(SocketNotGrey_Patches[1]) << DWORD(0x400000);
         MemoryPatch(SocketNotGrey_Patches[2]) << DWORD(0x400000);
 
+        // override item colors when draw on the floor
+        MemoryPatch(0x452924) << JUMP(ItemColor_Hook);
+
         // Fix RandTransforms.dat for LoD, to colorize monsters properly
         MemoryPatch(0x4666A5) << BYTE(0x26); // RandTransforms
 
@@ -381,13 +411,13 @@ public:
         AutomapInfoHooks.push_back([]() -> std::wstring {
             return version;
         });
-
-        AutomapInfoHooks.push_back([]() -> std::wstring {
-            DWORD elapsed = GetTickCount() - gamestart, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
-            wchar_t msg[16];
-            swprintf_s(msg, L"%d:%02d", minutes, seconds);
-            return msg;
-        });
+//
+//        AutomapInfoHooks.push_back([]() -> std::wstring {
+//            DWORD elapsed = GetTickCount() - gamestart, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
+//            wchar_t msg[16];
+//            swprintf_s(msg, L"%d:%02d", minutes, seconds);
+//            return msg;
+//        });
     }
 
     void gameLoop() {
