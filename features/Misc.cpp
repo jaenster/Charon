@@ -258,9 +258,7 @@ void __fastcall ItemDescription_Hook(wchar_t* wBuffer, long *x, long *y) {
 [[maybe_unused]] int
 __fastcall setItemColor(D2::Types::UnitAny *item, WCHAR *buffer, int nColor) {
     if (Settings["itemInfo"]) {
-        auto classid = item->dwTxtFileNo;
         D2::Types::ItemTxt *itemText = D2::GetItemText(item->dwTxtFileNo);
-        //if (itemText->nType == 76/*hp pot*/ || itemText->nType == 77/*mp pot*/) {
         if (itemText->nType == 78) {
             nColor = 11;
         }
