@@ -45,6 +45,7 @@ public:
 	virtual void oogPostDraw();
 	virtual void allPostDraw();
 	virtual void allFinalDraw();
+	virtual void preDraw();
 };
 
 extern Feature* Features;

@@ -31,3 +31,4 @@ void Feature::gamePostDraw() { }
 void Feature::oogPostDraw() { }
 void Feature::allPostDraw() { }
 void Feature::allFinalDraw() { }
+void Feature::preDraw() { }
