@@ -13,8 +13,8 @@
 #include <string>
 
 REMOTEREF(int, DrawAutoMapStatsOffsetY, 0x7A51BC);
-REMOTEREF(D2::Types::UnitAny*, CurrentTooltipItem, 0x7BCBF4);
-REMOTEFUNC(BYTE __stdcall, GetMaxSocketCount, (D2::Types::UnitAny *pItem), 0x62BC20);
+REMOTEREF(D2::Types::ItemUnit*, CurrentTooltipItem, 0x7BCBF4);
+REMOTEFUNC(BYTE __stdcall, GetMaxSocketCount, (D2::Types::ItemUnit *pItem), 0x62BC20);
 REMOTEFUNC(int, FUN_0047a560, (), 0x47a560);
 
 Dialog splashDialog;
@@ -193,7 +193,7 @@ void __fastcall DrawRepairImageAlertIntercept(void *pImage, bool isArrow) {
 
 ASMPTR GetItemName_Original = 0x48C060;
 
-__declspec(naked) BOOL __fastcall GetItemName_Relocated(D2::Types::UnitAny* item, wchar_t* wBuffer, DWORD dwSize) {
+__declspec(naked) BOOL __fastcall GetItemName_Relocated(D2::Types::ItemUnit* item, wchar_t* wBuffer, DWORD dwSize) {
     static ASMPTR GetItemName_Rejoin = 0x48C068;
     __asm {
         push ebp
@@ -203,7 +203,7 @@ __declspec(naked) BOOL __fastcall GetItemName_Relocated(D2::Types::UnitAny* item
     }
 }
 
-BOOL __fastcall GetItemName_Intercept(D2::Types::UnitAny* item, wchar_t* wBuffer, DWORD dwSize) {
+BOOL __fastcall GetItemName_Intercept(D2::Types::ItemUnit* item, wchar_t* wBuffer, DWORD dwSize) {
     BOOL ret = GetItemName_Relocated(item, wBuffer, dwSize);
     DWORD sockets = D2::GetUnitStat(item, 194, 0);
 
@@ -253,6 +253,33 @@ REMOTEFUNC(void __fastcall, CalcTextDimensions, (wchar_t* wBuffer, long* x, long
 void __fastcall ItemDescription_Hook(wchar_t* wBuffer, long *x, long *y) {
     GetItemDescription(wBuffer);
     CalcTextDimensions(wBuffer, x, y);
+}
+
+[[maybe_unused]] int
+__fastcall setItemColor(D2::Types::UnitAny *item, WCHAR *buffer, int nColor) {
+    if (Settings["itemInfo"]) {
+        D2::Types::ItemTxt *itemText = D2::GetItemText(item->dwTxtFileNo);
+        if (itemText->nType == 78) {
+            nColor = 11;
+        }
+    }
+    return nColor;
+}
+
+__declspec(naked) void ItemColor_Hook() {
+    static ASMPTR jmpBack = 0x452929;
+    static ASMPTR ITEM_GetTypeFromTxtTable = 0x62b400;
+    __asm {
+        mov ecx, esi              // Argument 1, item
+                                  // argument 2, buffer (already in edx
+        push  DWORD PTR[ebp-0x4]; // add argument 3,
+        call setItemColor
+        mov    DWORD PTR[ebp-0x4], eax // actual color is set @ setItemColor
+
+        // Original code
+        call ITEM_GetTypeFromTxtTable;
+        JMP jmpBack;
+    }
 }
 
 BOOL __fastcall OverrideQuestState(int questId, int questState, BOOL value) {
@@ -330,18 +357,8 @@ __declspec(naked) void __stdcall GetGlobalLight_Original(void* pAct, BYTE* red, 
     }
 }
 
-void __stdcall GetGlobalLight(void* pAct, BYTE &red, BYTE &green, BYTE &blue) {
-    if (Settings["useColors"]) {
-        red = (BYTE)(sin(flashy) * 127.5 + 127.5);
-        green = (BYTE)(sin(flashy * 2) * 127.5 + 127.5);
-        blue = (BYTE)(sin(flashy * 3) * 127.5 + 127.5);
-        return;
-    }
-
-    GetGlobalLight_Original(pAct, &red, &green, &blue);
-}
-
-wchar_t* __fastcall UnitVisualname(D2::Types::UnitAny *pUnit) {
+// Can this be even more specific? Maybe D2::Types::NonPlayerUnit?
+wchar_t* __fastcall UnitVisualname(D2::Types::LivingUnit *pUnit) {
     // For now it falls under item info, as it is as item/unit level
     if (!Settings["itemInfo"]) return D2::GetUnitName(pUnit);
 
@@ -362,10 +379,9 @@ public:
         SplashScreenDialogSetup();
         MemoryPatch(0x42fb40) << CALL(SplashScreenHook);
 
-        MemoryPatch(0x4F5623) << BYTESEQ{ 0xC7, 0xC0, 0, 0, 0, 0 }; // Allow multiple windows open
+        MemoryPatch(0x4f5621) << NOP_TO(0x4f5672); // Allow multiple windows open
         MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
         MemoryPatch(0x43BF60) << ASM::RET; // Prevent battle.net connections
-        MemoryPatch(0x61C0B0) << JUMP(GetGlobalLight);
         MemoryPatch(0x515FB1) << BYTE(0x01); // Delay of 1 on cleaning up sounds after quiting game
         MemoryPatch(0x4781AC) << BYTESEQ{ 0x6A, 0x05, 0x90, 0x90, 0x90 }; // Hyperjoin for TCP/IP games
         MemoryPatch(GetItemName_Original) << JUMP(GetItemName_Intercept);
@@ -377,6 +393,9 @@ public:
         MemoryPatch(SocketNotGrey_Patches[0]) << DWORD(0x400000);
         MemoryPatch(SocketNotGrey_Patches[1]) << DWORD(0x400000);
         MemoryPatch(SocketNotGrey_Patches[2]) << DWORD(0x400000);
+
+        // override item colors when draw on the floor
+        MemoryPatch(0x452924) << JUMP(ItemColor_Hook);
 
         // Fix RandTransforms.dat for LoD, to colorize monsters properly
         MemoryPatch(0x4666A5) << BYTE(0x26); // RandTransforms
@@ -392,13 +411,13 @@ public:
         AutomapInfoHooks.push_back([]() -> std::wstring {
             return version;
         });
-
-        AutomapInfoHooks.push_back([]() -> std::wstring {
-            DWORD elapsed = GetTickCount() - gamestart, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
-            wchar_t msg[16];
-            swprintf_s(msg, L"%d:%02d", minutes, seconds);
-            return msg;
-        });
+//
+//        AutomapInfoHooks.push_back([]() -> std::wstring {
+//            DWORD elapsed = GetTickCount() - gamestart, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
+//            wchar_t msg[16];
+//            swprintf_s(msg, L"%d:%02d", minutes, seconds);
+//            return msg;
+//        });
     }
 
     void gameLoop() {
@@ -424,4 +443,21 @@ public:
         height = D2::GetTextSize(version.c_str(), &width, &fileno);
         D2::DrawGameText(version.c_str(), D2::ScreenWidth - width - 5, D2::ScreenHeight - 5, 4, 0);
     }
+
+    bool keyEvent(DWORD keyCode, bool down, DWORD flags) {
+        switch (keyCode) {
+        case VK_PAUSE:
+            State["paused"] = !State["paused"];
+            if (State["paused"]) {
+                gamelog << COLOR(2) << "Game paused." << std::endl;
+            }
+            else {
+                gamelog << COLOR(1) << "Game unpaused." << std::endl;
+            }
+            return false;
+        }
+
+        return true;
+    }
+
 } feature;

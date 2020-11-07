@@ -2,10 +2,25 @@
  * Borrowed this from d2bs. Thanks noah!
  */
 #pragma once
-#ifndef _D2STRUCTS_H
-#define _D2STRUCTS_H
 
 #include <windows.h>
+#include <vector>
+
+class DPOINT {
+public:
+    DPOINT(double x, double y);
+    double x, y;
+    DPOINT operator +(const DPOINT& p);
+    DPOINT operator -(const DPOINT& p);
+    DPOINT operator /(const double d);
+    double distanceTo(DPOINT target);
+    POINT toScreen(POINT screenadjust = { 0, 0 });
+    POINT toAutomap(POINT screenadjust = { 0, 0 });
+    void DrawAutomapX(DWORD dwColor, double size = 5.0);
+    void DrawWorldX(DWORD dwColor, double size = 1.0);
+    void DrawAutomapDot(DWORD dwColor);
+    void DrawWorldDot(DWORD dwColor);
+};
 
 #pragma warning(push)
 #pragma warning(disable : 4201)
@@ -15,12 +30,12 @@ typedef void(*VOIDFUNC)();
 
 namespace D2 {
     enum class UnitType : DWORD {
-        UNIT_PLAYER = 0,
-        UNIT_MONSTER = 1,
-        UNIT_OBJECT = 2,
-        UNIT_MISSILE = 3,
-        UNIT_ITEM = 4,
-        UNIT_ROOMTILE = 5,
+        PLAYER = 0,
+        MONSTER = 1,
+        OBJECT = 2,
+        MISSILE = 3,
+        ITEM = 4,
+        ROOMTILE = 5,
     };
 
     enum class ItemQuality : DWORD {
@@ -113,7 +128,7 @@ namespace D2 {
 
         struct AutomapCell {
             DWORD fSaved;       // 0x00
-            WORD nCellNo;       // 0x04
+            short nCellNo;      // 0x04
             WORD xPixel;        // 0x06
             WORD yPixel;        // 0x08
             WORD wWeight;       // 0x0A
@@ -366,6 +381,8 @@ namespace D2 {
             DWORD _3;                // 0x10
             DWORD dwType;            // 0x14
             DWORD dwPosY;            // 0x18
+
+            DPOINT pos(Room2* pRoom, DPOINT adjust = { 0, 0 });
         };
 
         struct Level {
@@ -392,6 +409,9 @@ namespace D2 {
                 DWORD WarpY[9];
             };                   // 0x204
             DWORD dwRoomEntries; // 0x228
+
+            std::vector<Room1*> getAllRoom1();
+            std::vector<Room2*> getAllRoom2();
         };
 
         struct Room2 {
@@ -422,6 +442,7 @@ namespace D2 {
             DWORD getWorldY();
             DWORD getWorldWidth();
             DWORD getWorldHeight();
+            std::vector<PresetUnit*> getAllPresetUnits();
         };
 
 #pragma pack(pop)
@@ -831,14 +852,20 @@ namespace D2 {
 
         struct MonsterData {
             BYTE _1[22]; // 0x00
-            struct {
-                BYTE fUnk : 1;
-                BYTE fNormal : 1;
-                BYTE fChamp : 1;
-                BYTE fBoss : 1;
-                BYTE fMinion : 1;
+            union {
+                struct {
+                    bool fOther     : 1;
+                    bool fSuper     : 1;
+                    bool fChamp     : 1;
+                    bool fUnique    : 1;
+                    bool fMinion    : 1;
+                    bool fPossessed : 1;
+                    bool fGhostly   : 1;
+                    bool fMultishot : 1;
+                }; // 0x16
+                BYTE typeFlags;
             }; // 0x16
-            BYTE _2[5];
+            BYTE _2[5]; // 0x17
             BYTE anEnchants[9]; // 0x1C
             WORD wUniqueNo;     // 0x26
             DWORD _5;           // 0x28
@@ -958,10 +985,101 @@ namespace D2 {
             UnitAny* pRoomNext;       // 0xE8
             void* pMsgFirst;          // 0xEC
             void* pMsgLast;           // 0xF0
+
+            DPOINT pos(DPOINT adjust = { 0, 0 });
+            DPOINT getTargetPos(DPOINT adjust = { 0, 0 });
+            double distanceTo(UnitAny* pTarget);
+            void DrawAutomapX(DWORD dwColor, double size = 5.0);
+            void DrawWorldX(DWORD dwColor, double size = 1.0);
+            void DrawAutomapDot(DWORD dwColor);
+            void DrawWorldDot(DWORD dwColor);
         };
 
+        // Specific unit types inspired by Jaenster
+
+        struct LivingUnit : UnitAny { // Players and Non-Players
+            // Add any unit specific helpers here
+            DWORD unitHP();
+            bool isPlayerFriendly();
+            bool isPlayerHostile();
+            bool isAttackable();
+            bool isPlayerEnemy();
+            Room1* getRoom1();
+            Room2* getRoom2();
+            Level* getLevel();
+        };
+
+        struct PlayerUnit : LivingUnit { // Players Only (type 0)
+            // Add any unit specific helpers here
+        };
+
+        struct CurrentPlayerUnit : PlayerUnit { // The current player
+            // Most of our player actions should probably go here
+        };
+
+        struct NonPlayerUnit : LivingUnit { // Non-Players Only (type 1)
+            // Add any unit specific helpers here
+        };
+
+        struct ObjectUnit : UnitAny { // Objects Only (type 2)
+            // Add any unit specific helpers here
+        };
+
+        struct MissileUnit : UnitAny { // Missiles Only (type 3)
+            // Add any unit specific helpers here
+        };
+
+        struct ItemUnit : UnitAny { // Items Only (type 4)
+            // Add any unit specific helpers here
+        };
+
+        struct RoomTileUnit : UnitAny { // Room Tiles Only (type 5)
+            // Add any unit specific helpers here
+        };
+
+        template <class T>
         struct UnitHashTable {
-            UnitAny* table[128];
+            T* table[128];
+
+            // Based on work from Jaenster
+            std::vector<T*> all() {
+                std::vector<T*> ret;
+
+                for (T* pUnit : table) {
+                    while (pUnit != nullptr) {
+                        ret.push_back(pUnit);
+                        pUnit = (T*)(pUnit->pListNext);
+                    }
+                }
+
+                return ret;
+            }
+
+            // Based on work from Jaenster
+            std::vector<T*> allInRange(DPOINT source, double radius) {
+                std::vector<T*> ret;
+
+                for (T* pUnit : table) {
+                    while (pUnit != nullptr) {
+                        if (pUnit->pos().distanceTo(source) <= radius) {
+                            ret.push_back(pUnit);
+                        }
+
+                        pUnit = (T*)(pUnit->pListNext);
+                    }
+                }
+
+                return ret;
+            }
+        };
+
+        struct UnitHashTableCollection {
+            UnitHashTable<PlayerUnit> players;
+            UnitHashTable<NonPlayerUnit> nonplayers;
+            UnitHashTable<ObjectUnit> objects;
+            UnitHashTable<MissileUnit> missiles;
+            UnitHashTable<ItemUnit> items;
+            UnitHashTable<RoomTileUnit> roomtiles;
         };
 
         struct WardenClientRegion_t {
@@ -1292,6 +1410,74 @@ namespace D2 {
             VOIDFUNC fpDebugFillBackBuffer;
             VOIDFUNC fpClearCaches;
         };
+
+        // exported from ghidra
+        struct DC6Block {
+            int nFlip;
+            int nWidth;
+            int nHeight;
+            int nOffsetX;
+            int nOffsetY;
+            int nAllocSize;
+            int nNextBlock;
+            int nLength;
+            char data;
+        };
+
+        struct DC6 {
+            int nVersion;
+            int nFlags;
+            int nFormat;
+            char nTerm[4];
+            int nDirections;
+            int nFrames;
+            DC6Block *pBlocks;
+        };
+
+        struct DC6Context {
+            int nFrameNumberMaybe;
+            int field_0x4;
+            DWORD field_0x8;
+            DWORD field_0xc;
+            DWORD field_0x10;
+            DWORD field_0x14;
+            DWORD field_0x18;
+            DWORD field_0x1c;
+            DWORD field_0x20;
+            DWORD field_0x24;
+            DWORD field_0x28;
+            DWORD field_0x2c;
+            DWORD field_0x30;
+            struct DC6 * pDC6;
+            DWORD field_0x38;
+            DWORD field_0x3c;
+            int field_0x40;
+            DWORD field_0x44;
+        };
+
+        struct IncompleteGameData {
+            BYTE unk[4];                                // 0x0
+            DWORD seed;                                 // 0x4
+            BYTE unk2[0x20];                            // 0x8
+            WORD nServerToken;                          // 0x28
+            char szGameName[0x10];                      // 0x2A
+            char szGamePassword[0x10];                  // 0x3A
+            char szGameDescription[0x20];               // 0x4A
+            BYTE nGameType;                             // 0x6A
+            BYTE unk3[2];                               // 0x6B
+            BYTE nDifficulty;                           // 0x6D
+            BYTE unk4[2];                               // 0x6E
+            BOOL bExpansion;                            // 0x70
+            DWORD dwGameType;                           // 0x74
+            WORD wItemFormat;                           // 0x78
+            BYTE unk5[0x1CB6];                          // 0x7A
+            BYTE nBossFlagList[0x40];                   // 0x1D30
+            BYTE unk6[0x64];                            // 0x1D70
+            IncompleteGameData* pPrev;                  // 0x1DD4
+            IncompleteGameData* pNext;                  // 0x1DD8
+            BYTE unk7[0xC];                             // 0x1DDC
+        }; // Total Size: 0x1DE8
+
     }
 }
 
@@ -1300,7 +1486,4 @@ namespace D2 {
 
 namespace Offset {
     extern DWORD Base, D2CLIENT, D2COMMON, D2GAME, D2LANG, D2NET, D2MULTI, D2LAUNCH, D2WIN, D2GFX, D2CMP, BNCLIENT, STORM;
-    void DefineOffsets();
 }
-
-#endif

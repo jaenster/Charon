@@ -80,6 +80,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["showMissiles"] = !Settings["showMissiles"];
                 SaveSettings();
             }),
+        new DialogToggleInfo(L"Disable Rooftops",
+            []() -> std::wstring {
+                return Settings["disableRoofs"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["disableRoofs"] = !Settings["disableRoofs"];
+                SaveSettings();
+            }),
         nullptr, // Empty Gap
         new DialogToggleInfo(L"Regen Single Player Maps",
             []() -> std::wstring {
@@ -103,6 +111,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
                 Settings["noPickup"] = !Settings["noPickup"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Prevent socketing",
+            []() -> std::wstring {
+                return Settings["preventSockets"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["preventSockets"] = !Settings["preventSockets"];
                 SaveSettings();
             }),
         nullptr, // Empty Gap
@@ -171,6 +187,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["reportXP"] = !Settings["reportXP"];
                 SaveSettings();
             }),
+        new DialogToggleInfo(L"Omnivision",
+            []() -> std::wstring {
+                return Settings["omnivision"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["omnivision"] = !Settings["omnivision"];
+                SaveSettings();
+            }),
         nullptr, // Empty Gap
         new DialogToggleInfo(L"\u00FFc;*\u00FFc4Always D3D Mode",
             []() -> std::wstring {
@@ -198,6 +222,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["alwaysD3DStartFull"] = !Settings["alwaysD3DStartFull"];
                 SaveSettings();
             }),
+        new DialogToggleInfo(L"Draw all states",
+             []() -> std::wstring {
+                 return Settings["drawAllStates"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+             }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["drawAllStates"] = !Settings["drawAllStates"];
+                SaveSettings();
+            }),
         nullptr, // Empty Gap
         new DialogToggleInfo(L"Draw Color Swatch",
             []() -> std::wstring {
@@ -215,20 +247,36 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["disableWeather"] = !Settings["disableWeather"];
                 SaveSettings();
             }),
-        new DialogToggleInfo(L"Lighting Test",
-            []() -> std::wstring {
-                return Settings["useColors"] ? L"\u00FFc2On" : L"\u00FFc1Off";
-            }, [](MouseButton button, bool down) -> void {
-                if (down) return;
-                Settings["useColors"] = !Settings["useColors"];
-                SaveSettings();
-            }),
         new DialogToggleInfo(L"Debug Mode",
             []() -> std::wstring {
                 return Settings["debugMode"] ? L"\u00FFc2On" : L"\u00FFc1Off";
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
                 Settings["debugMode"] = !Settings["debugMode"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Debug Mode Type",
+            []() -> std::wstring {
+                switch (Settings["debugModeType"]) {
+                case DebugMode::NORMAL:
+                    return L"\u00FFc5Normal";
+                case DebugMode::DARK:
+                    return L"\u00FFc3Dark";
+                case DebugMode::HIDDEN:
+                default:
+                    return L"\u00FFc1Hidden";
+                }
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["debugModeType"] = (Settings["debugModeType"] + 1) % 3;
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Show Walls in Debug",
+            []() -> std::wstring {
+                return Settings["debugModeWalls"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["debugModeWalls"] = !Settings["debugModeWalls"];
                 SaveSettings();
             }),
         new DialogToggleInfo(L"Debug Packets",
@@ -245,20 +293,19 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
 namespace SettingsFeature {
     Element* dialog;
 
-
-    const static int __fastcall isVisibleWrapper() {
-        return dialog->isVisible();
+    const static int __fastcall shouldPause() {
+        return dialog->isVisible() || State["paused"];
     }
 
-    int __declspec(naked) pauseGameIntercept() {    
+    int __declspec(naked) pauseGameIntercept() {
         const static ASMPTR GetUiFlagWrapper = 0x453a90;
         const static ASMPTR Continue = 0x44efed;
         const static ASMPTR PauseGame = 0x44f00a;
         __asm {
-                
-                
-                CALL isVisibleWrapper 
-                CMP EAX, 1    
+
+
+                CALL shouldPause
+                CMP EAX, 1
                 JNE original
                 JMP PauseGame
 

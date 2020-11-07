@@ -45,6 +45,7 @@ public:
 	virtual void oogPostDraw();
 	virtual void allPostDraw();
 	virtual void allFinalDraw();
+	virtual void roomInit(D2::Types::IncompleteGameData* pGame, D2::Types::Room1* pRoom1);
 };
 
 extern Feature* Features;
@@ -58,3 +59,11 @@ extern StateMap State;
 extern StateMap Settings;
 void LoadSettings();
 void SaveSettings();
+
+namespace DebugMode {
+	enum DebugModeTypes {
+		NORMAL = 0,
+		DARK = 1,
+		HIDDEN = 2,
+	};
+}

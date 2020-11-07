@@ -26,13 +26,18 @@ namespace D2 {
 
 DPOINT xvector = { 16.0, 8.0 }, yvector = { -16.0, 8.0 };
 
+DPOINT::DPOINT(double x, double y) {
+    this->x = x;
+    this->y = y;
+}
+
 void DrawRectangle(POINT a, POINT b, DWORD dwColor) {
     if (
         a.x >= 0 && a.x < D2::ScreenWidth ||
         b.x >= 0 && b.x < D2::ScreenWidth ||
         a.y >= 0 && a.y < D2::ScreenHeight ||
         b.y >= 0 && b.y < D2::ScreenHeight
-        ) {
+    ) {
         D2DrawRectangle(a.x, a.y, b.x, b.y, dwColor, 0xFF);
     }
 }
@@ -48,167 +53,9 @@ void DrawLine(POINT a, POINT b, DWORD dwColor) {
     }
 }
 
-POINT WorldToScreen(DPOINT pos) {
-    POINT ret{
-        (long)(pos.x * xvector.x + pos.y * yvector.x) - GetMouseXOffset(),
-        (long)(pos.x * xvector.y + pos.y * yvector.y) - GetMouseYOffset()
-    };
-    return ret;
-}
-
-POINT WorldToScreen(D2::Types::Path *path, DPOINT adjust) {
-    return WorldToScreen({ (double)path->xPos + adjust.x + (double)path->xOffset / 65536.0, (double)path->yPos + adjust.y + (double)path->yOffset / 65536.0 });
-}
-
-POINT WorldToAutomap(DPOINT pos) {
-    POINT ret{
-        (long)((pos.x * xvector.x + pos.y * yvector.x) / (double)Divisor) - AutomapOffset.x + 8,
-        (long)((pos.x * xvector.y + pos.y * yvector.y) / (double)Divisor) - AutomapOffset.y - 8
-    };
-    return ret;
-}
-
-POINT WorldToAutomap(D2::Types::Path *path, DPOINT adjust) {
-    return WorldToAutomap({ (double)path->xPos + adjust.x + (double)path->xOffset / 65536.0, (double)path->yPos + adjust.y + (double)path->yOffset / 65536.0 });
-}
-
 void DrawDot(POINT pos, DWORD dwColor) {
     DrawLine({ pos.x - 1, pos.y }, { pos.x + 1, pos.y }, dwColor);
     DrawLine({ pos.x, pos.y - 1 }, { pos.x, pos.y + 1 }, dwColor);
-}
-
-void DrawAutomapX(DPOINT arg, DWORD dwColor, double size) {
-    POINT a = WorldToAutomap({ (double)arg.x - size, (double)arg.y }), b = WorldToAutomap({ (double)arg.x + size, (double)arg.y });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-    a = WorldToAutomap({ (double)arg.x, (double)arg.y - size }), b = WorldToAutomap({ (double)arg.x, (double)arg.y + size });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-}
-
-void DrawWorldX(DPOINT arg, DWORD dwColor, double size) {
-    POINT a = WorldToScreen({ (double)arg.x - size, (double)arg.y }), b = WorldToScreen({ (double)arg.x + size, (double)arg.y });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-    a = WorldToScreen({ (double)arg.x, (double)arg.y - size }), b = WorldToScreen({ (double)arg.x, (double)arg.y + size });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-}
-
-void DrawAutomapX(D2::Types::ItemPath* arg, DWORD dwColor, double size) {
-    POINT a = WorldToAutomap({ (double)arg->dwPosX - size, (double)arg->dwPosY }), b = WorldToAutomap({ (double)arg->dwPosX + size, (double)arg->dwPosY });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-    a = WorldToAutomap({ (double)arg->dwPosX, (double)arg->dwPosY - size }), b = WorldToAutomap({ (double)arg->dwPosX, (double)arg->dwPosY + size });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-}
-
-void DrawWorldX(D2::Types::ItemPath* arg, DWORD dwColor, double size) {
-    POINT a = WorldToScreen({ (double)arg->dwPosX - size, (double)arg->dwPosY }), b = WorldToScreen({ (double)arg->dwPosX + size, (double)arg->dwPosY });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-    a = WorldToScreen({ (double)arg->dwPosX, (double)arg->dwPosY - size }), b = WorldToScreen({ (double)arg->dwPosX, (double)arg->dwPosY + size });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-}
-
-void DrawAutomapX(D2::Types::Path *arg, DWORD dwColor, double size) {
-    POINT a = WorldToAutomap(arg, { -size, 0 }), b = WorldToAutomap(arg, { size, 0 });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-    a = WorldToAutomap(arg, { 0, -size }), b = WorldToAutomap(arg, { 0, size });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-}
-
-void DrawWorldX(D2::Types::Path* arg, DWORD dwColor, double size) {
-    POINT a = WorldToScreen(arg, { -size, 0 }), b = WorldToScreen(arg, { size, 0 });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-    a = WorldToScreen(arg, { 0, -size }), b = WorldToScreen(arg, { 0, size });
-    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-}
-
-template <int len>
-void DrawAutomapShape(DPOINT points[len], DWORD dwColor) {
-    POINT pos[2];
-
-    pos[0] = WorldToAutomap(points[len - 1]);
-    pos[1] = WorldToAutomap(points[0]);
-    DrawLine(pos[0], pos[1], dwColor);
-
-    for (int c = 1; c < len; c++) {
-        pos[0] = pos[1];
-        pos[1] = WorldToAutomap(points[c]);
-        DrawLine(pos[0], pos[1], dwColor);
-    }
-}
-
-template <int len>
-void DrawWorldShape(DPOINT points[len], DWORD dwColor) {
-    POINT pos[2];
-
-    pos[0] = WorldToScreen(points[len - 1]);
-    pos[1] = WorldToScreen(points[0]);
-    DrawLine(pos[0], pos[1], dwColor);
-
-    for (int c = 1; c < len; c++) {
-        pos[0] = pos[1];
-        pos[1] = WorldToScreen(points[c]);
-        DrawLine(pos[0], pos[1], dwColor);
-    }
-}
-
-void DrawAutomapRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, double angle) {
-    POINT pos[2];
-    double interval = M_PI * 2 / sides, i = angle;
-
-    pos[0] = WorldToAutomap({ center.x + cos(i) * radius, center.y + sin(i) * radius });
-    i += interval;
-    pos[1] = WorldToAutomap({ center.x + cos(i) * radius, center.y + sin(i) * radius });
-    i += interval;
-    DrawLine(pos[0], pos[1], dwColor);
-
-    for (int c = 1; c < sides; c++, i += interval) {
-        pos[0] = pos[1];
-        pos[1] = WorldToAutomap({ center.x + cos(i) * radius, center.y + sin(i) * radius });
-        DrawLine(pos[0], pos[1], dwColor);
-    }
-}
-
-void DrawAutomapRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, DPOINT target) {
-    DrawAutomapRadialShape(center, radius, sides, dwColor, atan2(target.y - center.y, target.x - center.x));
-}
-
-void DrawWorldRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, double angle) {
-    POINT pos[2];
-    double interval = M_PI * 2 / sides, i = angle;
-
-    pos[0] = WorldToScreen({ center.x + cos(i) * radius, center.y + sin(i) * radius });
-    i += interval;
-    pos[1] = WorldToScreen({ center.x + cos(i) * radius, center.y + sin(i) * radius });
-    i += interval;
-    DrawLine(pos[0], pos[1], dwColor);
-
-    for (int c = 1; c < sides; c++, i += interval) {
-        pos[0] = pos[1];
-        pos[1] = WorldToScreen({ center.x + cos(i) * radius, center.y + sin(i) * radius });
-        DrawLine(pos[0], pos[1], dwColor);
-    }
-}
-
-void DrawWorldRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, DPOINT target) {
-    DrawWorldRadialShape(center, radius, sides, dwColor, atan2(target.y - center.y, target.x - center.x));
-}
-
-DWORD unitHP(D2::Types::UnitAny* unit) {
-    return D2::GetUnitStat(unit, 6, 0) >> 8;
-}
-
-bool isFriendly(D2::Types::UnitAny* unit) {
-    return D2::GetUnitStat(unit, 172, 0) == 2;
-}
-
-bool isHostile(D2::Types::UnitAny* unit) {
-    return D2::GetUnitStat(unit, 172, 0) == 0;
-}
-
-bool isAttackable(D2::Types::UnitAny* unit) {
-    return unit->dwFlags & 0x4;
-}
-
-bool isEnemy(D2::Types::UnitAny* unit) {
-    return unitHP(unit) > 0 && isHostile(unit) && isAttackable(unit);
 }
 
 DPOINT DPOINT::operator +(const DPOINT& p) {
@@ -223,142 +70,158 @@ DPOINT DPOINT::operator /(const double d) {
     return { x / d, y / d };
 }
 
-double DPOINT::length() {
-    return sqrt(x * x + y + y);
+double DPOINT::distanceTo(DPOINT target) {
+    DPOINT v = target - *this;
+    return sqrt(v.x * v.x + v.y + v.y);
 }
 
-DPOINT getPosition(D2::Types::UnitAny* pUnit) {
-    return { (double)pUnit->pPath->xPos + (double)pUnit->pPath->xOffset / 65536.0, (double)pUnit->pPath->yPos + (double)pUnit->pPath->yOffset / 65536.0 };
+
+POINT DPOINT::toScreen(POINT screenadjust) {
+    return {
+        screenadjust.x + (long)(x * xvector.x + y * yvector.x) - GetMouseXOffset(),
+        screenadjust.y + (long)(x * xvector.y + y * yvector.y) - GetMouseYOffset()
+    };
 }
 
-DPOINT getTargetPosition(D2::Types::UnitAny* pUnit) {
-    return { (double)pUnit->pPath->xTarget, (double)pUnit->pPath->yTarget };
+POINT DPOINT::toAutomap(POINT screenadjust) {
+    return {
+        screenadjust.x + (long)((x * xvector.x + y * yvector.x) / (double)Divisor) - AutomapOffset.x + 8,
+        screenadjust.y + (long)((x * xvector.y + y * yvector.y) / (double)Divisor) - AutomapOffset.y - 8
+    };
 }
 
-// Based on work from Jaenster
-void forUnits(int type, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable *tables) {
-    if (tables != nullptr) {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                callback(pUnit);
-            }
-        }
-    }
-    else {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                callback(pUnit);
-            }
-        }
-
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                callback(pUnit);
-            }
-        }
-    }
+void DPOINT::DrawAutomapX(DWORD dwColor, double size) {
+    DrawLine(DPOINT(x - size, y).toAutomap(), DPOINT(x + size, y).toAutomap(), dwColor);
+    DrawLine(DPOINT(x, y - size).toAutomap(), DPOINT(x, y + size).toAutomap(), dwColor);
 }
 
-// Based on work from Jaenster
-std::vector<D2::Types::UnitAny*> getUnits(int type, D2::Types::UnitHashTable* tables, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback) {
-    std::vector<D2::Types::UnitAny*> ret;
-
-    if (tables != nullptr) {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if (filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-    }
-    else {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if (filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if (filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-    }
-
-    return ret;
+void DPOINT::DrawWorldX(DWORD dwColor, double size) {
+    DrawLine(DPOINT(x - size, y).toScreen(), DPOINT(x + size, y).toScreen(), dwColor);
+    DrawLine(DPOINT(x, y - size).toScreen(), DPOINT(x, y + size).toScreen(), dwColor);
 }
 
-// Based on work from Jaenster
-void forUnitsInRange(int type, DPOINT source, double radius, std::function<void(D2::Types::UnitAny* pUnit)> callback, D2::Types::UnitHashTable* tables) {
-    if (tables != nullptr) {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius) {
-                    callback(pUnit);
-                }
-            }
-        }
-    }
-    else {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius) {
-                    callback(pUnit);
-                }
-            }
-        }
-
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius) {
-                    callback(pUnit);
-                }
-            }
-        }
-    }
+void DPOINT::DrawAutomapDot(DWORD dwColor) {
+    DrawLine(this->toAutomap({ -1, 0 }), this->toAutomap({ 1, 0 }), dwColor);
+    DrawLine(this->toAutomap({ 0, -1 }), this->toAutomap({ 0, 1 }), dwColor);
 }
 
-// Based on work from Jaenster
-std::vector<D2::Types::UnitAny*> getUnitsInRange(int type, DPOINT source, double radius, D2::Types::UnitHashTable* tables, std::function<bool(D2::Types::UnitAny* pUnit)> filterCallback) {
-    std::vector<D2::Types::UnitAny*> ret;
-
-    if (tables != nullptr) {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = tables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius && filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-    }
-    else {
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ClientSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius && filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-
-        for (int c = 0; c < 128; c++) {
-            for (D2::Types::UnitAny* pUnit = D2::ServerSideUnitHashTables[type].table[c]; pUnit != NULL; pUnit = pUnit->pListNext) {
-                if ((getPosition(pUnit) - source).length() <= radius && filterCallback(pUnit)) {
-                    ret.push_back(pUnit);
-                }
-            }
-        }
-    }
-
-    return ret;
+void DPOINT::DrawWorldDot(DWORD dwColor) {
+    DrawLine(this->toScreen({ -1, 0 }), this->toScreen({ 1, 0 }), dwColor);
+    DrawLine(this->toScreen({ 0, -1 }), this->toScreen({ 0, 1 }), dwColor);
 }
 
 namespace D2 {
     namespace Types {
+
+        void UnitAny::DrawAutomapX(DWORD dwColor, double size) { return this->pos().DrawAutomapX(dwColor, size); }
+        void UnitAny::DrawWorldX(DWORD dwColor, double size) { return this->pos().DrawWorldX(dwColor, size); }
+        void UnitAny::DrawAutomapDot(DWORD dwColor) { return this->pos().DrawAutomapDot(dwColor); }
+        void UnitAny::DrawWorldDot(DWORD dwColor) { return this->pos().DrawWorldDot(dwColor); }
+
+        double UnitAny::distanceTo(UnitAny* pTarget) {
+            return this->pos().distanceTo(pTarget->pos());
+        }
+
+        std::vector<PresetUnit*> Room2::getAllPresetUnits() {
+            std::vector<PresetUnit*> ret;
+
+            for (D2::Types::PresetUnit* unit = this->pPreset; unit != NULL; unit = unit->pPresetNext) {
+                ret.push_back(unit);
+            }
+
+            return ret;
+        }
+
+        std::vector<Room1*> Level::getAllRoom1() {
+            std::vector<Room1*> ret;
+
+            for (D2::Types::Room2* room = this->pRoom2First; room != NULL; room = room->pRoom2Next) {
+                if (room->pRoom1) {
+                    ret.push_back(room->pRoom1);
+                }
+            }
+
+            return ret;
+        }
+
+        std::vector<Room2*> Level::getAllRoom2() {
+            std::vector<Room2*> ret;
+
+            for (D2::Types::Room2* room = this->pRoom2First; room != NULL; room = room->pRoom2Next) {
+                ret.push_back(room);
+            }
+
+            return ret;
+        }
+
+        DPOINT PresetUnit::pos(Room2* pRoom, DPOINT adjust) {
+            return { adjust.x + (double)pRoom->dwPosX * 5 + (double)this->dwPosX, adjust.y + (double)pRoom->dwPosY * 5 + (double)this->dwPosY };
+        }
+
+        DPOINT UnitAny::pos(DPOINT adjust) {
+            if (this->dwType == 2 || this->dwType == 5) {
+                return { adjust.x + (double)this->pObjectPath->dwPosX, adjust.y + (double)this->pObjectPath->dwPosY };
+            }
+
+            if (this->dwType == 4) {
+                return { adjust.x + (double)this->pItemPath->dwPosX, adjust.y + (double)this->pItemPath->dwPosY };
+            }
+
+            return { adjust.x + (double)this->pPath->xPos + (double)this->pPath->xOffset / 65536.0, adjust.y + (double)this->pPath->yPos + (double)this->pPath->yOffset / 65536.0 };
+        }
+
+        DPOINT UnitAny::getTargetPos(DPOINT adjust) {
+            if (this->dwType == 2 || this->dwType == 4) {
+                return this->pos();
+            }
+
+            return { (double)this->pPath->xTarget, (double)this->pPath->yTarget };
+        }
+
+        Room1* LivingUnit::getRoom1() {
+            if (this->pPath && this->pPath->pRoom1) {
+                return this->pPath->pRoom1;
+            }
+
+            return nullptr;
+        }
+
+        Room2* LivingUnit::getRoom2() {
+            if (this->pPath && this->pPath->pRoom1 && this->pPath->pRoom1->pRoom2) {
+                return this->pPath->pRoom1->pRoom2;
+            }
+
+            return nullptr;
+        }
+
+        Level* LivingUnit::getLevel() {
+            if (this->pPath && this->pPath->pRoom1 && this->pPath->pRoom1->pRoom2 && this->pPath->pRoom1->pRoom2->pLevel) {
+                return this->pPath->pRoom1->pRoom2->pLevel;
+            }
+
+            return nullptr;
+        }
+
+        DWORD LivingUnit::unitHP() {
+            return D2::GetUnitStat(this, 6, 0) >> 8;
+        }
+
+        bool LivingUnit::isPlayerFriendly() {
+            return D2::GetUnitStat(this, 172, 0) == 2;
+        }
+
+        bool LivingUnit::isPlayerHostile() {
+            return D2::GetUnitStat(this, 172, 0) == 0;
+        }
+
+        bool LivingUnit::isAttackable() {
+            return this->dwFlags & 0x4;
+        }
+
+        bool LivingUnit::isPlayerEnemy() {
+            return this->unitHP() > 0 && this->isPlayerHostile() && this->isAttackable();
+        }
+
         WORD CollMap::getCollision(DWORD localx, DWORD localy, WORD mask) {
             return pMapStart[localx + localy * dwSizeGameX] & mask;
         }

@@ -33,7 +33,7 @@ DWORD dwOldStyleEx = 0;
 void D3D_DirectDrawScreenSetup() {
     InternalWidth = 800;
     InternalHeight = 600;
-    IDirectDraw->SetCooperativeLevel(D2::hWnd, DDSCL_NORMAL);
+    IDirectDraw->SetCooperativeLevel(D2::hWnd, DDSCL_NORMAL | DDSCL_NOWINDOWCHANGES);
     if (!dwOldStyle) {
         dwOldStyle = GetWindowLong(D2::hWnd, GWL_STYLE);
         dwOldStyleEx = GetWindowLong(D2::hWnd, GWL_EXSTYLE);
@@ -218,10 +218,11 @@ BOOL __stdcall SetWindowPosStub(HWND hWnd, HWND hWndInsertAfter, int X, int Y, i
 namespace AlwaysD3D {
 
     class : public Feature {
-        bool startFull = false;
+        bool startFull = false, usingAD3D = false;
     public:
         void init() {
             if (Settings["alwaysD3D"]) {
+                usingAD3D = true;
                 // Prevent this MoveWindow call since it pushes the window off the screen.
                 MemoryPatch(0x4f5b8b) << CALL(SetWindowPosStub) << ASM::NOP;
 
@@ -268,7 +269,7 @@ namespace AlwaysD3D {
         }
 
         void allFinalDraw() {
-            if (startFull) {
+            if (usingAD3D && startFull) {
                 ToggleFullscreen();
                 startFull = false;
             }

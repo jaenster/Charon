@@ -25,10 +25,10 @@ namespace D2 {
 
 	// Basically, if the address represents an array (not a pointer to an array) use this
 	// global pointer 'GLOBALPTR' macro, otherwise use global reference 'GLOBALREF' instead
-	GLOBALPTR(Types::UnitHashTable, ClientSideUnitHashTables, 0x7A5270);
-	GLOBALPTR(Types::UnitHashTable, ServerSideUnitHashTables, 0x7A5E70);
+	GLOBALREF(Types::UnitHashTableCollection, ClientSideUnits, 0x7A5270);
+	GLOBALREF(Types::UnitHashTableCollection, ServerSideUnits, 0x7A5E70);
 	GLOBALPTR(Types::GameStructInfo, GameInfo, 0x7A0438);
-	GLOBALREF(Types::UnitAny*, PlayerUnit, 0x7A6A70);
+	GLOBALREF(Types::CurrentPlayerUnit*, PlayerUnit, 0x7A6A70);
 	GLOBALREF(DWORD, NoPickUp, 0x7A6A90);
 	GLOBALREF(HINSTANCE, hInst, 0x7C8CA8);
 	GLOBALREF(HWND, hWnd, 0x7C8CBC);
@@ -59,6 +59,13 @@ namespace D2 {
 	GLOBALFUNC(void __fastcall, OkDialog, (const WCHAR* title, const WCHAR* primary, const WCHAR* secondary, void (*callback)()), 0x4331c0);
 	GLOBALFUNC(void, MainMenuForm, (), 0x4336c0); // No params, so calling convention doesn't matter
 	GLOBALFUNC(void __fastcall, CreateFormElementFromListExEx, (int idx), 0x42f430);
+
+    GLOBALFUNC(DWORD __fastcall, LinkPortal, (void* ptGame, int unused, D2::Types::UnitAny* ptObject, DWORD levelEndID, DWORD levelStartID), 0x56CF40);
+    GLOBALFUNC(DWORD __fastcall, SpawnPortal, (D2::Types::IncompleteGameData* pGame, D2::Types::UnitAny* pUnit, D2::Types::Room1* pDrlgRoom, int nX, int nY, DWORD eD2LevelId, D2::Types::UnitAny** param_7, int nClassId, DWORD param_9), 0x56D130);
+    GLOBALFUNC(void __fastcall, OpenPortal, (D2::Types::IncompleteGameData* pGame, D2::Types::UnitAny* pUnit, DWORD LevelId), 0x5A9930);
+    GLOBALFUNC(void __fastcall, FindSpawnablePosition, (D2::Types::Room1* pDrlgRoom, POINT* pos, DWORD param_1_00, DWORD param_2_00, D2::Types::Room1** pRoomsNear, DWORD param_6, int param_7), 0x545340);
+    GLOBALFUNC(void __stdcall, UnitLocation, (D2::Types::UnitAny* pUnit, POINT* pPoint), 0x620870);
+    GLOBALFUNC(DWORD __stdcall, GetAct, (int levelId), 0x6427f0);
 }
 
 #pragma warning( default : 4229 )
