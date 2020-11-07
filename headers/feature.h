@@ -46,6 +46,7 @@ public:
 	virtual void allPostDraw();
 	virtual void allFinalDraw();
 	virtual void preDraw();
+	virtual void roomInit(D2::Types::IncompleteGameData* pGame, D2::Types::Room1* pRoom1);
 };
 
 extern Feature* Features;
