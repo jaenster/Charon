@@ -101,6 +101,52 @@ void _allFinalDraw() {
 
 REMOTEFUNC(float, PerfModOriginal, (), 0x4f6130);
 
+REMOTEFUNC (void __stdcall, DRAW_UI_BorderLeft, (void), 0x498630)
+REMOTEFUNC (void __stdcall, DRAW_UI_BorderRight, (void), 0x498700)
+void DrawBorderLeftIntercept() {
+    if (!Settings["NoBorders"]) DRAW_UI_BorderLeft();
+}
+void DrawBorderRightIntercept() {
+    if (!Settings["NoBorders"]) DRAW_UI_BorderRight();
+}
+
+[[maybe_unused]] bool __stdcall NoSkipDrawingWorldBecauseFullScreenUI() {
+    return Settings["NoBorders"];
+}
+[[maybe_unused]] bool __stdcall NoDrawingWorld() {
+    return State["NoWorldDraw"];
+}
+void __declspec(naked) needToDrawWorldIntercept() {
+    static ASMPTR skip = 0x44cafd;
+    static ASMPTR draw = 0x44caf2;
+    __asm {
+        // store old register
+        push ESI
+        xchg eax, esi
+
+        // check if we always need the borders
+        call NoSkipDrawingWorldBecauseFullScreenUI;
+        cmp eax, 0x01
+        je AlwaysDrawTheWorld
+
+        // if not, get the old eax back
+        xchg eax, esi
+        // Original code
+        cmp eax, 0x3 // If fullscreen UI, we dont can skip to draw the world
+        jne DrawWorld;
+        jmp NoDrawWorld
+
+    AlwaysDrawTheWorld:
+        xchg eax, esi
+    DrawWorld:
+        pop esi
+        JMP draw;
+
+    NoDrawWorld:
+        JMP skip
+    }
+}
+
 // This feature class registers itself.
 class : public Feature {
 public:
@@ -114,6 +160,9 @@ public:
         MemoryPatch(0x45fe1f) << CALL(DrawCursorHook); // Disc screen hook
         MemoryPatch(0x4601d6) << CALL(DrawCursorHook); // Unknown screen hook
 
+        MemoryPatch(0x44caed) << JUMP(needToDrawWorldIntercept);
+        MemoryPatch(0x49947e) << CALL(DrawBorderLeftIntercept);
+        MemoryPatch(0x499497) << CALL(DrawBorderRightIntercept);
 
         MemoryPatch(0x476d31) << JUMP(_gameUnitPostDraw);
         MemoryPatch(0x4F6230) << CALL(_allFinalDraw) << NOP_TO(0x4F623A);
