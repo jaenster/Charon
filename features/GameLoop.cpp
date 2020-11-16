@@ -50,6 +50,32 @@ void _oogLoop() {
     }
 }
 
+[[maybe_unused]]
+void __stdcall _serverLoop(D2::Types::IncompleteGameData* pGame) {
+    // to test it ups by one every loop, every tick this function is called for ever hosted game the client does
+    //int gameFrame = pGame->unk5[46];
+
+    for (Feature* f = Features; f; f = f->next) {
+        f->gameServerLoop(pGame);
+    }
+}
+
+REMOTEFUNC(int, FUN_0052d310,(void), 0x52d310)
+__declspec(naked) void _serverLoopIntercept() {
+    __asm {
+        // safety, we dont know what the function/gameloops messup in terms of ptrs
+        pushad
+
+        push edi // pGame
+        call _serverLoop
+
+        popad
+        // since we jump to this intercept as a call, the return value is set
+        JMP FUN_0052d310
+    }
+}
+
+
 // This feature class registers itself.
 class : public Feature {
 public:
@@ -64,6 +90,9 @@ public:
         MemoryPatch(0x4FA663)
             << CALL(_oogLoop)
             << BYTES(ASM::NOP, 18);
+
+        // overriding FUN_0052d310 function call
+        MemoryPatch(0x52d96c) << CALL(_serverLoopIntercept);
 
     }
 } feature;
