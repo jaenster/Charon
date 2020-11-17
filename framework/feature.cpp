@@ -32,4 +32,5 @@ void Feature::gamePostDraw() { }
 void Feature::oogPostDraw() { }
 void Feature::allPostDraw() { }
 void Feature::allFinalDraw() { }
-void Feature::roomInit(D2::Types::IncompleteGameData* pGame, D2::Types::Room1* pRoom1) {}
+void Feature::preDraw() { }
+void Feature::roomInit(D2::Types::IncompleteGameData* pGame, D2::Types::Room1* pRoom1) { }

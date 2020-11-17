@@ -60,6 +60,16 @@ void oogDraw() {
     DrawCursorOOG();
     // Since we patch to override DrawSprites, we need to call it ourselves.
 }
+REMOTEFUNC(unsigned int __stdcall, DRAW_GetTypeOfBorder,(void),0x45ae90);
+
+unsigned int __stdcall gamePreDraw() {
+    for (Feature* f = Features; f; f = f->next) {
+        f->preDraw();
+    }
+
+    // stuff we override
+    return DRAW_GetTypeOfBorder();
+}
 
 void gameDraw() {
     DWORD old = D2::SetFont(DEFAULT_FONT);
@@ -98,10 +108,12 @@ public:
         MemoryPatch(0x476ce1) << CALL(preDrawUnitsPatch); // Hook the unit draw
         MemoryPatch(0x456fa5) << CALL(gameAutomapDraw); // Hook the automap draw
         MemoryPatch(0x44CB14) << CALL(gameDraw); // Hook the game draw
+        MemoryPatch(0x44cae8) << CALL(gamePreDraw);
         MemoryPatch(0x4F9A5D) << CALL(oogDraw); // Hook the oog draw
         MemoryPatch(0x44ebea) << CALL(DrawCursorHook); // Congratulations screen hook
         MemoryPatch(0x45fe1f) << CALL(DrawCursorHook); // Disc screen hook
         MemoryPatch(0x4601d6) << CALL(DrawCursorHook); // Unknown screen hook
+
 
         MemoryPatch(0x476d31) << JUMP(_gameUnitPostDraw);
         MemoryPatch(0x4F6230) << CALL(_allFinalDraw) << NOP_TO(0x4F623A);
