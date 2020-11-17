@@ -34,7 +34,7 @@ public:
 	virtual void deinit();
 	virtual void gameLoop();
 	virtual void oogLoop();
-    virtual void gameServerLoop(D2::Types::IncompleteGameData* pGame);
+	virtual void gameServerLoop(D2::Types::IncompleteGameData* pGame);
 	virtual bool windowMessage(HWND, UINT, WPARAM, LPARAM);
 	virtual bool keyEvent(DWORD, bool, DWORD);
 	virtual bool chatInput(InputStream);
