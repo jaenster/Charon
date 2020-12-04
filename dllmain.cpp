@@ -5,15 +5,16 @@
 
 #define DEFINE_REMOTE_REFERENCES true
 
-#include <windows.h>
+
+#include "headers/remote.h"
 #include "headers/common.h"
 #include "headers/feature.h"
-#include "headers/remote.h"
 #include "headers/hook.h"
 #include <shellapi.h>
 #include <shlobj.h>
 #include <PathCch.h>
 #include <iostream>
+#include <windows.h>
 
 HINSTANCE hInst = nullptr;
 extern wchar_t saveDir[512] = { 0 };

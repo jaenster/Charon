@@ -1,8 +1,8 @@
 #define _USE_MATH_DEFINES
 
-#include "../headers/D2Structs.h"
-#include "../headers/common.h"
 #include "../headers/feature.h"
+#include "../headers/common.h"
+#include "../headers/D2Structs.h"
 #include "../headers/utilities.h"
 #include "../headers/remote.h"
 #include <iostream>
