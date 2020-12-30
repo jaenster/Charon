@@ -22,8 +22,11 @@ namespace AltBehavior {
         static ASMPTR jumpback = 0x466de9;
         static ASMPTR setSelectedUnitHookPtr = (DWORD) setSelectedUnitHook;
         __asm {
+            
+        pushad
         push eax
         call setSelectedUnitHookPtr
+        popad
 
         // Original code
         PUSH       EBP
