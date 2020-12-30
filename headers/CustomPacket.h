@@ -42,7 +42,7 @@ public:
         SetupValues(packetId, handler, 0x00);
     }
 
-    void sendPacket(Ghidra::D2ClientStrc* pClient, PacketStructure *packet) {
+    void __stdcall sendPacket(Ghidra::D2ClientStrc* pClient, PacketStructure *packet) {
         size_t packetSize = sizeof(PacketStructure);
         __asm {
         pushad // safety

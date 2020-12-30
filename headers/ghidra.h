@@ -15876,6 +15876,39 @@ namespace Ghidra {
         int field_0x20;
     };
 
+    struct D2DamageStrc {
+        int dwHitFlags;
+        short flags;
+        short extraFlags;
+        int dwPhysDamage;
+        int dwEnDmgPct;
+        int dwFireDmg;
+        int dwBurnDmg;
+        int dwBurnLen;
+        int dwLtngDamage;
+        int dwMagDamage;
+        int dwColdDamge;
+        int dwPoisDamage;
+        int dwColdDamage;
+        int dwColdLength;
+        int dwFrzLength;
+        int dwLifeLeech;
+        int dwManaLeech;
+        int dwStamLeech;
+        int dwStunLen;
+        int dwAbsLife;
+        int dwDmgTotal;
+        int unk0x50;
+        int dwDamageRate;
+        int dwPiercePct;
+        int unk0x5C;
+        int dwHitClass;
+        BYTE nHitClassActiveSet;
+        BYTE nConvType;
+        BYTE unk0x66[2][2];
+        int dwConvPct;
+        BYTE unk0x6C[2];
+    };
 
 
 
