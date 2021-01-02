@@ -7,7 +7,7 @@
 #include "../headers/remote.h"
 #include <iostream>
 #include <cmath>
-
+#include <unordered_map>
 
 REMOTEFUNC(void __stdcall, D2Drawline, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwAlpha), 0x4F6380)
 REMOTEFUNC(void __stdcall, D2DrawRectangle, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwAlpha), 0x4F6340)
@@ -75,7 +75,6 @@ double DPOINT::distanceTo(DPOINT target) {
     return sqrt(v.x * v.x + v.y + v.y);
 }
 
-
 POINT DPOINT::toScreen(POINT screenadjust) {
     return {
         screenadjust.x + (long)(x * xvector.x + y * yvector.x) - GetMouseXOffset(),
@@ -112,7 +111,6 @@ void DPOINT::DrawWorldDot(DWORD dwColor) {
 
 namespace D2 {
     namespace Types {
-
         void UnitAny::DrawAutomapX(DWORD dwColor, double size) { return this->pos().DrawAutomapX(dwColor, size); }
         void UnitAny::DrawWorldX(DWORD dwColor, double size) { return this->pos().DrawWorldX(dwColor, size); }
         void UnitAny::DrawAutomapDot(DWORD dwColor) { return this->pos().DrawAutomapDot(dwColor); }
