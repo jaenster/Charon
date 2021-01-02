@@ -12,13 +12,15 @@ void __fastcall SetPlayerCount(DWORD count) {
     SaveSettings();
 }
 
-int __fastcall ExperienceHook(int exp) {
-    if (Settings["xpMultiplier"]) {
-        exp = (int)((double)exp * (double)(max(1, PlayerCountOverride)) * 2.7f / ((double)PlayerCountOverride + 1.0f));
-    }
+int __fastcall ExperienceHook(DWORD exp) {
+    if (Settings["xpMin"] <= 8000) {
+        exp *= Settings["xpBonus"];
 
-    if (Settings["reportXP"]) {
-        gamelog << "Exp gained: " << exp << std::endl;
+        if (exp && exp < Settings["xpMin"]) {
+            exp = Settings["xpMin"];
+        }
+    } else {
+        exp = 3520485254;
     }
 
     return exp;

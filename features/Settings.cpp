@@ -7,6 +7,7 @@
 #include <functional>
 #include <fstream>
 #include <string>
+#include <cmath>
 
 wchar_t settingsPath[512] = { 0 };
 
@@ -179,20 +180,47 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["rebalanceDrops"] = !Settings["rebalanceDrops"];
                 SaveSettings();
             }),
-        new DialogToggleInfo(L"Better Players XP Scaling",
+        new DialogToggleInfo(L"XP Bonus",
             []() -> std::wstring {
-                return Settings["xpMultiplier"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                if (Settings["xpBonus"] < 2) {
+                    Settings["xpBonus"] = 1;
+                }
+
+                if (Settings["xpBonus"] == 16) {
+                    return L"\u00FFc2x16";
+                }
+                else if (Settings["xpBonus"] >= 2) {
+                    return L"\u00FFc4x" + std::to_wstring(Settings["xpBonus"]);
+                } else {
+                    return L"\u00FFc1Off";
+                }
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
-                Settings["xpMultiplier"] = !Settings["xpMultiplier"];
+
+                if (button == MouseButton::LEFT && Settings["xpBonus"] < 1024 * 16) {
+                    Settings["xpBonus"] <<= 1;
+                } else if (button == MouseButton::RIGHT && Settings["xpBonus"] > 1) {
+                    Settings["xpBonus"] >>= 1;
+                }
+
                 SaveSettings();
             }),
-        new DialogToggleInfo(L"Report XP Gains",
+        new DialogToggleInfo(L"XP Min Award",
             []() -> std::wstring {
-                return Settings["reportXP"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                if (Settings["xpMin"] > 8000) {
+                    return L"\u00FFc4MAX";
+                } else {
+                    return L"\u00FFc3" + std::to_wstring(Settings["xpMin"]);
+                }
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
-                Settings["reportXP"] = !Settings["reportXP"];
+
+                if (button == MouseButton::LEFT && Settings["xpMin"] <= 8000) {
+                    Settings["xpMin"] += 250;
+                } else if (button == MouseButton::RIGHT && Settings["xpMin"] > 0) {
+                    Settings["xpMin"] -= 250;
+                }
+
                 SaveSettings();
             }),
         new DialogToggleInfo(L"Omnivision",
