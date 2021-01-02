@@ -9,6 +9,7 @@
 #include "headers/hook.h"
 #include "headers/remote.h"
 #include <iostream>
+#include <vector>
 #include <cmath>
 
 REMOTEFUNC(DWORD __stdcall, GetAutomapSize, (void), 0x45A710);
@@ -24,41 +25,36 @@ struct RevealData {
     D2::Types::AutomapLayer* layer = nullptr;
 };
 
-D2::Types::Room2* GetFirstTileOtherRoom(D2::Types::Room2* room2, DWORD num)
-{
+struct LevelLabel {
+    DPOINT pos;
+    DWORD layer, level;
+};
+
+std::vector<LevelLabel> levellabels;
+
+D2::Types::Room2* GetFirstTileOtherRoom(D2::Types::Room2* room2, DWORD num) {
     D2::Types::RoomTile* roomtile = room2->pRoomTiles;
+
     while (roomtile) {
         if (*roomtile->nNum == num) {
             return roomtile->pRoom2;
         }
         roomtile = roomtile->pNext;
     }
-    return 0;
+
+    return nullptr;
 }
 
 REMOTEFUNC(void __stdcall, D2GFX_DrawSprite6, (D2::Types::DC6Context *pDC6Context, DWORD x, DWORD y, RECT *clipRect, DWORD bright), 0x4f6510);
 
-void __stdcall D2GFX_DrawSprite6_override(D2::Types::DC6Context *pDC6Context, int x, int y, RECT *clipRect, DWORD bright) {
-    int cellno = pDC6Context->nFrameNumberMaybe;
-
-    // We use the cell number below 0 to set the text of a cellno
-    if (cellno < 0) {
-        if (Settings["revealLevel"]) {
-            DWORD width = 0, height = 0, fontNum = 6;
-            wchar_t* levelNameUnicode = D2::GetLevelText(-cellno)->wName;
-            D2::SetFont(fontNum);
-            height = D2::GetTextSize(levelNameUnicode, &width, &fontNum);
-            int offsetx = 8 - ((int)width / 2), offsety = -16;
-            D2::DrawGameText(levelNameUnicode, x + offsetx, y + offsety, 0, false);
-        }
-    }
-    else {
-        // Call original function
-        D2GFX_DrawSprite6(pDC6Context, x, y, clipRect, bright);
-    }
-
-    
-    
+void DrawWarpText(DPOINT pos, DWORD levelno, bool isScreen = false) {
+    POINT apos = isScreen ? pos.toScreen() : pos.toAutomap();
+    DWORD width = 0, height = 0, fontNum = 6;
+    wchar_t* levelNameUnicode = D2::GetLevelText(levelno)->wName;
+    D2::SetFont(fontNum);
+    height = D2::GetTextSize(levelNameUnicode, &width, &fontNum);
+    int offsetx = 8 - ((int)width / 2), offsety = -16;
+    D2::DrawGameText(levelNameUnicode, apos.x + offsetx, apos.y + offsety, 0, false);
 }
 
 // This feature class registers itself.
@@ -72,26 +68,28 @@ class : public Feature {
 public:
     void init() {
         MemoryPatch(0x4DC000) << ASM::RET; // Disable fade effects from switching areas (so we can reveal sooner)
-
-        MemoryPatch(0x4596d9) << CALL(D2GFX_DrawSprite6_override);
     }
 
     void gameLoop() {
         if (!inGame) {
             revealdata.clear();
+            levellabels.clear();
             inGame = true;
         }
+
         D2::Types::CurrentPlayerUnit* me = D2::PlayerUnit;
 
-        if (Settings["revealLevel"] && me && me->pPath && me->pPath->pRoom1 && me->pPath->pRoom1->pRoom2 && me->pPath->pRoom1->pRoom2->pLevel) {
-            DWORD levelno = me->pPath->pRoom1->pRoom2->pLevel->dwLevelNo;
-            if (levelno != currentLevel) {
-                currentLevel = levelno;
-                revealStart = GetTickCount();
-            }
+        if (me && me->getLevel()) {
+            if (Settings["revealLevel"]) {
+                DWORD levelno = me->getLevel()->dwLevelNo;
+                if (levelno != currentLevel) {
+                    currentLevel = levelno;
+                    revealStart = GetTickCount();
+                }
 
-            if (GetTickCount() - revealStart > 200) {
-                RevealCurrentLevel();
+                if (GetTickCount() - revealStart > 200) {
+                    RevealCurrentLevel();
+                }
             }
         }
     }
@@ -99,6 +97,14 @@ public:
     void oogLoop() {
         currentLevel = 0;
         inGame = false;
+    }
+
+    void gameAutomapPostDraw() {
+        for (LevelLabel label : levellabels) {
+            if (label.layer == AutomapLayer->nLayerNo) {
+                DrawWarpText(label.pos, label.level);
+            }
+        }
     }
 
     bool EnsureRoom(D2::Types::Room2* current) {
@@ -241,22 +247,14 @@ public:
                     }
                 }
 
-                // If we can find a room on the otherside of this exit
-                D2::Types::Room2* other = GetFirstTileOtherRoom(pRoom2, pUnit->dwTxtFileNo);
-                if (other) {
-                    // If so, make a new cell with a negative number
-                    D2::Types::AutomapCell* pCell = NewAutomapCell();
-                    pCell->nCellNo = -(short)(other->pLevel->dwLevelNo);
-                    int pX = (pUnit->dwPosX + (pRoom2->dwPosX * 5));
-                    int pY = (pUnit->dwPosY + (pRoom2->dwPosY * 5));
-                    pCell->xPixel = (WORD)((((pX - pY) * 16) / 10) + 1);
-                    pCell->yPixel = (WORD)((((pY + pX) * 8) / 10) - 3);
+                // Check if tile leads to another room
+                D2::Types::Room2* warpto = GetFirstTileOtherRoom(pRoom2, pUnit->dwTxtFileNo);
 
-                    // fake the talrasha's chamber instead of the correct tomb
-                    if (other->pLevel->dwLevelNo == correctTomb) pCell->nCellNo = -73; 
-
-                    AddAutomapCell(pCell, &(layer->pExtras));
+                if (warpto != nullptr) {
+                    LevelLabel label{ DPOINT{ (double)(pUnit->dwPosX + (pRoom2->dwPosX * 5)), (double)(pUnit->dwPosY + (pRoom2->dwPosY * 5)) }, layer->nLayerNo, warpto->pLevel->dwLevelNo };
+                    levellabels.push_back(label);
                 }
+
                 break;
             }
         }
