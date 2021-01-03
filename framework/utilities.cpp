@@ -7,7 +7,8 @@
 #include "../headers/remote.h"
 #include <iostream>
 #include <cmath>
-
+#include <unordered_map>
+#include <random>
 
 REMOTEFUNC(void __stdcall, D2Drawline, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwAlpha), 0x4F6380)
 REMOTEFUNC(void __stdcall, D2DrawRectangle, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwAlpha), 0x4F6340)
@@ -25,6 +26,19 @@ namespace D2 {
 }
 
 DPOINT xvector = { 16.0, 8.0 }, yvector = { -16.0, 8.0 };
+
+std::random_device rd; // obtain a random number from hardware
+std::mt19937 gen(rd()); // seed the generator
+
+int randIntInRange(int low, int high) {
+    std::uniform_int_distribution<> distr(low, high);
+    return distr(gen);
+}
+
+double randDoubleInRange(double low, double high) {
+    std::uniform_real_distribution<> distr(low, high);
+    return distr(gen);
+}
 
 DPOINT::DPOINT(double x, double y) {
     this->x = x;
@@ -75,7 +89,6 @@ double DPOINT::distanceTo(DPOINT target) {
     return sqrt(v.x * v.x + v.y + v.y);
 }
 
-
 POINT DPOINT::toScreen(POINT screenadjust) {
     return {
         screenadjust.x + (long)(x * xvector.x + y * yvector.x) - GetMouseXOffset(),
@@ -112,7 +125,6 @@ void DPOINT::DrawWorldDot(DWORD dwColor) {
 
 namespace D2 {
     namespace Types {
-
         void UnitAny::DrawAutomapX(DWORD dwColor, double size) { return this->pos().DrawAutomapX(dwColor, size); }
         void UnitAny::DrawWorldX(DWORD dwColor, double size) { return this->pos().DrawWorldX(dwColor, size); }
         void UnitAny::DrawAutomapDot(DWORD dwColor) { return this->pos().DrawAutomapDot(dwColor); }

@@ -2,8 +2,20 @@
 #include "headers/common.h"
 #include "headers/hook.h"
 #include "headers/remote.h"
+#include "headers/ghidra.h"
+#include "headers/CustomPacket.h"
+
+Ghidra::D2UnitStrc* pLastVictim;
 
 REMOTEREF(DWORD, PlayerCountOverride, 0x883d70);
+REMOTEFUNC(DWORD __fastcall, CALC_Experience, (Ghidra::D2UnitStrc* pUnit, int dummy, Ghidra::D2GameStrc* pGame, unsigned int param_3), 0x57e3f0)
+REMOTEFUNC(Ghidra::D2ClientStrc* __stdcall, PLAYER_GetClientFromUnitData, (Ghidra::D2UnitStrc* pUnit), 0x5531c0)
+REMOTEFUNC(void __fastcall, SERVER_KillExperience, (Ghidra::D2GameStrc* pGame, Ghidra::D2UnitStrc* pAttacker, Ghidra::D2UnitStrc* pVictim), 0x57e990)
+
+void __fastcall SERVER_KillExperience_intercept(Ghidra::D2GameStrc* pGame, Ghidra::D2UnitStrc* pAttacker, Ghidra::D2UnitStrc* pVictim) {
+    pLastVictim = pVictim;
+    return SERVER_KillExperience(pGame, pAttacker, pVictim);
+}
 
 void __fastcall SetPlayerCount(DWORD count) {
     PlayerCountOverride = count > 1 ? count : 1;
@@ -12,13 +24,22 @@ void __fastcall SetPlayerCount(DWORD count) {
     SaveSettings();
 }
 
-int __fastcall ExperienceHook(int exp) {
-    if (Settings["xpMultiplier"]) {
-        exp = (int)((double)exp * (double)(max(1, PlayerCountOverride)) * 2.7f / ((double)PlayerCountOverride + 1.0f));
+DWORD __fastcall ExperienceIntercept(Ghidra::D2UnitStrc* pUnit, int dummy, Ghidra::D2GameStrc* pGame, unsigned int param_3) {
+    DWORD exp = CALC_Experience(pUnit, dummy, pGame, param_3);
+
+    if (Settings["xpMin"] <= 8000) {
+        exp *= Settings["xpBonus"];
+
+        if (exp && exp < Settings["xpMin"]) {
+            exp = Settings["xpMin"];
+        }
+    }
+    else {
+        exp = 3520485254;
     }
 
-    if (Settings["reportXP"]) {
-        gamelog << "Exp gained: " << exp << std::endl;
+    for (Feature* f = Features; f; f = f->next) {
+        f->serverExpAward(exp, pUnit, pGame);
     }
 
     return exp;
@@ -38,7 +59,10 @@ namespace ExperienceMod {
                 << ASM::POPAD
                 << NOP_TO(0x47c50e);
 
-            MemoryPatch(0x57e501) << ASM::MOV_ECX_EAX << ASM::MOV_ECX_EAX << CALL(ExperienceHook) << BYTESEQ{ 0xc2, 0x08, 0x00 };
+            MemoryPatch(0x57e4fa) << CALL(ExperienceIntercept);
+
+            // actual memory patches for feature
+            MemoryPatch(0x5a4f12) << CALL(SERVER_KillExperience_intercept);
 
             AutomapInfoHooks.push_back([]() -> std::wstring {
                 wchar_t ret[256] = L"Players 1";
@@ -49,6 +73,13 @@ namespace ExperienceMod {
 
                 return ret;
             });
+        }
+
+        void serverExpAward(DWORD exp, Ghidra::D2UnitStrc* pUnit, Ghidra::D2GameStrc* pGame) {
+            Ghidra::D2ClientStrc* pClient = PLAYER_GetClientFromUnitData(pUnit);
+
+            FlyingTextPacket packet{ 0x3D, static_cast<unsigned char>(pLastVictim->eUnitType), (DWORD)pLastVictim->nUnitGUID, 2, static_cast<int>(exp) };
+            FlyingTextPacketHandler->sendPacket(pClient, &packet);
         }
 
         void gameLoop() {

@@ -1483,7 +1483,3 @@ namespace D2 {
 
 #pragma warning(pop)
 #pragma optimize("", on)
-
-namespace Offset {
-    extern DWORD Base, D2CLIENT, D2COMMON, D2GAME, D2LANG, D2NET, D2MULTI, D2LAUNCH, D2WIN, D2GFX, D2CMP, BNCLIENT, STORM;
-}
