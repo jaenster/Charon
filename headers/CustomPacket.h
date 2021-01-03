@@ -40,7 +40,7 @@ protected:
     }
 
 public:
-    CustomPacketServerSide(char packetId, void* handler, void* unitHandler) {
+    CustomPacketServerSide(char packetId, void* handler, void* unitHandler = nullptr) {
         SetupValues(packetId, handler, unitHandler);
     }
 
@@ -62,8 +62,8 @@ public:
 
 template<class PacketStructure>
 class CustomUnitPacketServerSide : protected CustomPacketServerSide<PacketStructure> {
-    CustomUnitPacketServerSide(char packetId, void* handler) {
-        CustomPacketServerSide<PacketStructure>::SetupValues(packetId, handler, nullptr);
+    CustomUnitPacketServerSide(char packetId, void* unitHandler, void* handler = nullptr) {
+        CustomPacketServerSide<PacketStructure>::SetupValues(packetId, handler, unitHandler);
     }
 };
 

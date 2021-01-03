@@ -32,7 +32,7 @@ namespace CustomPacket {
     public:
         void init() {
             // register packet 0x3D
-            FlyingTextPacketHandler = new CustomPacketServerSide<FlyingTextPacket>(0x3d, D2ClientIncoming0x3d, nullptr);
+            FlyingTextPacketHandler = new CustomPacketServerSide<FlyingTextPacket>(0x3d, D2ClientIncoming0x3d);
         }
     } feature;
 
