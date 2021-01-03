@@ -1,5 +1,6 @@
 #include "headers/common.h"
-#include "../headers/feature.h"
+#include "headers/feature.h"
+#include "headers/remote.h"
 #include <iostream>
 
 HotkeyCallbackMap HotkeyCallbacks;
@@ -34,3 +35,5 @@ void Feature::allPostDraw() { }
 void Feature::allFinalDraw() { }
 void Feature::preDraw() { }
 void Feature::roomInit(D2::Types::IncompleteGameData* pGame, D2::Types::Room1* pRoom1) { }
+void Feature::serverExpAward(DWORD exp, Ghidra::D2UnitStrc* pUnit, Ghidra::D2GameStrc* pGame) { }
+void Feature::valueFromServer(D2::Types::LivingUnit* unit, int value, char color) { }

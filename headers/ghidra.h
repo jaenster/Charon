@@ -1,6 +1,4 @@
-#ifndef CHARON_GHIDRA_H
-#define CHARON_GHIDRA_H
-
+#pragma once
 
 namespace Ghidra {
     typedef unsigned char undefined;
@@ -1294,7 +1292,7 @@ namespace Ghidra {
         char corpseSel: 1;
         char revive: 1;
         char isAtt: 1;
-        char small: 1;
+        char small_: 1;
         char large: 1;
         char soft: 1;
         char critter: 1;
@@ -15880,5 +15878,3 @@ namespace Ghidra {
 
 
 }
-
-#endif //CHARON_GHIDRA_H

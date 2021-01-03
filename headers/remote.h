@@ -66,6 +66,9 @@ namespace D2 {
     GLOBALFUNC(void __fastcall, FindSpawnablePosition, (D2::Types::Room1* pDrlgRoom, POINT* pos, DWORD param_1_00, DWORD param_2_00, D2::Types::Room1** pRoomsNear, DWORD param_6, int param_7), 0x545340);
     GLOBALFUNC(void __stdcall, UnitLocation, (D2::Types::UnitAny* pUnit, POINT* pPoint), 0x620870);
     GLOBALFUNC(DWORD __stdcall, GetAct, (int levelId), 0x6427f0);
+	GLOBALFUNC(void, NET_D2GS_CLIENT_IncomingReturn, (char* pBytes), 0x45c900);
+	GLOBALFUNC(void __stdcall, NET_D2GS_SERVER_SendPacket_Helper, (char* pBytes, size_t nSize /* uses EDI for pClient*/), 0x53b280)
+
 }
 
 #pragma warning( default : 4229 )

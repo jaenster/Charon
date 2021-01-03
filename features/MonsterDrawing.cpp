@@ -1,90 +1,66 @@
+#define _USE_MATH_DEFINES
+
 #include "headers/feature.h"
 #include "headers/hook.h"
 #include "headers/remote.h"
-#include "headers/ghidra.h"
 #include "headers/CustomPacket.h"
 #include <vector>
+#include <cmath>
+
+const DPOINT popupoffset{ -1, -1 };
+const double popupSpreadArc = 60.0, flyspeed = 120.0, flyduration = 0.6, timescale = 1 / flyduration, gravityAccel = -flyspeed * flyduration;
+const double popupArcStart = M_PI * (180.0 - popupSpreadArc) / 360.0, popupArcEnd = M_PI * (180.0 + popupSpreadArc) / 360.0;
+
+FlyingText::FlyingText(D2::Types::LivingUnit* unit, int value, char color) {
+    this->unit = unit;
+    this->color = color;
+    this->value = value;
+    this->counter = GetTickCount64();
+    double angle = randDoubleInRange(popupArcStart, popupArcEnd);
+    this->delta = DPOINT{ cos(angle), sin(angle) };
+    this->pos = unit->pos();
+}
+
+std::vector<FlyingText> FlyingTexts;
 
 namespace MonsterDrawing {
-
-    CustomPacketServerSide<Packet0x3d> *packetHandler;
-    Ghidra::D2UnitStrc *pLastVictim;
-
-    REMOTEFUNC(Ghidra::D2ClientStrc* __fastcall, PLAYER_GetClientFromUnitData, (D2::Types::UnitAny * pUnit),                                                                    0x5531c0)
-    REMOTEFUNC(void __fastcall,                  SERVER_KillExperience,        (Ghidra::D2GameStrc * pGame, Ghidra::D2UnitStrc * pAttacker, Ghidra::D2UnitStrc * pVictim),      0x57e990)
-    REMOTEFUNC(unsigned int __fastcall,          CALC_Experience,              (Ghidra::D2UnitStrc * param_1_00, int dummy, Ghidra::D2GameStrc * param_2, unsigned int param_3),0x57e3f0)
-
-    struct Drawing {
-        char unitType;
-        int unitId;
-        DWORD counter;
-        int offset;
-        char color;
-        int value;
-    };
-
-    std::vector<Drawing*> toDraw;
-
-    void __fastcall D2ClientIncoming0x3d(Packet0x3d *pBytes) {
-        Drawing* drawing = new Drawing{pBytes->unitType, pBytes->unitId, GetTickCount(),0, pBytes->color, pBytes->value};
-        toDraw.push_back(drawing);
-    }
-
-    void __fastcall SERVER_KillExperience_intercept(Ghidra::D2GameStrc *pGame, Ghidra::D2UnitStrc *pAttacker,
-                                                    Ghidra::D2UnitStrc *pVictim) {
-        pLastVictim = pVictim;
-        return SERVER_KillExperience(pGame, pAttacker, pVictim);
-    }
-
-    unsigned int __fastcall CALC_Experience_intercept(Ghidra::D2UnitStrc *unit, int dummy, Ghidra::D2GameStrc *param_2,
-                                                      unsigned int param_3) {
-        unsigned int experience = CALC_Experience(unit, dummy, param_2, param_3);
-        Ghidra::D2ClientStrc *pClient = PLAYER_GetClientFromUnitData((D2::Types::UnitAny *) (unit));
-
-        Packet0x3d *packet = new Packet0x3d{0x3D, static_cast<char>(pLastVictim->eUnitType), pLastVictim->nUnitGUID, 12,
-                                            static_cast<int>(experience)};
-        packetHandler->sendPacket(pClient, packet);
-        delete packet;
-
-        return experience;
-    }
-
-
     class : public Feature {
     public:
-        void init() {
+        void oogDraw() {
+            if (FlyingTexts.size()) {
+                FlyingTexts.clear();
+            }
+        }
 
-            // register packet 0x3D
-            packetHandler = new CustomPacketServerSide<Packet0x3d>(0x3d, (DWORD) D2ClientIncoming0x3d);
-
-            // actual memory patches for feature
-            MemoryPatch(0x5a4f12) << CALL(SERVER_KillExperience_intercept);
-            MemoryPatch(0x57e4fa) << CALL(CALC_Experience_intercept);
+        void valueFromServer(D2::Types::LivingUnit* unit, int value, char color) {
+            if (Settings["infoPopups"]) {
+                FlyingTexts.push_back(FlyingText(unit, value, color));
+            }
         }
 
         void gameUnitPostDraw() {
-            for (int i = 0; i<toDraw.size(); ++i) {
+            for (size_t i = 0; i < FlyingTexts.size(); ++i) {
+                FlyingText* current = &FlyingTexts[i];
 
-                Drawing* current = toDraw[i];
+                double secondsElapsed = (double)(GetTickCount64() - current->counter) / 1000.0;
+                double t = secondsElapsed * timescale;
+                double ox = current->delta.x * t * flyspeed;
+                double oy = current->delta.y * t * flyspeed + t * t * gravityAccel;
 
-                for (D2::Types::NonPlayerUnit* unit : D2::ServerSideUnits.nonplayers.all()) {
-                    if (unit->dwUnitId == current->unitId && unit->dwType == current->unitType) {
-                        if (GetTickCount() - current->counter < 2500) {
-                            std::wstring numberStr = std::to_wstring(current->value);
-                            std::wstring symbol = current->value < 0 ? L"-" : L"+";
-                            std::wstring currentText = symbol + numberStr;
-
-                            POINT point = unit->pos().toScreen();
-                            D2::DrawGameText(currentText.c_str(), point.x+(++current->offset/2), point.y-(current->offset), current->color, false);
-                        } else {
-                            toDraw.erase(toDraw.begin()+(i--));
-                        }
-                        break;
-                    }
+                if (secondsElapsed > flyduration) {
+                    FlyingTexts.erase(FlyingTexts.begin() + (i--));
+                    continue;
                 }
 
-            }
+                std::wstring numberStr = std::to_wstring(current->value);
+                std::wstring symbol = current->value < 0 ? L"-" : L"+";
+                std::wstring currentText = symbol + numberStr;
+                POINT pos = current->pos.toScreen();
 
+                DWORD fontno = current->font, old = D2::SetFont(fontno), width, height = D2::GetTextSize(currentText.c_str(), &width, &fontno);
+                D2::DrawGameText(currentText.c_str(), pos.x + (int)ox - (int)(width / 2), pos.y - (int)oy - (height / 2), current->color, false);
+                D2::SetFont(old);
+            }
         }
     } feature;
 

@@ -89,14 +89,6 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["disableRoofs"] = !Settings["disableRoofs"];
                 SaveSettings();
             }),
-        new DialogToggleInfo(L"Lock Alt Items",
-            []() -> std::wstring {
-                return Settings["altToggle"] ? L"\u00FFc2On" : L"\u00FFc1Off";
-            }, [](MouseButton button, bool down) -> void {
-                if (down) return;
-                Settings["altToggle"] = !Settings["altToggle"];
-                SaveSettings();
-            }),
         nullptr, // Empty Gap
         new DialogToggleInfo(L"Regen Single Player Maps",
             []() -> std::wstring {
@@ -128,6 +120,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
                 Settings["preventSockets"] = !Settings["preventSockets"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Lock Alt Items",
+            []() -> std::wstring {
+                return Settings["altToggle"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["altToggle"] = !Settings["altToggle"];
                 SaveSettings();
             }),
         nullptr, // Empty Gap
@@ -223,15 +223,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
 
                 SaveSettings();
             }),
-        new DialogToggleInfo(L"Omnivision",
+        new DialogToggleInfo(L"Info Popups",
             []() -> std::wstring {
-                return Settings["omnivision"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+                return Settings["infoPopups"] ? L"\u00FFc2On" : L"\u00FFc1Off";
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
-                Settings["omnivision"] = !Settings["omnivision"];
+                Settings["infoPopups"] = !Settings["infoPopups"];
                 SaveSettings();
             }),
-        nullptr, // Empty Gap
         nullptr, // Empty Gap
         new DialogToggleInfo(L"\u00FFc;*\u00FFc4Always D3D Mode",
             []() -> std::wstring {
@@ -265,6 +264,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
              }, [](MouseButton button, bool down) -> void {
                 if (down) return;
                 Settings["drawAllStates"] = !Settings["drawAllStates"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"Omnivision",
+            []() -> std::wstring {
+                return Settings["omnivision"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["omnivision"] = !Settings["omnivision"];
                 SaveSettings();
             }),
         nullptr, // Empty Gap
