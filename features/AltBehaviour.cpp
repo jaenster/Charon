@@ -68,23 +68,36 @@ namespace AltBehavior {
     }
 
     class : public Feature {
+        bool enabled = false, inGame = false;
     public:
-        void init() {
-            MemoryPatch(0x457264) << ASM::NOP << JUMP(interceptIfIsAltShowItemsSet);
+        void setup() {
+            if (Settings["altToggle"] && !enabled) {
+                MemoryPatch(0x457264) << ASM::NOP << JUMP(interceptIfIsAltShowItemsSet);
+                MemoryPatch(0x466de0) << JUMP(interceptSetSelectedUnit) << NOP_TO(0x466de9);
+                enabled = true;
+            }
 
-            MemoryPatch(0x466de0) << JUMP(interceptSetSelectedUnit) << NOP_TO(0x466de9);
+            if (!Settings["altToggle"] && enabled) {
+                MemoryPatch(0x457264) << REVERT(6);
+                MemoryPatch(0x466de0) << REVERT(9);
+                enabled = false;
+            }
+        }
+
+        void gameLoop() {
+            inGame = true;
+            setup();
+        }
+
+        void oogLoop() {
+            inGame = false;
+            setup();
         }
 
         bool keyEvent(DWORD keyCode, bool down, DWORD flags) {
-
-            if (!Settings["altToggle"]) {
-                // when settings are not on, disable keycode
-                drawItemsOnFloor = false;
-                return true;
-            }
-
-            if (keyCode == 18 /*alt*/) {
+            if (inGame && Settings["altToggle"] && keyCode == 18 /*alt*/) {
                 drawItemsOnFloor = !drawItemsOnFloor;
+                return false;
             }
 
             return true;
