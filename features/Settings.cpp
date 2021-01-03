@@ -163,6 +163,15 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["cowsOverride"] = !Settings["cowsOverride"];
                 SaveSettings();
             }),
+        nullptr, // Empty Gap
+        new DialogToggleInfo(L"Disable splash on start",
+            []() -> std::wstring {
+                return Settings["disableSplash"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["disableSplash"] = !Settings["disableSplash"];
+                SaveSettings();
+            }),
     }, { // Second Column
         new DialogToggleInfo(L"\u00FFc3*\u00FFc4Enable Ladder Items",
             []() -> std::wstring {

@@ -376,8 +376,10 @@ wchar_t* __fastcall UnitVisualname(D2::Types::LivingUnit *pUnit) {
 class : public Feature {
 public:
     void init() {
-        SplashScreenDialogSetup();
-        MemoryPatch(0x42fb40) << CALL(SplashScreenHook);
+        if (!Settings["disableSplash"]) {
+            SplashScreenDialogSetup();
+            MemoryPatch(0x42fb40) << CALL(SplashScreenHook);
+        }
 
         MemoryPatch(0x4f5621) << NOP_TO(0x4f5672); // Allow multiple windows open
         MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
