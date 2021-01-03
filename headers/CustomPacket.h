@@ -8,23 +8,40 @@
 #include "headers/remote.h"
 #include "headers/ghidra.h"
 
+/*
+    if (NET_D2GS_CLIENT_INCOMING[ÒPacketId].fpIncomingHandlerUnit != NULL) {
+    if ((ÒPacketId < 0x67) || (0x6d < ÒPacketId)) {
+        nUnitGUID = *(DWORD *)((byte *)pBytes + 2);
+        dwType = (eD2UnitType)((byte *)pBytes)[1];
+    }
+    else {
+        nUnitGUID = *(DWORD *)((byte *)pBytes + 1);
+        dwType = UNIT_MONSTER;
+    }
+    pUnit = FindClientSideUnitWrapper(nUnitGUID,dwType);
+    if (pUnit != NULL) {
+        NET_D2GS_CLIENT_INCOMING[uVar4].fpIncomingHandlerUnit(pUnit,pBytes);
+    }
+    }
+*/
+
 template<class PacketStructure>
 class CustomPacketServerSide {
 
 protected:
-    void SetupValues(char packetId, void* handler, DWORD unitHandler) {
+    void SetupValues(char packetId, void* handler, void* unitHandler) {
         if (!handler) handler = D2::NET_D2GS_CLIENT_IncomingReturn;
         MemoryPatch(0x7114d0 + (packetId * 12) + 0) << (DWORD)handler;
-        MemoryPatch(0x7114d0 + (packetId * 12) + 4) << BYTE(sizeof(PacketStructure));
-        MemoryPatch(0x7114d0 + (packetId * 12) + 8) << unitHandler;
+        MemoryPatch(0x7114d0 + (packetId * 12) + 4) << (DWORD)(sizeof(PacketStructure));
+        MemoryPatch(0x7114d0 + (packetId * 12) + 8) << (DWORD)unitHandler;
 
         // size array client
-        MemoryPatch(0x730ae8 + (packetId * 4)) << BYTE(sizeof(PacketStructure));
+        MemoryPatch(0x730ae8 + (packetId * 4)) << (DWORD)(sizeof(PacketStructure));
     }
 
 public:
-    CustomPacketServerSide(char packetId, void* handler) {
-        SetupValues(packetId, handler, 0x00);
+    CustomPacketServerSide(char packetId, void* handler, void* unitHandler) {
+        SetupValues(packetId, handler, unitHandler);
     }
 
     void sendPacket(Ghidra::D2ClientStrc* pClient, PacketStructure *packet) {
@@ -46,7 +63,7 @@ public:
 template<class PacketStructure>
 class CustomUnitPacketServerSide : protected CustomPacketServerSide<PacketStructure> {
     CustomUnitPacketServerSide(char packetId, void* handler) {
-        CustomPacketServerSide<PacketStructure>::SetupValues(packetId, (DWORD) 0x00, handler);
+        CustomPacketServerSide<PacketStructure>::SetupValues(packetId, handler, nullptr);
     }
 };
 
