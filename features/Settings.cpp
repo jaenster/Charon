@@ -90,6 +90,7 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 SaveSettings();
             }),
         nullptr, // Empty Gap
+        nullptr, // Empty Gap
         new DialogToggleInfo(L"Regen Single Player Maps",
             []() -> std::wstring {
                 return Settings["regenMap"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -187,6 +188,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
             }, [](MouseButton button, bool down) -> void {
                 if (down) return;
                 Settings["rebalanceDrops"] = !Settings["rebalanceDrops"];
+                SaveSettings();
+            }),
+        new DialogToggleInfo(L"\u00FFc4Item QoL Fixes",
+            []() -> std::wstring {
+                return Settings["itemQOL"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["itemQOL"] = !Settings["itemQOL"];
                 SaveSettings();
             }),
         new DialogToggleInfo(L"XP Bonus",
