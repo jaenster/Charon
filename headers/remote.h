@@ -67,8 +67,6 @@ namespace D2 {
     GLOBALFUNC(void __stdcall, UnitLocation, (D2::Types::UnitAny* pUnit, POINT* pPoint), 0x620870);
     GLOBALFUNC(DWORD __stdcall, GetAct, (int levelId), 0x6427f0);
 	GLOBALFUNC(void, NET_D2GS_CLIENT_IncomingReturn, (char* pBytes), 0x45c900);
-	GLOBALFUNC(void __stdcall, NET_D2GS_SERVER_SendPacket_Helper, (char* pBytes, size_t nSize /* uses EDI for pClient*/), 0x53b280)
-
 }
 
 #pragma warning( default : 4229 )

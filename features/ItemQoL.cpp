@@ -7,6 +7,7 @@
 using namespace Ghidra;
 
 REMOTEFUNC(BOOL __stdcall, ITEM_EditItemData_eItemFlag, (D2UnitStrc* pItem, eD2ItemFlag eItemFlag, BOOL bSet), 0x6280d0);
+REMOTEFUNC(void __fastcall, SERVER_PickToCursor, (D2GameStrc* pGame, D2UnitStrc* pPlayer, DWORD nItemGUID, int* param_2_00), 0x55cf50)
 
 ASMPTR NET_D2GS_SERVER_Send_0x9C_ItemWorld_original = 0x53eae0, NET_D2GS_SERVER_Send_0x9C_ItemWorld_rejoin = 0x53eae9;
 
@@ -28,12 +29,33 @@ void __fastcall NET_D2GS_SERVER_Send_0x9C_ItemWorld_hook(D2ClientStrc* pClient, 
     NET_D2GS_SERVER_Send_0x9C_ItemWorld_relocated(pClient, pItem, nAction, eItemFlag, param_5);
 };
 
-namespace AlwaysIdentified {
+/*
+ASMPTR NET_D2GS_SERVER_Send_0x19_0x1D_0x1E_0x1F_GoldPickup_original = 0x53e9b0, NET_D2GS_SERVER_Send_0x19_0x1D_0x1E_0x1F_GoldPickup_rejoin = 0x53e9b6;
+
+__declspec(naked) void __fastcall NET_D2GS_SERVER_Send_0x19_0x1D_0x1E_0x1F_GoldPickup_relocated(D2ClientStrc* pClient, uint nGold, uint nNewGold) {
+    __asm {
+        PUSH       EBP
+        MOV        EBP, ESP
+        SUB        ESP, 0x8
+
+        JMP NET_D2GS_SERVER_Send_0x19_0x1D_0x1E_0x1F_GoldPickup_rejoin
+    }
+};
+
+void __fastcall NET_D2GS_SERVER_Send_0x19_0x1D_0x1E_0x1F_GoldPickup_hook(D2ClientStrc* pClient, uint nNewGold, uint nGold) {
+    NET_D2GS_SERVER_Send_0x19_0x1D_0x1E_0x1F_GoldPickup_relocated(pClient, nNewGold, nGold);
+
+    return;
+};
+*/
+
+namespace ItemQoL {
 
     class : public Feature {
     public:
         void init() {
             MemoryPatch(NET_D2GS_SERVER_Send_0x9C_ItemWorld_original) << JUMP(NET_D2GS_SERVER_Send_0x9C_ItemWorld_hook);
+           // MemoryPatch(NET_D2GS_SERVER_Send_0x19_0x1D_0x1E_0x1F_GoldPickup_original) << JUMP(NET_D2GS_SERVER_Send_0x19_0x1D_0x1E_0x1F_GoldPickup_hook);
         }
     } feature;
 

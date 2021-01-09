@@ -51,7 +51,7 @@ void _oogLoop() {
 }
 
 [[maybe_unused]]
-void __stdcall _serverLoop(D2::Types::IncompleteGameData* pGame) {
+void __stdcall _serverLoop(Ghidra::D2GameStrc* pGame) {
     // to test it ups by one every loop, every tick this function is called for ever hosted game the client does
     //int gameFrame = pGame->unk5[46];
 

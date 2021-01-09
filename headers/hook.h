@@ -118,6 +118,16 @@ public:
     MemoryPatch& operator << (BYTESEQ bytes);
 };
 
+template <class T> BYTESEQ DATA(const T& data) {
+    BYTESEQ bytes;
+
+    for (size_t c = 0; c < sizeof(T); c++) {
+        bytes.push_back(((BYTE*)&data)[c]);
+    }
+
+    return bytes;
+}
+
 namespace ASM {
     const BYTE NOP = 0x90;
     const BYTE CALL = 0xE8;

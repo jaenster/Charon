@@ -123,6 +123,34 @@ void DPOINT::DrawWorldDot(DWORD dwColor) {
     DrawLine(this->toScreen({ 0, -1 }), this->toScreen({ 0, 1 }), dwColor);
 }
 
+REMOTEFUNC(void __stdcall, NET_D2GS_SERVER_SendPacket_Helper, (char* pBytes, size_t nSize /* uses EDI for pClient*/), 0x53b280)
+REMOTEFUNC(void __stdcall, NET_D2GS_CLIENT_Send, (char* pBytes), 0x478350)
+
+void __stdcall serverSendPacket(Ghidra::D2ClientStrc* pClient, char* pBytes, size_t nSize) {
+    __asm {
+        pushad
+
+        mov EDI, pClient;
+        push nSize;
+        push pBytes;
+        call NET_D2GS_SERVER_SendPacket_Helper;
+
+        popad
+    }
+}
+
+void clientSendPacket(char* pBytes, size_t nSize) {
+    __asm {
+        pushad
+
+        mov EDI, nSize;
+        push pBytes;
+        call NET_D2GS_CLIENT_Send;
+
+        popad
+    }
+}
+
 namespace D2 {
     namespace Types {
         void UnitAny::DrawAutomapX(DWORD dwColor, double size) { return this->pos().DrawAutomapX(dwColor, size); }

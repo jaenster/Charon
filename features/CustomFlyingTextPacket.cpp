@@ -1,9 +1,11 @@
+// Based on code by Jaenster
+
 #define _USE_MATH_DEFINES
 
 #include "headers/feature.h"
 #include "headers/hook.h"
 #include "headers/remote.h"
-#include "headers/CustomPacket.h"
+#include "headers/utilities.h"
 #include <vector>
 #include <cmath>
 
@@ -11,19 +13,23 @@ const DPOINT popupoffset{ -1, -1 };
 const double popupSpreadArc = 60.0, flyspeed = 120.0, flyduration = 0.6, timescale = 1 / flyduration, gravityAccel = -flyspeed * flyduration;
 const double popupArcStart = M_PI * (180.0 - popupSpreadArc) / 360.0, popupArcEnd = M_PI * (180.0 + popupSpreadArc) / 360.0;
 
-FlyingText::FlyingText(D2::Types::LivingUnit* unit, int value, char color) {
-    this->unit = unit;
+FlyingText::FlyingText(DPOINT pos, int value, char color) {
+    this->pos = pos;
     this->color = color;
     this->value = value;
     this->counter = GetTickCount64();
     double angle = randDoubleInRange(popupArcStart, popupArcEnd);
     this->delta = DPOINT{ cos(angle), sin(angle) };
-    this->pos = unit->pos();
+}
+
+FlyingText::FlyingText(FlyingTextPacket *packet) {
+    if (packet->subPacketId != FLYING_TEXT_PACKET_ID) throw "Incorrect packet!";
+    FlyingText(packet->pos, packet->value, packet->color);
 }
 
 std::vector<FlyingText> FlyingTexts;
 
-namespace MonsterDrawing {
+namespace CustomFlyingTextPacket {
     class : public Feature {
     public:
         void oogDraw() {
@@ -32,9 +38,9 @@ namespace MonsterDrawing {
             }
         }
 
-        void valueFromServer(D2::Types::LivingUnit* unit, int value, char color) {
-            if (Settings["infoPopups"]) {
-                FlyingTexts.push_back(FlyingText(unit, value, color));
+        void clientGetCustomData(char* pBytes, int nSize) {
+            if (pBytes[0] == FLYING_TEXT_PACKET_ID) {
+                FlyingTexts.push_back(FlyingText((FlyingTextPacket*)pBytes));
             }
         }
 

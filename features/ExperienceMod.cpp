@@ -3,7 +3,6 @@
 #include "headers/hook.h"
 #include "headers/remote.h"
 #include "headers/ghidra.h"
-#include "headers/CustomPacket.h"
 
 Ghidra::D2UnitStrc* pLastVictim;
 
@@ -76,10 +75,19 @@ namespace ExperienceMod {
         }
 
         void serverExpAward(DWORD exp, Ghidra::D2UnitStrc* pUnit, Ghidra::D2GameStrc* pGame) {
-            Ghidra::D2ClientStrc* pClient = PLAYER_GetClientFromUnitData(pUnit);
+            if (pUnit->eUnitType == 0) {
+                Ghidra::D2ClientStrc* pClient = PLAYER_GetClientFromUnitData(pUnit);
 
-            FlyingTextPacket packet{ 0x3D, static_cast<unsigned char>(pLastVictim->eUnitType), (DWORD)pLastVictim->nUnitGUID, 2, static_cast<int>(exp) };
-            FlyingTextPacketHandler->sendPacket(pClient, &packet);
+                if (pClient != nullptr) {
+                    FlyingTextPacket packet;
+
+                    packet.pos = ((D2::Types::UnitAny*)pUnit)->pos();
+                    packet.color = 2;
+                    packet.value = static_cast<int>(exp);
+
+                    ServerSendCustomData(pClient, packet);
+                }
+            }
         }
 
         void gameLoop() {
