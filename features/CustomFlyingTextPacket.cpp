@@ -24,7 +24,12 @@ FlyingText::FlyingText(DPOINT pos, int value, char color) {
 
 FlyingText::FlyingText(FlyingTextPacket *packet) {
     if (packet->subPacketId != FLYING_TEXT_PACKET_ID) throw "Incorrect packet!";
-    FlyingText(packet->pos, packet->value, packet->color);
+    this->pos = packet->pos;
+    this->color = packet->color;
+    this->value = packet->value;
+    this->counter = GetTickCount64();
+    double angle = randDoubleInRange(popupArcStart, popupArcEnd);
+    this->delta = DPOINT{ cos(angle), sin(angle) };
 }
 
 std::vector<FlyingText> FlyingTexts;
@@ -39,7 +44,7 @@ namespace CustomFlyingTextPacket {
         }
 
         void clientGetCustomData(char* pBytes, int nSize) {
-            if (pBytes[0] == FLYING_TEXT_PACKET_ID) {
+            if (pBytes[0] == FLYING_TEXT_PACKET_ID && Settings["infoPopups"]) {
                 FlyingTexts.push_back(FlyingText((FlyingTextPacket*)pBytes));
             }
         }

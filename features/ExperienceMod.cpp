@@ -75,13 +75,14 @@ namespace ExperienceMod {
         }
 
         void serverExpAward(DWORD exp, Ghidra::D2UnitStrc* pUnit, Ghidra::D2GameStrc* pGame) {
-            if (pUnit->eUnitType == 0) {
+            if (pUnit->eUnitType == Ghidra::UNIT_PLAYER && Settings["infoPopups"]) {
                 Ghidra::D2ClientStrc* pClient = PLAYER_GetClientFromUnitData(pUnit);
 
                 if (pClient != nullptr) {
                     FlyingTextPacket packet;
+                    D2::Types::UnitAny* unit = (D2::Types::UnitAny*)pUnit;
 
-                    packet.pos = ((D2::Types::UnitAny*)pUnit)->pos();
+                    packet.pos = unit->pos();
                     packet.color = 2;
                     packet.value = static_cast<int>(exp);
 
