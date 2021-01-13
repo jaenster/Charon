@@ -119,18 +119,17 @@ struct D2BitBufferStrc{
 };
 
 struct D2WaypointStrc{
-	
+	short field_0x0[2]; 
+	undefined _0[12]; // compressed
 };
 
 struct D2UnitDataPlayerArenaStrc{
-	undefined4 field_0x0; 
-	undefined4 field_0x4; 
+	undefined4 _0[2]; // compressed
 };
 
 struct D2PetStrc{
 	int flag; 
-	undefined4 field_0x4; 
-	undefined4 field_0x8; 
+	undefined4 _0[2]; // compressed
 };
 
 struct D2UnitDataPlayerPetsStrc{
@@ -152,8 +151,9 @@ struct D2PartyDataStrc{
 };
 
 struct D2EventEntryStrc{
-	undefined _0[28]; // removed field_0xxx for space
+	undefined _0[28]; // compressed
 	D2EventEntryStrc* pNext; 
+	undefined _1[16]; // compressed
 };
 
 struct D2EventStrc{
@@ -163,7 +163,7 @@ struct D2EventStrc{
 };
 
 struct D2EventControlStrc{
-	undefined _0[2588]; // removed field_0xxx for space
+	undefined _0[2588]; // compressed
 	D2EventStrc* pEvent; 
 };
 
@@ -184,6 +184,7 @@ struct D2DrlgEnvironmentStrc{
 	int nTimeRate; 
 	int field_0x2c; 
 	BOOL pEclipse; 
+	undefined _0[4]; // compressed
 };
 
 struct D2TileLibraryHashRefStrc{
@@ -229,6 +230,7 @@ struct D2TileLibraryEntryStrc{
 	D2TileRecordStrc* pParent; 
 	short field_0x3c; 
 	short nCacheIndex; 
+	int _0[4]; // compressed
 };
 
 struct D2DrlgTileDataStrc{
@@ -236,8 +238,10 @@ struct D2DrlgTileDataStrc{
 	int nWorldCoordsYMin; 
 	int nWorldCoordsXMax; 
 	int nWorldCoordsYMax; 
-	undefined _0[8]; // removed field_0xxx for space
+	undefined _0[8]; // compressed
 	D2TileLibraryEntryStrc* pTileLibraryEntry; /* Created by retype action*/
+	int field_0x1c; 
+	undefined _1[16]; // compressed
 };
 
 struct D2DrlgRoomTilesStrc{
@@ -256,10 +260,7 @@ struct D2DrlgCoordsStrc{
 
 struct D2DrlgRoomExSub00Strc{
 	D2RoomExStrc* pRoomEx; 
-	undefined field_0x4; 
-	undefined field_0x5; 
-	undefined field_0x6; 
-	undefined field_0x7; 
+	undefined _0[4]; // compressed
 	BOOL bIsDrlgTypePresetArea; 
 	int nNextCount; 
 	D2DrlgCoordsStrc* psCoordinatesAndSize; 
@@ -290,8 +291,7 @@ struct D2DrlgOutdoorRoomStrc{
 	D2DrlgVertexStrc* pVertex; 
 	int dwFlags; 
 	int dwFlagsEx; 
-	int field_0x5c; 
-	int field_0x60; 
+	int _0[2]; // compressed
 	int nSubType; 
 	int nSubTheme; 
 	int nSubThemePicked; /* Created by retype action*/
@@ -303,7 +303,7 @@ struct D2DrlgRoomExDataPresetWorldCoordinatesBurialGrounds{
 
 struct D2DrlgRoomExDataPreset{
 	int Def; 
-	undefined _0[236]; // removed field_0xxx for space
+	undefined _0[236]; // compressed
 	D2DrlgRoomExDataPresetWorldCoordinatesBurialGrounds* sWorldPointsBurialGrounds; 
 	int nWorldPointsBurialGroundsSize; /* Created by retype action*/
 };
@@ -315,16 +315,15 @@ union D2DrlgRoomExDataUnion{
 
 /* field 0x4C of */
 struct D2DrlgRoomExSub4CRoomTileStrc{
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _0[4]; // compressed
 	D2DrlgRoomExSub4CRoomTileStrc* pRoomTileNext; 
+	undefined _1[16]; // compressed
 };
 
 struct D2DrlgRoomExSub54RoomTileStrc{
-	undefined4 field_0x0; 
-	undefined4 field_0x4; 
+	undefined4 _0[2]; // compressed
 	D2DrlgRoomExSub54RoomTileStrc* nNext; /* Created by retype action*/
-	undefined4 field_0xc; 
-	undefined4 field_0x10; 
+	undefined4 _1[2]; // compressed
 	D2DrlgRoomTilesStrc Tiles; 
 };
 
@@ -346,7 +345,7 @@ struct D2LvlPrestTxt{
 	int KillEdge; 
 	int FillBlanks; 
 	int Expansion; 
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _0[4]; // compressed
 	int SizeX; 
 	int SizeY; 
 	int AutoMap; 
@@ -362,12 +361,12 @@ struct D2DrlgLevelSub1B0Strc{
 	void* field_0x0; 
 	int nRandomMapFileSelector; /* Created by retype action*/
 	D2LvlPrestTxt* pTxtLevelPrest; 
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _0[4]; // compressed
 	int nRealOffsetX; 
 	int nRealOffsetY; 
 	int nSizeX; 
 	int nSizeY; 
-	undefined _1[52]; // removed field_0xxx for space
+	undefined _1[52]; // compressed
 	D2DrlgLevelSub1B0Strc* pNext; 
 };
 
@@ -377,7 +376,7 @@ struct D2DrlgLevelDataPresetArea{
 };
 
 struct D2DrlgLevelDataWildernessLevel{
-	undefined _0[612]; // removed field_0xxx for space
+	undefined _0[612]; // compressed
 	D2RoomExStrc* pDrlgRoomEx; /* Created by retype action*/
 };
 
@@ -395,11 +394,11 @@ struct D2DrlgActWarpsInfoStrc{
 };
 
 struct D2DrlgActMiscSubA0Strc{
-	undefined _0[28]; // removed field_0xxx for space
+	undefined _0[28]; // compressed
 	D2DrlgActMiscSubA0Strc* pActMiscSubA0_1; 
-	undefined _1[36]; // removed field_0xxx for space
+	undefined _1[36]; // compressed
 	byte nActNo; /* Created by retype action*/
-	undefined _2[163]; // removed field_0xxx for space
+	undefined _2[163]; // compressed
 	D2DrlgActMiscSubA0Strc* pActMiscSubA0_2; 
 };
 
@@ -407,28 +406,31 @@ struct D2DrlgStrc{
 	D2SeedStrc nSeed; 
 	int field_0x8; 
 	undefined4 pTileProjects; 
-	undefined _0[124]; // removed field_0xxx for space
+	undefined _0[124]; // compressed
 	int dwFlags; 
 	D2DrlgActWarpsInfoStrc* pWarpsInfo; 
 	uint nAct2_RealTombLevel; 
 	char field_0x98; 
+	undefined _1[3]; // compressed
 	D2GameStrc* pGame; 
 	D2DrlgActMiscSubA0Strc* apSubA0[5]; 
-	undefined _1[920]; // removed field_0xxx for space
+	undefined _2[52]; // compressed
+	int field_0xe8; 
+	undefined _3[868]; // compressed
 	BYTE nDifficulty; 
-	undefined _2[3]; // removed field_0xxx for space
+	undefined _4[3]; // compressed
 	callback_void2pfAutoMap * pfAutoMap; 
 	DWORD nInitSeed; 
-	undefined _3[8]; // removed field_0xxx for space
+	undefined _5[8]; // compressed
 	DWORD nUnknownZero; 
-	undefined _4[4]; // removed field_0xxx for space
+	undefined _6[4]; // compressed
 	D2DrlgActStrc* pAct; 
 	uint nSeedLast; 
 	uint nAct3_SpecificUnknown; 
 	D2PoolManagerStrc* pMemoryPool; 
 	D2DrlgLevelStrc* pLevel; 
 	char nActNo; 
-	undefined _5[3]; // removed field_0xxx for space
+	undefined _7[3]; // compressed
 	uint nAct2_BigTomb; 
 	callback_void3pfTownAutoMap * pfTownAutoMap; 
 };
@@ -437,22 +439,22 @@ struct D2DrlgLevelStrc{
 	enum eD2DrlgType eDrlgType; 
 	uint dwFlags; 
 	int nRoomExSize; 
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _0[4]; // compressed
 	D2RoomExStrc* pRoomExFirst; /* Created by retype action*/
 	D2DrlgLevelDataUnion pDrlgLevelData; 
-	undefined _1[4]; // removed field_0xxx for space
+	undefined _1[4]; // compressed
 	D2DrlgCoordsStrc sCoordinatesAndSize; 
 	char aUnknown0x2C[384]; 
 	D2DrlgLevelStrc* pLevelNext; 
 	D2DrlgLevelSub1B0Strc* pDrglLevelSub1B0; /* Created by retype action*/
 	D2DrlgStrc* pDrlgActMisc; /* Created by retype action*/
-	undefined _2[4]; // removed field_0xxx for space
+	undefined _2[4]; // compressed
 	pointer pUnknownStructure0x1BC; 
 	int nLevelType; 
 	D2SeedStrc sSeed; /* Created by retype action*/
 	pointer pIAmStructUnknownSize_0x1CC; 
 	enum eD2LevelId eD2LevelId; 
-	undefined _3[4]; // removed field_0xxx for space
+	undefined _3[4]; // compressed
 	int nUnknown0x1D8; 
 	int nLastRoomExCoordsIndex; 
 	char aUnknown0x1E0[76]; 
@@ -498,9 +500,10 @@ struct D2RoomExStrc{
 	D2DrlgRoomExSub00Strc* psSub00; 
 	int nSeed; 
 	D2RoomExStrc** ppDrlgRoomsExNear; 
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _0[4]; // compressed
+	int field_0x10; 
 	D2SeedStrc sSeed; /* Created by retype action*/
-	undefined _1[4]; // removed field_0xxx for space
+	undefined _1[4]; // compressed
 	D2DrlgRoomExDataUnion pRoomExData; /* Created by retype action*/
 	D2RoomExStrc* pRoomExNext; 
 	int eRoomExFlags; /* Created by retype action*/
@@ -508,15 +511,17 @@ struct D2RoomExStrc{
 	D2RoomStrc* pRoom; 
 	D2DrlgCoordsStrc sCoords; /* Created by retype action*/
 	char field_0x44; 
+	undefined _2[3]; // compressed
 	int nPresetType; /* Created by retype action*/
 	D2DrlgRoomExSub4CRoomTileStrc* pRoomTile; 
 	int dwFlags_Dt1Mask; /* Created by retype action*/
 	D2DrlgRoomExSub54RoomTileStrc* pRoomExSub54; /* Created by retype action*/
 	D2DrlgLevelStrc* pLevel; /* Created by retype action*/
 	D2PresetUnitStrc* pPresetUnit; 
-	undefined _2[4]; // removed field_0xxx for space
+	undefined _3[4]; // compressed
 	D2DrlgCoordListStrc* pDrlgCoordList; /* Created by retype action*/
 	undefined4 pTileProject; /* This field seems like its same as in ActMisc_0xC = pTileProject*/
+	undefined _4[128]; // compressed
 	DWORD getWorldX ();
 	DWORD getWorldY ();
 	DWORD getWorldWidth ();
@@ -547,24 +552,26 @@ struct D2DrlgRoomCoordsStrc{
 	short wTileX; 
 	short field_0x12; 
 	short wTileY; 
+	short field_0x16; 
+	int _0[2]; // compressed
 };
 
 struct D2RoomStrc{
 	D2RoomStrc** ppRoomList; 
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _0[4]; // compressed
 	D2DrlgRoomTilesStrc* pTilesAll; /* Pointer to Sub54 Sub14 field in RoomEx*/
 	int field_0xc; 
 	D2RoomExStrc* pRoomEx; 
-	undefined _1[4]; // removed field_0xxx for space
+	undefined _1[4]; // compressed
 	D2DrlgDeleteStrc* pDrlgDelete; /* Created by retype action*/
 	D2UnitStrc* pUnitUpdate; 
 	D2RoomCollisionGridStrc* pCollisionGrid; /* Created by retype action*/
 	uint nRoomListCount; /* Created by retype action*/
 	int nAllies; 
 	D2DrlgActStrc* pDrlgAct; /* Created by retype action*/
-	undefined _2[4]; // removed field_0xxx for space
+	undefined _2[4]; // compressed
 	int eFlags; /* Created by retype action*/
-	undefined _3[16]; // removed field_0xxx for space
+	undefined _3[16]; // compressed
 	pointer pClients; 
 	D2DrlgRoomCoordsStrc sCoords; /* Created by retype action*/
 	D2SeedStrc sSeed; 
@@ -575,10 +582,15 @@ struct D2RoomStrc{
 
 struct D2DrlgActSub18Strc{
 	D2DrlgTileDataStrc* pTileData; 
-	int _0[3]; // removed field_0xxx for space
+	int _0[3]; // compressed
+	undefined _1[4]; // compressed
 	uint dwFlags; 
 	int field_0x18; 
+	undefined4 field_0x1c; 
 	D2DrlgActSub18Strc* pNext; /* Created by retype action*/
+	undefined4 field_0x24; 
+	byte _2[3]; // compressed
+	undefined _3[5]; // compressed
 };
 
 /* Structure is aligned to 4 */
@@ -589,12 +601,12 @@ struct D2DrlgActStrc{
 	int dwInitSeed; 
 	D2RoomStrc* pRoom; /* Created by retype action*/
 	char nActNo; 
-	undefined _0[3]; // removed field_0xxx for space
+	undefined _0[3]; // compressed
 	D2DrlgActSub18Strc pActSub18; 
 	D2DrlgStrc* pDrlg; /* Created by retype action*/
 	callback_void9pCallback * pCallback; 
 	BOOL bClientSide; 
-	undefined _1[4]; // removed field_0xxx for space
+	undefined _1[4]; // compressed
 	BOOL bDrlgDeleteIsSet; /* Created by retype action*/
 	D2PoolManagerStrc* pMemory; /* Created by retype action*/
 };
@@ -610,13 +622,15 @@ struct D2InactiveUnitListStrc{
 
 struct D2MonsterRegionFieldStrc{
 	short spawn; 
+	byte field_0x2; 
+	undefined _0[49]; // compressed
 };
 
 struct D2MonsterRegionStrc{
 	char nAct; 
-	undefined _0[3]; // removed field_0xxx for space
+	undefined _0[3]; // compressed
 	int nRoomsCount; 
-	undefined _1[4]; // removed field_0xxx for space
+	undefined _1[4]; // compressed
 	int nLevelRoomsCount; 
 	byte nCounter; 
 	byte nTotalRarity; 
@@ -629,13 +643,13 @@ struct D2MonsterRegionStrc{
 	byte nMonWander; 
 	undefined field_0x2bf; 
 	enum eD2LevelId eLevelId; /* Created by retype action*/
-	undefined _2[4]; // removed field_0xxx for space
+	undefined _2[4]; // compressed
 	int dwUniqueCount; 
 	int dwMonSpawnCount; 
 	int dwMonKillCount; 
-	undefined _3[4]; // removed field_0xxx for space
+	undefined _3[4]; // compressed
 	bool bQuest; 
-	undefined _4[3]; // removed field_0xxx for space
+	undefined _4[3]; // compressed
 	int dwDungeonLevel; 
 	int dwDungeonLevelEx; /* Created by retype action*/
 };
@@ -652,11 +666,9 @@ struct D2QuestArgStrcUnion1{
 
 struct D2QuestArgStrcUnion2{
 	short nNPCNo; 
-	undefined field_0x2; 
-	undefined field_0x3; 
+	undefined _0[2]; // compressed
 	short nMessageIndex; 
-	undefined field_0x6; 
-	undefined field_0x7; 
+	undefined _1[2]; // compressed
 };
 
 struct D2QuestArgStrcUnion3{
@@ -704,14 +716,12 @@ struct D2QuestDataStrc{
 	byte nStateFlagPrev; 
 	byte nStateFlag; 
 	byte nInitNo; 
-	undefined field_0xe; 
-	undefined field_0xf; 
+	undefined _0[2]; // compressed
 	int nSequenceQuestId; 
 	int eFlags; 
 	void* pQuestSpecificData; /* Each quest has its own substructure here*/
 	D2QuestGUIDStrc sQuestGUID; 
-	undefined field_0x9e; 
-	undefined field_0x9f; 
+	undefined _1[2]; // compressed
 	D2QuestDataCallbacksStrc sStateFunctions; 
 	D2NPCMessageTableStrc* pNpcMessages; 
 	enum eD2Quests nQuestIdReal; 
@@ -783,14 +793,15 @@ struct D2InventoryStrc{
 struct D2GameNpcStrc{
 	int nMonStatsId; 
 	D2InventoryStrc* pInventory; 
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _0[4]; // compressed
 	bool bGamble; 
-	undefined _1[20]; // removed field_0xxx for space
+	undefined _1[20]; // compressed
 	bool bHireling; 
 	undefined field_0x22; 
 	bool bNormalShop; 
-	undefined _2[8]; // removed field_0xxx for space
+	undefined _2[8]; // compressed
 	pointer ItemList; 
+	undefined _3[20]; // compressed
 };
 
 struct D2GameNpcArrayStrc{
@@ -801,10 +812,7 @@ struct D2GameNpcControlStrc{
 	int nNpcCount; 
 	D2GameNpcArrayStrc* pNpc; 
 	D2SeedStrc sSeed; 
-	undefined field_0x10; 
-	undefined field_0x11; 
-	undefined field_0x12; 
-	undefined field_0x13; 
+	undefined _0[4]; // compressed
 };
 
 struct D2ArenaControlStrc{
@@ -816,20 +824,19 @@ struct D2ArenaControlStrc{
 
 struct D2GameStrc{
 	pointer field_0x0; /* probably pGameTbl, passed from D2Client or D2Server...*/
+	int field_0x4; /* seed from the D2Client Game Marshal iirc*/
+	undefined4 _0[4]; // compressed
 	LPCRITICAL_SECTION lpCriticalSection; 
 	D2PoolManagerStrc* pMemoryPool; 
-	undefined4 field_0x20; 
-	undefined4 field_0x24; 
+	undefined4 _1[2]; // compressed
 	WORD nServerToken; 
 	char szGameName[16]; 
 	char szGamePassword[16]; 
 	char szGameDescription[32]; 
 	enum eD2HostGameType nGameType; 
-	undefined1 field_0x6b; 
-	undefined1 field_0x6c; 
+	undefined1 _2[2]; // compressed
 	byte nDifficulty; 
-	undefined1 field_0x6e; 
-	undefined1 field_0x6f; 
+	undefined1 _3[2]; // compressed
 	BOOL bExpansion; 
 	enum eD2GSGameType eGameType; 
 	WORD wItemFormat; 
@@ -876,8 +883,7 @@ struct D2GameStrc{
 	D2GameStrc* pPrev; 
 	D2GameStrc* pNext; 
 	int dwException; /* has for exceptions 1 = NULL deref, 2 = 0xC0000001 deref, 3 = Assert with blank Msg, 4 = Alloc 1.7Gb of Mem(lol)*/
-	int field_0x1de0; 
-	int field_0x1de4; 
+	int _4[2]; // compressed
 	int nUberRelated1; 
 	int nUberRelated2; 
 	int nUberRelated3; 
@@ -889,14 +895,7 @@ struct D2PacketListStrc{
 };
 
 struct D2ClientHotKeyStrc{
-	undefined field_0x0; 
-	undefined field_0x1; 
-	undefined field_0x2; 
-	undefined field_0x3; 
-	undefined field_0x4; 
-	undefined field_0x5; 
-	undefined field_0x6; 
-	undefined field_0x7; 
+	undefined _0[8]; // compressed
 };
 
 /* Used to send the server packet 0x18, 0x95, */
@@ -926,28 +925,25 @@ struct D2ClientStrc{
 	char szAccName[64]; 
 	byte nPad[3]; 
 	pointer pClientContainer; 
-	undefined1 _0[4]; // removed field_0xxx for space
+	undefined1 _0[4]; // compressed
 	void* pRealm; 
 	int nStartSkill; 
-	int field_0x70; 
-	int field_0x74; 
+	int _1[2]; // compressed
 	int dwMapSeed; 
-	undefined1 _1[240]; // removed field_0xxx for space
+	undefined1 _2[240]; // compressed
 	int nPlayerType; 
 	int dwPlayerGUID; 
-	D2UnitStrc* pPlayer; 
+	D2UnitPlayer* pPlayer; 
 	int dwSave; 
 	pointer pSaveGame; 
 	size_t nSaveOpenSize; 
 	size_t nSaveCurrentSize; 
 	size_t nFileSize; 
 	void* pSavePacketList; 
-	int field_0x190; 
-	int field_0x194; 
+	int _3[2]; // compressed
 	int nAttachedUnitType; 
 	int dwAttachedUnitGUID; 
-	int field_0x1a0; 
-	int field_0x1a4; 
+	int _4[2]; // compressed
 	D2GameStrc* pGame; 
 	int nAct; 
 	int dwRoomTicker; 
@@ -956,9 +952,9 @@ struct D2ClientStrc{
 	D2PacketListStrc* pPacketList; /* D2PacketListStrc**/
 	D2PacketListStrc* pEmpty; /* D2PacketListStrc**/
 	int dwPacketsInListMaybe; 
-	int _2[15]; // removed field_0xxx for space
+	int _5[15]; // compressed
 	pointer pDispatchListEx; /* D2PacketListStrc**/
-	int _3[110]; // removed field_0xxx for space
+	int _6[110]; // compressed
 	int dwLastWarpFrame[5]; 
 	int fClientFlags; 
 	int dwTimeOut; 
@@ -987,11 +983,12 @@ struct D2ClientStrc{
 	D2ClientStrc* pNext; 
 	D2ClientStrc* pServerNext; 
 	D2ClientStrc* pNextInListByName; 
-	undefined1 _4[76]; // removed field_0xxx for space
+	undefined1 _7[76]; // compressed
 	int dwHeartbeatTick; 
 	int nExpLoss; 
 	int nExp; 
 	int dwLangId; 
+	int _8[2]; // compressed
 };
 
 struct D2UnitDataPlayerStrc{
@@ -1009,10 +1006,9 @@ struct D2UnitDataPlayerStrc{
 	undefined4 field_0x30; 
 	D2UnitDataPlayerArenaStrc* pArena; 
 	void* pPlayerList; 
-	undefined4 field_0x3c; 
-	undefined4 field_0x40; 
+	undefined4 _0[2]; // compressed
 	D2UnitDataPlayerPetsStrc* pPets; 
-	undefined4 _0[6]; // removed field_0xxx for space
+	undefined4 _1[6]; // compressed
 	D2UnitDataPlayerInteractedNPCStrc* pInteractedNPCs[3]; 
 	int nInteractedNPCsRelated; 
 	enum eD2Skills eRightSkillId; 
@@ -1027,6 +1023,7 @@ struct D2UnitDataPlayerStrc{
 	enum eD2Skills eUnknownSkill; 
 	D2PartyDataStrc* pPartyData; 
 	D2ClientStrc* pClient; 
+	undefined4 _2[51]; // compressed
 };
 
 struct D2MonStatsTxtTC{
@@ -1042,8 +1039,7 @@ struct D2MonStatsTxt{
 	short NextInClass; 
 	ushort NameStr; 
 	ushort DescStr; 
-	undefined field_0xa; 
-	undefined field_0xb; 
+	undefined _0[2]; // compressed
 	int isSpawn:1; 
 	int isMelee:1; 
 	int noRatio:1; 
@@ -1096,7 +1092,7 @@ struct D2MonStatsTxt{
 	char sparsePopulate; 
 	short Velocity; 
 	short Run; 
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _1[4]; // compressed
 	short MissA1; 
 	short MissA2; 
 	short MissS1; 
@@ -1105,8 +1101,7 @@ struct D2MonStatsTxt{
 	short MissS4; 
 	short MissC; 
 	short MissSQ; 
-	undefined field_0x4a; 
-	undefined field_0x4b; 
+	undefined _2[2]; // compressed
 	char Align; 
 	char TransLvl; 
 	char threat; 
@@ -1269,6 +1264,7 @@ struct D2MonStatsTxt{
 	short Skill7; 
 	short Skill8; 
 	char field_unknown_delayRelated[8]; /* Created by retype action*/
+	undefined _3[16]; // compressed
 	char Sk1lvl; 
 	char Sk2lvl; 
 	char Sk3lvl; 
@@ -1305,8 +1301,7 @@ struct D2MonsterDataComponents{
 
 struct D2MonStats2Txt{
 	short Id; 
-	undefined field_0x2; 
-	undefined field_0x3; 
+	undefined _0[2]; // compressed
 	int noGfxHitTest:1; 
 	int noMap:1; 
 	int noOvly:1; 
@@ -1339,16 +1334,16 @@ struct D2MonStats2Txt{
 	undefined field_0xf; 
 	int BaseW; 
 	char HitClass; 
-	undefined _0[215]; // removed field_0xxx for space
+	undefined _1[215]; // compressed
 	char TotalPieces; 
+	undefined _2[71]; // compressed
 };
 
 struct D2AiParamStrc{
 	D2MonsterAiGeneralStrc* pMonsterAiGeneral; 
 	callback_void4fpAiFunction * fpAiFunction; 
 	D2UnitStrc* pTarget; 
-	int field_0xc; 
-	int field_0x10; 
+	int _0[2]; // compressed
 	int nDistanceToTarget; 
 	BOOL bEngagedInCombat; 
 	D2MonStatsTxt* pMonStats; 
@@ -1381,19 +1376,19 @@ struct D2MonsterAiGeneralStrc{
 	int nOwnerGUIDEx; 
 	enum eD2UnitType eOwnerTypeEx; 
 	D2MonsterDataMinionList* pMinionList; 
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _0[4]; // compressed
 	int nGenericSpawnerSpecific; 
 };
 
 struct D2MonsterModeStrc{
-	
+	undefined _0[24]; // compressed
+	int _1[2]; // compressed
+	byte field_0x20; 
+	undefined _2[3]; // compressed
 };
 
 struct D2MonsterAiStrc{
-	undefined field_0x0; 
-	undefined field_0x1; 
-	undefined field_0x2; 
-	undefined field_0x3; 
+	undefined _0[4]; // compressed
 };
 
 struct D2UnitDataMonsterStrc{
@@ -1409,9 +1404,9 @@ struct D2UnitDataMonsterStrc{
 	D2MonsterAiGeneralStrc* pMonsterAiGeneral; 
 	D2MonsterModeStrc* pMonsterMode; 
 	D2MonsterAiStrc* pMonsterAi; 
-	undefined4 _0[3]; // removed field_0xxx for space
+	undefined4 _0[3]; // compressed
 	int nNecroPet; 
-	undefined4 _1[3]; // removed field_0xxx for space
+	undefined4 _1[3]; // compressed
 	pointer pVision; 
 	int nAiState; 
 	enum eD2LevelId eD2LevelId; 
@@ -1426,7 +1421,7 @@ struct D2ObjectsTxt{
 	char SpawnMax; 
 	bool Selectable[8]; 
 	char TrapProb; 
-	undefined _0[3]; // removed field_0xxx for space
+	undefined _0[3]; // compressed
 	int SizeX; 
 	int SizeY; 
 	int FrameCnt[8]; 
@@ -1484,16 +1479,14 @@ struct D2ObjectsTxt{
 	bool RestoreVirgins; 
 	bool Sync; 
 	int Parm[8]; 
-	undefined field_0x196; 
-	undefined field_0x197; 
+	undefined _1[2]; // compressed
 	char nTgtFX; 
 	char nTgtFY; 
 	char nTgtBX; 
 	char nTgtBY; 
 	char Damage; 
 	bool CollisionSubst; 
-	undefined field_0x19e; 
-	undefined field_0x19f; 
+	undefined _2[2]; // compressed
 	int Left; 
 	int Top; 
 	int Width; 
@@ -1507,13 +1500,13 @@ struct D2ObjectsTxt{
 	char BlockMissile; 
 	bool DrawUnder; 
 	bool OpenWarp; 
-	undefined _1[3]; // removed field_0xxx for space
+	undefined _3[3]; // compressed
 	int AutoMap; 
 };
 
 struct D2ShrinesTxt{
 	byte Code; 
-	undefined _0[3]; // removed field_0xxx for space
+	undefined _0[3]; // compressed
 	int Arg[2]; 
 	int DurationInFrames; 
 	byte ResetTimeInMinutes; 
@@ -1529,9 +1522,9 @@ struct D2UnitDataObjectStrc{
 	D2ObjectsTxt* pTxtObjectsLine; 
 	byte nShrineId; 
 	byte nPortalFlags; 
-	undefined field_0x6; 
-	undefined field_0x7; 
+	undefined _0[2]; // compressed
 	D2ShrinesTxt* pTxtShrinesLine; 
+	undefined _1[44]; // compressed
 };
 
 struct D2CoordsShort{
@@ -1540,8 +1533,7 @@ struct D2CoordsShort{
 };
 
 struct D2UnitDataMissileStrc{
-	undefined4 field_0x0; 
-	undefined4 field_0x4; 
+	undefined4 _0[2]; // compressed
 	short ActivateFrame; 
 	short nSkillNo; 
 	short nSkillLevel; 
@@ -1554,6 +1546,7 @@ struct D2UnitDataMissileStrc{
 	int nTargetGUID; 
 	int HomeStatus; 
 	D2CoordsShort sCoords; 
+	undefined _1[4]; // compressed
 };
 
 struct D2UnitDataItemStrc{
@@ -1563,8 +1556,7 @@ struct D2UnitDataItemStrc{
 	int nModSeed; 
 	enum eD2ItemCmd eD2ItemCmd; 
 	enum eD2ItemFlag eD2ItemFlag; 
-	int field_0x1c; 
-	int field_0x20; 
+	int _0[2]; // compressed
 	int nActionStamp; 
 	int nFileIndex; 
 	int nItemLevel; 
@@ -1587,8 +1579,7 @@ struct D2UnitDataItemStrc{
 	D2UnitStrc* pNextItem; 
 	enum eD2InventoryGrid eD2InventoryGrid; 
 	enum eD2InventoryGridType eD2InventoryGridType; 
-	undefined field_0x6a; 
-	undefined field_0x6b; 
+	undefined _1[2]; // compressed
 	D2UnitStrc* pPrevItemInPage; 
 	D2UnitStrc* pNextItemInPage; 
 };
@@ -1653,27 +1644,30 @@ struct D2DynamicPathStrc{
 	int dwCollisionPattern; /* Created by retype action*/
 	int eCollisionFlag; /* Cast To eCollisionFlags*/
 	int field_0x50; 
+	short _0[2]; // compressed
 	D2UnitStrc* pTargetUnit; /* Created by retype action*/
 	enum eD2UnitType eTargetType; 
 	int nTargetGUID; 
 	byte nDirection; /* Created by retype action*/
 	byte nNewDirection; 
 	byte nDiffDirection; 
-	byte _0[11]; // removed field_0xxx for space
+	byte _1[11]; // compressed
+	int _2[2]; // compressed
+	char field_0x7a[2]; 
 	int dwVelocity; 
 	int field_0x80; 
 	int dwVelocity2; 
-	int field_0x88; 
-	int field_0x8c; 
+	int _3[2]; // compressed
 	byte nDist; 
 	byte nDistMax; 
 	byte field_0x92; 
 	byte nStepNum; 
 	byte nDistance; 
-	byte _1[3]; // removed field_0xxx for space
+	byte _4[3]; // compressed
 	D2PathPointStrc PathPoints[7]; 
-	int _2[73]; // removed field_0xxx for space
+	int _5[73]; // compressed
 	D2PathPointStrc pInitCoords; 
+	int _6[9]; // compressed
 };
 
 union D2PathUnion{
@@ -1723,6 +1717,7 @@ struct D2StatListStrc{
 
 struct D2StateFlags{
 	int nStateBitFlags[6]; 
+	undefined _0[24]; // compressed
 };
 
 struct D2StatListExStrc{
@@ -1742,8 +1737,7 @@ struct D2LightMapStrc{
 	DWORD nUnitGUID; 
 	BOOL bUnknown; 
 	int nLightType; 
-	int field_0x10; 
-	int field_0x14; 
+	int _0[2]; // compressed
 	int nRadiusX; 
 	int nRadiusY; 
 	int field_0x20; 
@@ -1762,15 +1756,14 @@ struct D2TimerArgStrc{
 };
 
 struct D2CUnitEventStrc{
-	undefined _0[24]; // removed field_0xxx for space
+	undefined _0[24]; // compressed
 	D2CUnitEventStrc* pNext; /* Created by retype action*/
 	D2CUnitEventStrc* pPrev; /* Created by retype action*/
 };
 
 struct D2SUnitEventStrc{
 	int nItemEventId; 
-	undefined4 field_0x4; 
-	undefined4 field_0x8; 
+	undefined4 _0[2]; // compressed
 	enum eD2Skills eSkill; 
 	undefined4 field_0x10; 
 	callback_BOOL11fpItemEventFunc * fpItemEventFunc; 
@@ -1784,21 +1777,18 @@ union D2UnitEvent{
 };
 
 struct D2HoverTextStrc{
-	int field_0x0; 
-	int field_0x4; 
+	int _0[2]; // compressed
 	byte nLanguageCode; 
-	undefined field_0x9; 
-	undefined field_0xa; 
-	undefined field_0xb; 
+	undefined _1[3]; // compressed
 	int field_0xc; 
 	char szMessage[256]; 
 };
 
 struct D2SkillsTxt{
 	short skill; 
-	undefined _0[10]; // removed field_0xxx for space
+	undefined _0[10]; // compressed
 	char charclass; 
-	undefined _1[3]; // removed field_0xxx for space
+	undefined _1[3]; // compressed
 	char anim; 
 	char monanim; 
 	char seqtrans; 
@@ -1820,8 +1810,7 @@ struct D2SkillsTxt{
 	short srvstfunc; 
 	short srvdofunc; 
 	short srvprgfunc[3]; 
-	undefined field_0x36; 
-	undefined field_0x37; 
+	undefined _2[2]; // compressed
 	int prgcalc[3]; 
 	char prgdam; 
 	undefined field_0x45; 
@@ -1844,8 +1833,7 @@ struct D2SkillsTxt{
 	short passivestate; 
 	short passiveitype; 
 	short passivestat1[5]; 
-	undefined field_0xa2; 
-	undefined field_0xa3; 
+	undefined _3[2]; // compressed
 	int passivecalc[5]; 
 	short passiveevent; 
 	short passiveeventfunc; 
@@ -1854,8 +1842,7 @@ struct D2SkillsTxt{
 	char summode; 
 	int petmax; 
 	short sumskill[5]; 
-	undefined field_0xce; 
-	undefined field_0xcf; 
+	undefined _4[2]; // compressed
 	int sumskcalc[5]; 
 	short sumumod; 
 	short sumoverlay; 
@@ -1884,8 +1871,7 @@ struct D2SkillsTxt{
 	undefined field_0x121; 
 	short ItemCastSound; 
 	short ItemCastOverlay; 
-	undefined field_0x126; 
-	undefined field_0x127; 
+	undefined _5[2]; // compressed
 	int perdelay; 
 	short maxlvl; 
 	short ResultFlags; 
@@ -1897,8 +1883,7 @@ struct D2SkillsTxt{
 	undefined field_0x169; 
 	short ItemEffect; 
 	short ItemCltEffect; 
-	undefined field_0x16e; 
-	undefined field_0x16f; 
+	undefined _6[2]; // compressed
 	int skpoints; 
 	short reqlevel; 
 	short reqstr; 
@@ -1915,22 +1900,20 @@ struct D2SkillsTxt{
 	char lineofsight; 
 	int delay; 
 	short skilldesc; 
-	undefined field_0x196; 
-	undefined field_0x197; 
+	undefined _7[2]; // compressed
 	int ToHit; 
 	int LevToHit; 
 	int ToHitCalc; 
 	char HitShift; 
 	char SrcDam; 
-	undefined field_0x1a6; 
-	undefined field_0x1a7; 
+	undefined _8[2]; // compressed
 	int MinDam; 
 	int MaxDam; 
 	int MinLevDam[5]; 
 	int MaxLevDam[5]; 
 	int DmgSymPerCalc; 
 	enum eSkillEType EType; 
-	undefined _2[3]; // removed field_0xxx for space
+	undefined _9[3]; // compressed
 	int EMin; 
 	int EMax; 
 	int EMinLev[5]; 
@@ -1954,8 +1937,7 @@ struct D2SkillStrc{
 	D2SkillStrc* pNext; 
 	int nMode; 
 	int fFlags; 
-	int field_0x10; 
-	int field_0x14; 
+	int _0[2]; // compressed
 	int nPar1; 
 	int nPar2; 
 	int nPar3; 
@@ -1965,6 +1947,7 @@ struct D2SkillStrc{
 	int nQuantity; 
 	int nOwnerGUID; 
 	int nCharges; 
+	int field_0x3c; 
 };
 
 struct D2SkillListStrc{
@@ -2002,7 +1985,7 @@ struct D2UnitStrc{
 	DWORD nAnimMode; 
 	D2UnitDataUnion pUnitData; 
 	byte nAct; /* Created by retype action*/
-	undefined _0[3]; // removed field_0xxx for space
+	undefined _0[3]; // compressed
 	D2DrlgActStrc* pDrlgAct; 
 	D2SeedStrc sSeed; 
 	int nInitSeed; 
@@ -2024,14 +2007,13 @@ struct D2UnitStrc{
 	D2InventoryStrc* pInventory; /* Created by retype action*/
 	D2LightMapStrc* pLightMap; 
 	int nLightRadiusX; 
-	undefined field_0x6c; 
-	undefined field_0x6d; 
+	undefined _1[2]; // compressed
 	short nUpdateType; 
 	D2UnitStrc* pUpdateUnit; 
-	undefined _1[8]; // removed field_0xxx for space
+	undefined _2[8]; // compressed
 	D2TimerArgStrc* pTimerArg; 
 	D2GameStrc* pGame; /* Created by retype action*/
-	undefined _2[12]; // removed field_0xxx for space
+	undefined _3[12]; // compressed
 	D2UnitEvent pUnitEvent; 
 	enum eD2UnitType eOwnerType; 
 	int nOwnerGUID; 
@@ -2040,14 +2022,14 @@ struct D2UnitStrc{
 	D2HoverTextStrc* pHoverText; 
 	D2SkillListStrc* pSkillsList; 
 	pointer pCombat; 
-	undefined _3[8]; // removed field_0xxx for space
+	undefined _4[8]; // compressed
 	char* szRewardItemCode; 
-	undefined _4[8]; // removed field_0xxx for space
+	undefined _5[8]; // compressed
 	enum eD2UnitFlags eUnitFlags; /* Created by retype action*/
 	enum eD2UnitFlagsEx eUnitFlagsEx; /* Created by retype action*/
-	undefined _5[4]; // removed field_0xxx for space
+	undefined _6[4]; // compressed
 	int nNodeTableIndex; /* Created by retype action*/
-	undefined _6[4]; // removed field_0xxx for space
+	undefined _7[4]; // compressed
 	D2ServerCmdStrc* pServerCmd; 
 	D2TimerStrc* pTimer; /* Created by retype action*/
 	D2UnitStrc* pUnitNext_0; 
@@ -2060,7 +2042,7 @@ struct D2UnitStrc{
 	D2UnitMissile* asMissile ();
 	D2UnitObject* asObject ();
 	D2UnitItem* asItem ();
-	D2UnitTitle* asWarp ();
+	D2UnitWarp* asWarp ();
 	DPOINT pos ();
 	DPOINT pos (DPOINT adjust);
 	DPOINT getTargetPos (DPOINT adjust);
@@ -2068,15 +2050,39 @@ struct D2UnitStrc{
 
 struct D2CharSelCompStrc{
 	uint nFlags; 
+	undefined _0[4]; // compressed
+	undefined4 field_0x8; 
+	uint field_0xc; 
+	undefined4 field_0x10; 
+	undefined _1[8]; // compressed
+	uint field_0x1c; 
+	int _2[2]; // compressed
+	char _3[4]; // compressed
+	undefined _4[12]; // compressed
+	undefined4 field_0x38; 
+	string field_0x3c[9]; 
+	undefined _5[24]; // compressed
+	undefined4 field_0x78; 
+	undefined _6[60]; // compressed
+	int* field_0xb8; 
+	undefined _7[8]; // compressed
+	undefined* field_0xc4; 
+	undefined4 field_0xc8; 
+	undefined _8[360]; // compressed
 };
 
 struct D2CharSelStrc{
 	CHAR field_0x0[256]; 
+	WCHAR field_0x100[256]; 
 	char szUnk1[16]; 
 	char szUnk2[16]; 
 	bool field_0x320; 
+	undefined field_0x321; 
+	undefined2 _0[4]; // compressed
+	undefined _1[10]; // compressed
+	int field_0x334; 
 	D2CharSelCompStrc* pCharSelCompStrc; 
-	undefined _0[16]; // removed field_0xxx for space
+	undefined _2[16]; // compressed
 	D2CharSelStrc* pNext; 
 };
 
@@ -2087,15 +2093,16 @@ struct D2QServerClientPacketStrc{
 };
 
 struct D2QServerClientStrc{
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _0[4]; // compressed
 	D2QServerClientStrc* ptNextClient; /* Created by retype action*/
 	int nInterlockedInrement; /* Created by retype action*/
-	undefined _1[20]; // removed field_0xxx for space
+	undefined _1[20]; // compressed
 	undefined1 nToken; /* Created by retype action*/
-	undefined _2[11]; // removed field_0xxx for space
+	undefined _2[11]; // compressed
 	LPCRITICAL_SECTION ClientCriticalSection; /* Created by retype action*/
-	undefined _3[68]; // removed field_0xxx for space
+	undefined _3[68]; // compressed
 	D2QServerClientPacketStrc* pQServerClientPacket; /* Created by retype action*/
+	undefined _4[172]; // compressed
 };
 
 struct D2QServerClientListStrc{
@@ -2105,46 +2112,52 @@ struct D2QServerClientListStrc{
 struct D2QServerStrc{
 	undefined4 field_0x0; 
 	int clientsCount; /* Created by retype action*/
-	undefined4 _0[3]; // removed field_0xxx for space
+	undefined4 _0[3]; // compressed
 	D2QServerClientListStrc* pQServerClientList; /* Created by retype action*/
-	undefined4 _1[14]; // removed field_0xxx for space
+	undefined4 _1[14]; // compressed
 	LPCRITICAL_SECTION CriticalCreatingGame; 
-	undefined4 _2[176]; // removed field_0xxx for space
+	undefined4 _2[176]; // compressed
+	undefined _3[1332]; // compressed
 	int nCounterIndex; 
-	undefined _3[8]; // removed field_0xxx for space
+	undefined _4[8]; // compressed
 	LPCRITICAL_SECTION lpCriticalSection; /* Created by retype action*/
-	undefined _4[20]; // removed field_0xxx for space
+	undefined _5[20]; // compressed
 	enum eD2GSConnectionType eD2GSConnectionType; 
-	undefined _5[20]; // removed field_0xxx for space
+	undefined _6[20]; // compressed
 	BOOL nPlayersCount; /* Created by retype action*/
-	undefined _6[776]; // removed field_0xxx for space
+	undefined _7[776]; // compressed
 	SOCKET Socket1; 
-	undefined _7[12]; // removed field_0xxx for space
+	undefined _8[12]; // compressed
 	u_short Socket1Port; /* Created by retype action*/
-	undefined _8[26]; // removed field_0xxx for space
+	undefined _9[6]; // compressed
+	undefined4 _10[2]; // compressed
+	undefined _11[20]; // compressed
 	undefined4 send0xAFFunc; 
-	undefined4 field_0xbc8; 
-	undefined4 field_0xbcc; 
+	undefined4 _12[2]; // compressed
 	BOOL bUseQServerHack; 
 	HANDLE hEmptyEvent; 
 	HANDLE hThreadHandle; /* Created by retype action*/
-	undefined4 _9[3]; // removed field_0xxx for space
+	undefined4 _13[3]; // compressed
 	DWORD dwThreadId; 
+	undefined4 _14[2]; // compressed
+	undefined _15[88]; // compressed
 };
 
 struct D2CharSelSaveDataStrc{
 	WORD wFlags; 
+	undefined _0[254]; // compressed
 };
 
 struct D2UnknownSequence{
-	pointer _0[4]; // removed field_0xxx for space
+	pointer _0[4]; // compressed
 	pointer someConnectToBnetHandler; 
-	pointer _1[8]; // removed field_0xxx for space
+	pointer _1[8]; // compressed
 	callback_void30fpSID_StartAdVex3 * fpSID_StartAdVex3; 
-	pointer _2[5]; // removed field_0xxx for space
+	pointer _2[5]; // compressed
 	pointer checkRevisionMaybe; 
-	pointer _3[3]; // removed field_0xxx for space
+	pointer _3[3]; // compressed
 	pointer verByte; 
+	pointer _4[30]; // compressed
 };
 
 struct D2IniConfigStrc{
@@ -2167,7 +2180,7 @@ struct D2IniConfigStrc{
 	char szSERVERIP[24]; 
 	char szBATTLENETIP[24]; 
 	char szMCPIP[24]; 
-	undefined _0[4]; // removed field_0xxx for space
+	undefined _0[4]; // compressed
 	bool bNOPK; 
 	bool bOPENC; 
 	bool bAMAZON; 
@@ -2178,7 +2191,7 @@ struct D2IniConfigStrc{
 	bool bDRUID; 
 	bool bASSASSIN; 
 	bool bINVINCIBLE; 
-	undefined _1[48]; // removed field_0xxx for space
+	undefined _1[48]; // compressed
 	char szNAME[24]; 
 	char szREALM[24]; 
 	D2CharSelSaveDataStrc CharSelSaveDataStrc; 
@@ -2191,17 +2204,15 @@ struct D2IniConfigStrc{
 	int nMONSTERDEBUG; 
 	bool bRARE; 
 	bool bUNIQUE; 
-	undefined field_0x1fd; 
-	undefined field_0x1fe; 
+	undefined _2[2]; // compressed
 	int nACT; 
 	bool bNOPREDLOAD; 
 	bool bDIRECT; 
 	bool bLOWEND; 
 	bool bNOCOMPRESS; 
-	undefined field_0x207; 
-	undefined field_0x208; 
+	undefined _3[2]; // compressed
 	enum eD2ArenaFlags eArenaFlags; 
-	undefined _2[3]; // removed field_0xxx for space
+	undefined _4[3]; // compressed
 	undefined1 dificulty; /* Created by retype action*/
 	pointer* bTrue; /* ptr to function that returns true?*/
 	bool bTXT; 
@@ -2218,14 +2229,26 @@ struct D2IniConfigStrc{
 	bool bBUILD; 
 	bool bSOUNDBKG; 
 	D2UnknownSequence* pUnknownSequence; 
-	undefined _3[4]; // removed field_0xxx for space
+	undefined _5[4]; // compressed
 	char bGameIsSinglePlayerMaybe[24]; 
 	char szGamePassword[24]; /* Created by retype action*/
 	char szGameDescription[256]; /* Created by retype action*/
 	bool bSKIPTOBNET; 
 	byte nScreenToShow; /* Created by retype action*/
-	undefined _4[108]; // removed field_0xxx for space
+	undefined _6[108]; // compressed
 	enum eD2PlayerStatus eD2PlayerStatus; 
+};
+
+struct DC6Block{
+	int nFlip; 
+	int nWidth; 
+	int nHeight; 
+	int nOffsetX; 
+	int nOffsetY; 
+	int nAllocSize; 
+	int nNextBlock; 
+	int nLength; 
+	char data[1]; /*variable size*/
 };
 
 struct DC6{
@@ -2235,6 +2258,7 @@ struct DC6{
 	char nTerm[4]; 
 	int nDirections; 
 	int nFrames; 
+	DC6Block* pBlocks[1]; /*variable size*/
 };
 
 struct D2ControlMsg{
@@ -2269,9 +2293,14 @@ struct FORMS_PredefinedFormStrc{
 	int nLabelAsLocaleStringId; 
 	DC6* pDC6; 
 	callback_BOOL108fpOnPressCallback * fpOnPressCallback; 
-	undefined4 field_0x24; 
-	undefined4 field_0x28; 
-	undefined4 field_0x2c; 
+	undefined4 _0[3]; // compressed
+};
+
+struct D2BoundingBoxStrc{
+	int nLeft; 
+	int nBottom; 
+	int nRight; 
+	int nTop; 
 };
 
 }; // ghidra namespace

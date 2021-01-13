@@ -49,10 +49,9 @@ namespace Ghidra {
         return reinterpret_cast<D2UnitItem *>(this);
     }
 
-    D2UnitTitle* D2UnitStrc::asWarp() {
-        return reinterpret_cast<D2UnitTitle *>(this);
+    D2UnitWarp* D2UnitStrc::asWarp() {
+        return reinterpret_cast<D2UnitWarp *>(this);
     }
-
 
     DWORD D2RoomExStrc::getWorldX() {
         return pRoom->sCoords.dwXStart;
