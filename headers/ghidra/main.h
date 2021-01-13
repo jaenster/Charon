@@ -39,6 +39,7 @@ typedef PRTL_CRITICAL_SECTION LPCRITICAL_SECTION;
 typedef unsigned short ushort;
 typedef ushort WORD;
 typedef unsigned short undefined2;
+typedef uchar uint8_t;
 typedef  void (*callback_void2pfAutoMap)(D2RoomStrc*) ;
 typedef  void (*callback_void3pfTownAutoMap)(enum eD2LevelId, int, int, int) ;
 typedef  void (*callback_void9pCallback)(D2RoomStrc*) ;
@@ -234,14 +235,21 @@ struct D2TileLibraryEntryStrc{
 };
 
 struct D2DrlgTileDataStrc{
-	int nWorldCoordsXMin; 
-	int nWorldCoordsYMin; 
-	int nWorldCoordsXMax; 
-	int nWorldCoordsYMax; 
-	undefined _0[8]; // compressed
+	int nWidth; 
+	int nHeight; 
+	int nPosX; 
+	int nPosY; 
+	int field_0x10; 
+	int nFlags; 
 	D2TileLibraryEntryStrc* pTileLibraryEntry; /* Created by retype action*/
 	int field_0x1c; 
-	undefined _1[16]; // compressed
+	D2DrlgTileDataStrc* pNext; 
+	int field_0x24; 
+	uint8_t nRed; 
+	uint8_t nGreen; 
+	uint8_t nBlue; 
+	uint8_t nIntensity; 
+	int field_0x2c; 
 };
 
 struct D2DrlgRoomTilesStrc{
@@ -297,32 +305,37 @@ struct D2DrlgOutdoorRoomStrc{
 	int nSubThemePicked; /* Created by retype action*/
 };
 
-struct D2DrlgRoomExDataPresetWorldCoordinatesBurialGrounds{
-	POINT PointsList[6]; /* My guess is thats a list of points where BloodRaven is moving to*/
-};
-
-struct D2DrlgRoomExDataPreset{
-	int Def; 
-	undefined _0[236]; // compressed
-	D2DrlgRoomExDataPresetWorldCoordinatesBurialGrounds* sWorldPointsBurialGrounds; 
-	int nWorldPointsBurialGroundsSize; /* Created by retype action*/
+struct D2DrlgPresetRoomStrc{
+	int nLevelPrest; 
+	int nPickedFile; 
+	void* pMap; 
+	int nFlags; 
+	D2DrlgGridStrc pWallGrid[4]; 
+	D2DrlgGridStrc pOrientationGrid[4]; 
+	D2DrlgGridStrc pFloorGrid[2]; 
+	D2DrlgGridStrc pCellGrid; 
+	D2DrlgGridStrc* pMazeGrid; 
+	POINT* pNavigationPoints; 
+	int nNavigationPointsCount; /* Created by retype action*/
 };
 
 union D2DrlgRoomExDataUnion{
 	D2DrlgOutdoorRoomStrc* pRoomExDataOutRoom; /* DRLG Type = RandomMaze*/
-	D2DrlgRoomExDataPreset* pRoomExDataPreset; /* DRLG Type = PresetArea*/
+	D2DrlgPresetRoomStrc* pRoomExDataPreset; /* DRLG Type = PresetArea*/
 };
 
-/* field 0x4C of */
-struct D2DrlgRoomExSub4CRoomTileStrc{
-	undefined _0[4]; // compressed
-	D2DrlgRoomExSub4CRoomTileStrc* pRoomTileNext; 
-	undefined _1[16]; // compressed
+struct D2DrlgTileGridStrc{
+	pointer pMapLinks; 
+	D2DrlgTileGridStrc* pAnimTiles; 
+	int nWalls; 
+	int nFloors; 
+	int nShadows; 
+	D2DrlgRoomTilesStrc* pTiles; 
 };
 
-struct D2DrlgRoomExSub54RoomTileStrc{
+struct D2DrlgRoomTilesListStrc{
 	undefined4 _0[2]; // compressed
-	D2DrlgRoomExSub54RoomTileStrc* nNext; /* Created by retype action*/
+	D2DrlgRoomTilesListStrc* nNext; /* Created by retype action*/
 	undefined4 _1[2]; // compressed
 	D2DrlgRoomTilesStrc Tiles; 
 };
@@ -513,9 +526,9 @@ struct D2RoomExStrc{
 	char field_0x44; 
 	undefined _2[3]; // compressed
 	int nPresetType; /* Created by retype action*/
-	D2DrlgRoomExSub4CRoomTileStrc* pRoomTile; 
-	int dwFlags_Dt1Mask; /* Created by retype action*/
-	D2DrlgRoomExSub54RoomTileStrc* pRoomExSub54; /* Created by retype action*/
+	D2DrlgTileGridStrc* pTileGrid; 
+	int nDT1Mask; /* Created by retype action*/
+	D2DrlgRoomTilesListStrc* pRoomTiles; /* Created by retype action*/
 	D2DrlgLevelStrc* pLevel; /* Created by retype action*/
 	D2PresetUnitStrc* pPresetUnit; 
 	undefined _3[4]; // compressed
@@ -559,7 +572,7 @@ struct D2DrlgRoomCoordsStrc{
 struct D2RoomStrc{
 	D2RoomStrc** ppRoomList; 
 	undefined _0[4]; // compressed
-	D2DrlgRoomTilesStrc* pTilesAll; /* Pointer to Sub54 Sub14 field in RoomEx*/
+	D2DrlgRoomTilesStrc* pRoomTiles; 
 	int field_0xc; 
 	D2RoomExStrc* pRoomEx; 
 	undefined _1[4]; // compressed
@@ -580,19 +593,6 @@ struct D2RoomStrc{
 	D2RoomStrc* pDrlgRoomNext; /* Created by retype action*/
 };
 
-struct D2DrlgActSub18Strc{
-	D2DrlgTileDataStrc* pTileData; 
-	int _0[3]; // compressed
-	undefined _1[4]; // compressed
-	uint dwFlags; 
-	int field_0x18; 
-	undefined4 field_0x1c; 
-	D2DrlgActSub18Strc* pNext; /* Created by retype action*/
-	undefined4 field_0x24; 
-	byte _2[3]; // compressed
-	undefined _3[5]; // compressed
-};
-
 /* Structure is aligned to 4 */
 struct D2DrlgActStrc{
 	enum eD2LevelId eD2LevelId; 
@@ -602,11 +602,11 @@ struct D2DrlgActStrc{
 	D2RoomStrc* pRoom; /* Created by retype action*/
 	char nActNo; 
 	undefined _0[3]; // compressed
-	D2DrlgActSub18Strc pActSub18; 
+	D2DrlgTileDataStrc pTileData; 
 	D2DrlgStrc* pDrlg; /* Created by retype action*/
 	callback_void9pCallback * pCallback; 
 	BOOL bClientSide; 
-	undefined _1[4]; // compressed
+	int field_0x54; 
 	BOOL bDrlgDeleteIsSet; /* Created by retype action*/
 	D2PoolManagerStrc* pMemory; /* Created by retype action*/
 };
@@ -1973,7 +1973,7 @@ struct D2TimerStrc{
 /* Size is different for each */
 struct D2SUnitMsgStrc{
 	D2SUnitMsgStrc* pNext; 
-	undefined4 nPacketId; 
+	int nPacketId; 
 	byte nArgs[16]; 
 };
 
@@ -1982,7 +1982,7 @@ struct D2UnitStrc{
 	int nClassId; /* Created by retype action*/
 	D2PoolManagerStrc* pMemory; /* Created by retype action*/
 	int nUnitGUID; /* Created by retype action*/
-	DWORD nAnimMode; 
+	int nAnimMode; 
 	D2UnitDataUnion pUnitData; 
 	byte nAct; /* Created by retype action*/
 	undefined _0[3]; // compressed
