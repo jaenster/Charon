@@ -58,17 +58,17 @@ typedef uint UINT_PTR;
 typedef UINT_PTR SOCKET;
 typedef ushort u_short;
 typedef void* HANDLE;
-typedef  void (*callback_void30fpSID_StartAdVex3)(char* , char* , char* , int) ;
-typedef  BOOL (*callback_BOOL100fpDraw)(D2ControlStrc*) ;
-typedef  BOOL (*callback_BOOL101fpDrawEx)(D2ControlStrc*) ;
+typedef  void (*callback_void32fpSID_StartAdVex3)(char* , char* , char* , int) ;
+typedef  BOOL (*callback_BOOL110fpDraw)(D2ControlStrc*) ;
+typedef  BOOL (*callback_BOOL111fpDrawEx)(D2ControlStrc*) ;
 typedef UINT_PTR WPARAM;
-typedef  BOOL (*callback_BOOL102fpPush)(D2ControlMsg*) ;
-typedef  BOOL (*callback_BOOL103fpMouse)(D2ControlMsg*) ;
-typedef  BOOL (*callback_BOOL104fpListCheck)(D2ControlMsg*) ;
-typedef  BOOL (*callback_BOOL105fpKey)(D2ControlMsg*) ;
-typedef  BOOL (*callback_BOOL106fpOnPress)(D2ControlStrc*) ;
-typedef  BOOL (*callback_BOOL107fpDrawAnim)(D2ControlStrc*) ;
-typedef  BOOL (*callback_BOOL108fpOnPressCallback)(D2ControlStrc*) ;
+typedef  BOOL (*callback_BOOL112fpPush)(D2ControlMsg*) ;
+typedef  BOOL (*callback_BOOL113fpMouse)(D2ControlMsg*) ;
+typedef  BOOL (*callback_BOOL114fpListCheck)(D2ControlMsg*) ;
+typedef  BOOL (*callback_BOOL115fpKey)(D2ControlMsg*) ;
+typedef  BOOL (*callback_BOOL116fpOnPress)(D2ControlStrc*) ;
+typedef  BOOL (*callback_BOOL117fpDrawAnim)(D2ControlStrc*) ;
+typedef  BOOL (*callback_BOOL118fpOnPressCallback)(D2ControlStrc*) ;
 struct D2PoolBlockStrc{
 	BYTE* pCommit; 
 	DWORD* pUsage; 
@@ -861,7 +861,7 @@ struct D2GameStrc{
 	D2InactiveUnitListStrc* pInactiveUnitList[5]; 
 	dword dwMonSeed; 
 	D2MonsterRegionStrc* pMonsterRegion[1024]; 
-	void* pObjectControl; 
+	pointer pObjectControl; 
 	D2QuestControlStrc* pQuestControl; 
 	D2UnitNodeStrc* pUnitNodes[10]; 
 	D2UnitStrc* pUnitList[5][128]; 
@@ -1395,7 +1395,7 @@ struct D2UnitDataMonsterStrc{
 	D2MonStatsTxt* pMonStatsTxt; 
 	D2MonsterDataComponents Components; 
 	short nNameSeed; 
-	enum D2MonsterDataMonType eMonType; 
+	enum eD2MonsterType eMonsterType; 
 	byte eLastMode; 
 	int nDuriel; 
 	byte MonUModList[9]; 
@@ -2013,7 +2013,9 @@ struct D2UnitStrc{
 	undefined _2[8]; // compressed
 	D2TimerArgStrc* pTimerArg; 
 	D2GameStrc* pGame; /* Created by retype action*/
-	undefined _3[12]; // compressed
+	undefined _3[8]; // compressed
+	ushort nOriginalX; 
+	ushort nOriginalY; 
 	D2UnitEvent pUnitEvent; 
 	enum eD2UnitType eOwnerType; 
 	int nOwnerGUID; 
@@ -2152,7 +2154,7 @@ struct D2UnknownSequence{
 	pointer _0[4]; // compressed
 	pointer someConnectToBnetHandler; 
 	pointer _1[8]; // compressed
-	callback_void30fpSID_StartAdVex3 * fpSID_StartAdVex3; 
+	callback_void32fpSID_StartAdVex3 * fpSID_StartAdVex3; 
 	pointer _2[5]; // compressed
 	pointer checkRevisionMaybe; 
 	pointer _3[3]; // compressed
@@ -2275,14 +2277,14 @@ struct D2ControlStrc{
 	int dwPosY; 
 	int dwSizeX; 
 	int dwSizeY; 
-	callback_BOOL100fpDraw * fpDraw; 
-	callback_BOOL101fpDrawEx * fpDrawEx; 
-	callback_BOOL102fpPush * fpPush; 
-	callback_BOOL103fpMouse * fpMouse; 
-	callback_BOOL104fpListCheck * fpListCheck; 
-	callback_BOOL105fpKey * fpKey; 
-	callback_BOOL106fpOnPress * fpOnPress; 
-	callback_BOOL107fpDrawAnim * fpDrawAnim; 
+	callback_BOOL110fpDraw * fpDraw; 
+	callback_BOOL111fpDrawEx * fpDrawEx; 
+	callback_BOOL112fpPush * fpPush; 
+	callback_BOOL113fpMouse * fpMouse; 
+	callback_BOOL114fpListCheck * fpListCheck; 
+	callback_BOOL115fpKey * fpKey; 
+	callback_BOOL116fpOnPress * fpOnPress; 
+	callback_BOOL117fpDrawAnim * fpDrawAnim; 
 	D2ControlStrc* pNext; 
 };
 
@@ -2292,7 +2294,7 @@ struct FORMS_PredefinedFormStrc{
 	undefined4 field_0x14; 
 	int nLabelAsLocaleStringId; 
 	DC6* pDC6; 
-	callback_BOOL108fpOnPressCallback * fpOnPressCallback; 
+	callback_BOOL118fpOnPressCallback * fpOnPressCallback; 
 	undefined4 _0[3]; // compressed
 };
 
@@ -2301,6 +2303,1292 @@ struct D2BoundingBoxStrc{
 	int nBottom; 
 	int nRight; 
 	int nTop; 
+};
+
+struct D2ItemUnknownServerSideStrc{
+	D2UnitStrc* pUnit; 
+	D2ItemUnknownServerSideStrc* pNext; 
+	D2GameStrc* pGame; 
+	int nItemLevel; 
+	undefined4 field_0x10; 
+	int nItemClassid; 
+	int dwMode; 
+	int nPosX; 
+	int nPosY; 
+	D2RoomStrc* pDrlgRoom; 
+	short usually_one; 
+	short wItemFormat; 
+	BOOL somethingCustom; 
+	enum eD2ItemQuality eQuality; 
+	int nPriceMaybe; /* Created by retype action*/
+	undefined4 durability; 
+	undefined4 maxDurability; 
+	DWORD dwFileIndex; 
+	enum eD2ItemFlag eD2ItemFlag; 
+	int nInitSeed; /* Created by retype action*/
+	int nModSeed; 
+	bool bGrade; 
+	undefined _0[3]; // compressed
+	undefined4 field_0x54; 
+	char szCustomName[16]; 
+	undefined4 _1[6]; // compressed
+	enum eD2ItemFlag nFlags; 
+};
+
+/* Totally unsure about this, might be some data about what is under your */
+struct D2UnderMouseStrc{
+	undefined4 flags; 
+	D2UnitStrc* pPlayer; 
+	D2UnitStrc* pTarget; 
+	undefined4 nX; 
+	undefined4 nY; 
+	undefined4 _0[2]; // compressed
+	D2SkillStrc* pSkill; 
+};
+
+struct D2PlayerClassTxt{
+	char code[4]; 
+};
+
+struct D2TxtLinkNodeStrc{
+	char szText[32]; 
+	int nLinkIndex; 
+	D2TxtLinkNodeStrc* pPrevious; 
+	D2TxtLinkNodeStrc* pNext; 
+};
+
+struct D2TxtLinkStrc{
+	int nRecords; 
+	void* field_0x4; 
+	void* pUnknownPointer; 
+	D2TxtLinkNodeStrc* pTxtLinkNode; 
+};
+
+struct D2BodyLocsTxt{
+	char code[4]; 
+};
+
+struct D2StorePageTxt{
+	char code[4]; 
+};
+
+struct D2ElemTypesTxt{
+	char code[4]; 
+};
+
+struct D2HitClassTxt{
+	char code[4]; 
+};
+
+struct D2MonModeTxtSmall{
+	char code[4]; 
+};
+
+struct D2PlrModeTxt{
+	char code[4]; 
+};
+
+struct D2SkillCalcTxt{
+	char code[4]; 
+};
+
+struct D2MissCalcTxt{
+	char code[4]; 
+};
+
+struct D2SkillsHeaderTxt{
+	ushort skill; 
+};
+
+struct D2EventsTxt{
+	ushort event; 
+};
+
+struct D2CompCodeTxt{
+	char code[4]; 
+};
+
+struct D2MonAiTxt{
+	ushort AI; 
+};
+
+struct D2PropertiesTxt{
+	ushort code; 
+	char set[7]; 
+	undefined field_0x9; 
+	short val[7]; 
+	char func[7]; 
+	undefined field_0x1f; 
+	short stat[7]; 
+};
+
+struct D2HireDescTxt{
+	char code[4]; 
+};
+
+struct D2StatesTxt{
+	short state; 
+	short overlay[4]; 
+	short castoverlay; 
+	short removerlay; 
+	short pgsvoverlay; 
+	int nosend:1; 
+	int aura:1; 
+	int hide:1; 
+	int transform:1; 
+	int pgsv:1; 
+	int active:1; 
+	int remhit:1; 
+	int damblue:1; 
+	int damred:1; 
+	int attblue:1; 
+	int attred:1; 
+	int curse:1; 
+	int curable:1; 
+	int plrstaydeath:1; 
+	int monstaydeath:1; 
+	int bossstaydeath:1; 
+	int disguise:1; 
+	int restrict:1; 
+	int blue:1; 
+	int armblue:1; 
+	int rfblue:1; 
+	int rcblue:1; 
+	int rlblue:1; 
+	int rpblue:1; 
+	int stambarblue:1; 
+	int armred:1; 
+	int rfred:1; 
+	int rcred:1; 
+	int rlred:1; 
+	int rpred:1; 
+	int exp:1; 
+	int shatter:1; 
+	int life:1; 
+	int udead:1; 
+	int green:1; 
+	int nooverlays:1; 
+	int noclear:1; 
+	int bossinv:1; 
+	int meleeonly:1; 
+	int notondead:1; 
+	undefined _0[3]; // compressed
+	short stat; 
+	short setfunc; 
+	short remfunc; 
+	short group; 
+	char colorpri; 
+	char colorshift; 
+	char light_r; 
+	char light_g; 
+	char light_b; 
+	undefined field_0x25; 
+	short onsound; 
+	short offsound; 
+	short itemtype; 
+	char itemtrans; 
+	char gfxtype; 
+	short gfxclass; 
+	short cltevent; 
+	short clteventfunc; 
+	short cltactivefunc; 
+	short srvactivefunc; 
+	short skill; 
+	short missile; 
+};
+
+struct D2StatesDataTbls{
+	undefined _0[160]; // compressed
+};
+
+struct D2AllStatesDataTbl{
+	short nStateId; 
+};
+
+struct D2SoundsTxtSmall{
+	short Sound; 
+};
+
+struct D2HirelingTxt{
+	short version; 
+	undefined _0[2]; // compressed
+	int id; 
+	int classId; 
+	int act; 
+	int difficulty; 
+	int seller; 
+	int gold; 
+	int level; 
+	int expPerLvl; 
+	int hp; 
+	int hpPerlvl; 
+	int defense; 
+	int defPerlvl; 
+	int str; 
+	int strPerlvl; 
+	int dex; 
+	int dexPerlvl; 
+	int ar; 
+	int arPerlvl; 
+	int share; 
+	int dmgMin; 
+	int dmgMax; 
+	int dmgPerlvl; 
+	int resist; 
+	int resistPerlvl; 
+	int defaultchance; 
+	int head; 
+	int torso; 
+	int weapon; 
+	int shield; 
+	int nSkillId[6]; 
+	int nSkillChance[6]; 
+	int nSkillChanceRerLvl[6]; 
+	byte nSkillMode[6]; 
+	byte nSkillLevel[6]; 
+	byte nSkillLvlPerLvl[6]; 
+	byte hiredesc; 
+	char namefirst[32]; 
+	char namelast[32]; 
+	undefined field_0x113; 
+	short nNameFirst; 
+	short nNameLast; 
+};
+
+struct D2NpcTxt{
+	int npc; 
+	int sellMult; 
+	int buyMult; 
+	int repMult; 
+	int questflagA; 
+	int questflagB; 
+	int questflagC; 
+	int questsellmultA; 
+	int questsellmultB; 
+	int questsellmultC; 
+	int questbuymultA; 
+	int questbuymultB; 
+	int questbuymultC; 
+	int questrepmultA; 
+	int questrepmultB; 
+	int questrepmultC; 
+	int maxBuy[3]; 
+};
+
+struct D2ColorsTxt{
+	char code[4]; 
+};
+
+struct D2ParsedTreasureClassSub0x28Strc{
+	int somethingClassic; 
+	int somethingExpansion; 
+	short nItemClassId; 
+	undefined _0[2]; // compressed
+	byte nFlags; 
+	undefined _1[15]; // compressed
+};
+
+struct D2ParsedTreasureClassStrc{
+	short _0[2]; // compressed
+	int count; 
+	int somethingClassic; 
+	int somethingExpansion; 
+	int field_0x10; 
+	undefined _1[6]; // compressed
+	int _2[3]; // compressed
+	undefined _3[2]; // compressed
+	D2ParsedTreasureClassSub0x28Strc* field_0x28; 
+};
+
+struct D2ParsedChestTreasureClassStrc{
+	D2ParsedTreasureClassStrc* ChestA; 
+	D2ParsedTreasureClassStrc* ChestB; 
+	D2ParsedTreasureClassStrc* ChestC; 
+};
+
+struct D2ParsedActTreasureClassStrc{
+	D2ParsedChestTreasureClassStrc Act1; 
+	D2ParsedChestTreasureClassStrc Act2; 
+	D2ParsedChestTreasureClassStrc Act3; 
+	D2ParsedChestTreasureClassStrc Act4; 
+	D2ParsedChestTreasureClassStrc Act5; 
+};
+
+struct D2ParsedDifficultyTreasureClassStrc{
+	D2ParsedActTreasureClassStrc Normal; 
+	D2ParsedActTreasureClassStrc Nightmare; 
+	D2ParsedActTreasureClassStrc Hell; 
+};
+
+struct D2MonSoundsTxt{
+	short Id; 
+	undefined _0[2]; // compressed
+	int Attack1; 
+	int Att1Del; 
+	int Att1Prb; 
+	int Weapon1; 
+	int Wea1Del; 
+	int Wea1Vol; 
+	int Attack2; 
+	int Att2Del; 
+	int Att2Prb; 
+	int Weapon2; 
+	int Wea2Del; 
+	int Wea2Vol; 
+	int HitSound; 
+	int HitDelay; 
+	int DeathSound; 
+	int DeaDelay; 
+	int Skill[4]; 
+	int Footstep; 
+	int FootstepLayer; 
+	int FsCnt; 
+	int FsOff; 
+	int FsPrb; 
+	int Neutral; 
+	int NeuTime; 
+	int Init; 
+	int Taunt; 
+	int Flee; 
+	char CvtMo1; 
+	char CvtTgt1; 
+	undefined _1[2]; // compressed
+	int CvtSk1; 
+	char CvtMo2; 
+	char CvtTgt2; 
+	undefined _2[2]; // compressed
+	int CvtSk2; 
+	char CvtMo3; 
+	char CvtTgt3; 
+	undefined _3[2]; // compressed
+	int CvtSk3; 
+};
+
+struct D2MonPlaceTxt{
+	ushort code; 
+};
+
+struct D2MonPresetTxtPlace{
+	int Place:1; 
+	undefined _0[3]; // compressed
+};
+
+struct D2MonPresetTxt{
+	char Act; 
+	undefined _0[3]; // compressed
+};
+
+struct D2SuperUniquesTxt{
+	short Superunique; 
+	short Name; 
+	int Class; 
+	int hcIdx; 
+	int Mod[3]; 
+	int MonSound; 
+	int MinGrp; 
+	int MaxGrp; 
+	char AutoPos; 
+	char EClass; 
+	char Stacks; 
+	char Replaceable; 
+	char Utrans[3]; 
+	undefined field_0x2b; 
+	short TC[3]; 
+	undefined _0[2]; // compressed
+};
+
+struct D2MissilesTxt{
+	ushort Missile; 
+	int LastCollide:1; 
+	int Explosion:1; 
+	int Pierce:1; 
+	int CanSlow:1; 
+	int CanDestroy:1; 
+	int ClientSend:1; 
+	int GetHit:1; 
+	int SoftHit:1; 
+	int ApplyMastery:1; 
+	int ReturnFire:1; 
+	int Town:1; 
+	int SrcTown:1; 
+	int NoMultiShot:1; 
+	int NoUniqueMod:1; 
+	int Half2HSrc:1; 
+	int MissileSkill:1; 
+	undefined _0[4]; // compressed
+	short pCltDoFunc; 
+	short pCltHitFunc; 
+	short pSrvDoFunc; 
+	short pSrvHitFunc; 
+	short pSrvDmgFunc; 
+	short TravelSound; 
+	short HitSound; 
+	short ExplosionMissile; 
+	short SubMissile1; 
+	short SubMissile2; 
+	short SubMissile3; 
+	short CltSubMissile1; 
+	short CltSubMissile2; 
+	short CltSubMissile3; 
+	short HitSubMissile1; 
+	short HitSubMissile2; 
+	short HitSubMissile3; 
+	short HitSubMissile4; 
+	short CltHitSubMissile1; 
+	short CltHitSubMissile2; 
+	short CltHitSubMissile3; 
+	short CltHitSubMissile4; 
+	short ProgSound; 
+	short ProgOverlay; 
+	int Param1; 
+	int Param2; 
+	int Param3; 
+	int Param4; 
+	int Param5; 
+	int sHitPar1; 
+	int sHitPar2; 
+	int sHitPar3; 
+	int CltParam1; 
+	int CltParam2; 
+	int CltParam3; 
+	int CltParam4; 
+	int CltParam5; 
+	int cHitPar1; 
+	int cHitPar2; 
+	int cHitPar3; 
+	int dParam1; 
+	int dParam2; 
+	uint SrvCalc1; 
+	uint CltCalc1; 
+	uint SHitCalc1; 
+	uint CHitCalc1; 
+	uint DmgCalc1; 
+	char HitClass; 
+	undefined field_0x95; 
+	short Range; 
+	short LevRange; 
+	char Vel; 
+	char VelLev; 
+	char MaxVel; 
+	undefined field_0x9d; 
+	short Accel; 
+	short animrate; 
+	short xoffset; 
+	short yoffset; 
+	short zoffset; 
+	uint HitFlags; 
+	short ResultFlags; 
+	char KnockBack; 
+	undefined field_0xaf; 
+	int MinDamage; 
+	int MaxDamage; 
+	int MinLevDam1; 
+	int MinLevDam2; 
+	int MinLevDam3; 
+	int MinLevDam4; 
+	int MinLevDam5; 
+	int MaxLevDam1; 
+	int MaxLevDam2; 
+	int MaxLevDam3; 
+	int MaxLevDam4; 
+	int MaxLevDam5; 
+	int DmgSymPerCalc; 
+	char EType; 
+	undefined _1[3]; // compressed
+	int EMin; 
+	int EMax; 
+	int MinELev1; 
+	int MinELev2; 
+	int MinELev3; 
+	int MinELev4; 
+	int MinELev5; 
+	int MaxELev1; 
+	int MaxELev2; 
+	int MaxELev3; 
+	int MaxELev4; 
+	int MaxELev5; 
+	int EDmgSymPerCalc; 
+	int ELen; 
+	int ELevLen1; 
+	int ELevLen2; 
+	int ELevLen3; 
+	char CltSrcTown; 
+	char SrcDamage; 
+	char SrcMissDmg; 
+	char Holy; 
+	char Light; 
+	char Flicker; 
+	char Red; 
+	char Green; 
+	char Blue; 
+	char InitSteps; 
+	char Activate; 
+	char LoopAnim; 
+	char CelFile[64]; 
+	char AnimLen; 
+	undefined _2[3]; // compressed
+	int RandStart; 
+	char SubLoop; 
+	char SubStart; 
+	char SubStop; 
+	char CollideType; 
+	char Collision; 
+	char ClientCol; 
+	char CollideKill; 
+	char CollideFriend; 
+	char NextHit; 
+	char NextDelay; 
+	char Size; 
+	char ToHit; 
+	char AlwaysExplode; 
+	char Trans; 
+	char Qty; 
+	undefined field_0x18f; 
+	int SpecialSetup; 
+	short Skill; 
+	char HitShift; 
+	undefined _3[5]; // compressed
+	int DamageRate; 
+	char NumDirections; 
+	char AnimSpeed; 
+	char LocalBlood; 
+	undefined field_0x1a3; 
+};
+
+struct D2MonLvlTxt{
+	int AC[3]; 
+	int L_AC[3]; 
+	int TH[3]; 
+	int L_TH[3]; 
+	int HP[3]; 
+	int L_HP[3]; 
+	int DM[3]; 
+	int L_DM[3]; 
+	int XP[3]; 
+	int L_XP[3]; 
+};
+
+struct D2MonSeqTxt{
+	short sequence; 
+	byte mode; 
+	byte frame; 
+	byte dir; 
+	byte event; 
+};
+
+struct D2MonSeqMonsterTbls{
+	D2MonSeqTxt* pMonSeqTxt; 
+	int nCounter1; 
+	int nCounter2; 
+};
+
+struct D2SkillDescTxt{
+	short skilldesc; 
+	byte skillpage; 
+	byte skillrow; 
+	byte skillcolumn; 
+	byte ListRow; 
+	byte ListPool; 
+	byte iconcel; 
+	short strName; 
+	short strShort; 
+	short strLong; 
+	short strAlt; 
+	short strMana; 
+	short descdam; 
+	short descatt; 
+	undefined _0[2]; // compressed
+	pointer ddamCalc1; 
+	pointer ddamCalc2; 
+	byte dmelem[3]; 
+	undefined field_0x23; 
+	pointer dmmin[3]; 
+	pointer dmmax[3]; 
+	short descmissile[3]; 
+	byte descline[6]; 
+	byte dsc2line[4]; 
+	byte dsc3line[7]; 
+	undefined field_0x53; 
+	short desctexta[6]; 
+	short dsc2texta[4]; 
+	short dsc3texta[7]; 
+	short desctextb[6]; 
+	short dsc2textb[4]; 
+	short dsc3textb[7]; 
+	pointer desccalca[6]; 
+	pointer dsc2calca[4]; 
+	pointer dsc3calca[7]; 
+	pointer desccalcb[6]; 
+	pointer dsc2calcb[4]; 
+	pointer dsc3calcb[7]; 
+};
+
+struct D2SkillsPerClassCounter{
+	int Amazon; 
+	int Sorceress; 
+	int Necromancer; 
+	int Paladin; 
+	int Barbarian; 
+	int Druid; 
+	int Assassin; 
+};
+
+struct D2SkillsPerClassStrc{
+	short Amazon; 
+	short Sorceress; 
+	short Necromancer; 
+	short Paladin; 
+	short Barbarian; 
+	short Druid; 
+	short Assassin; 
+};
+
+struct D2PassiveSkillsPerClassStrc{
+	short nSkillId; 
+};
+
+struct D2OverlayTxt{
+	ushort overlay; 
+	char Filename[64]; 
+	short version; 
+	int Frames; 
+	char PreDraw; 
+	undefined _0[3]; // compressed
+	int _1ofN; 
+	char Dir; 
+	char Open; 
+	char Beta; 
+	undefined field_0x53; 
+	int Xoffset; 
+	int Yoffset; 
+	int Height1; 
+	int Height2; 
+	int Height3; 
+	int Height4; 
+	int AnimRate; 
+	int InitRadius; 
+	int Radius; 
+	int LoopWaitTime; 
+	char Trans; 
+	char Red; 
+	char Green; 
+	char Blue; 
+	char NumDirections; 
+	char LocalBlood; 
+	undefined _1[2]; // compressed
+};
+
+struct D2CharItemStrc{
+	int dwItemCode; 
+	char nBodyLoc; 
+	char nItemCount; 
+	undefined _0[2]; // compressed
+};
+
+struct D2CharStatsTxt{
+	WCHAR wszClass[16]; 
+	char szClass[16]; 
+	char str; 
+	char dex; 
+	char _int; 
+	char vit; 
+	char stamina; 
+	char hpadd; 
+	char PercentStr; 
+	char PercentInt; 
+	char PercentDex; 
+	char PercentVit; 
+	char ManaRegen; 
+	undefined field_0x3b; 
+	int ToHitFactor; 
+	char WalkVelocity; 
+	char RunVelocity; 
+	char RunDrain; 
+	char LifePerLevel; 
+	char StaminaPerLevel; 
+	char ManaPerLevel; 
+	char LifePerVitality; 
+	char StaminaPerVitality; 
+	char ManaPerMagic; 
+	char BlockFactor; 
+	undefined _0[2]; // compressed
+	char basewclass[4]; 
+	char StatPerLevel; 
+	undefined field_0x51; 
+	ushort StrAllSkills; 
+	ushort StrSkillTab1; 
+	ushort StrSkillTab2; 
+	ushort StrSkillTab3; 
+	ushort StrClassOnly; 
+	D2CharItemStrc sItem[10]; 
+	short StartSkill; 
+	short Skill[10]; 
+	undefined _1[2]; // compressed
+};
+
+struct D2ItemStatCostTxt{
+	ushort stat; 
+	int sendOther:1; 
+	int signed:1; 
+	int damagerelated:1; 
+	int itemspecific:1; 
+	int direct:1; 
+	int updateanimrate:1; 
+	int fmin:1; 
+	int fcallback:1; 
+	int saved:1; 
+	int csvsigned:1; 
+	undefined _0[4]; // compressed
+	char sendBits; 
+	char sendParamBits; 
+	char csvbits; 
+	char csvparam; 
+	int divide; 
+	int multiply; 
+	int add; 
+	char valshift; 
+	char saveBits; 
+	char _1_09_saveBits; 
+	undefined field_0x1b; 
+	int saveAdd; 
+	int _1_09_saveAdd; 
+	int saveParamBits; 
+	undefined _1[4]; // compressed
+	int minaccr; 
+	char encode; 
+	undefined field_0x31; 
+	short maxstat; 
+	short descpriority; 
+	char descfunc; 
+	char descval; 
+	ushort descstrpos; 
+	ushort descstrneg; 
+	ushort descstr2; 
+	short dgrp; 
+	char dgrpfunc; 
+	char dgrpval; 
+	short dgrpstrpos; 
+	short dgrpstrneg; 
+	short dgrpstr2; 
+	short itemevent1; 
+	short itemevent2; 
+	short itemeventfunc1; 
+	short itemeventfunc2; 
+	char keepzero; 
+	undefined _2[3]; // compressed
+	char op; 
+	char opParam; 
+	short opBase; 
+	short opStat1; 
+	short opStat2; 
+	short opStat3; 
+	undefined _3[226]; // compressed
+	int stuff; 
+};
+
+struct D2MonEquipTxt{
+	short monster; 
+	short level; 
+	bool oninit; 
+	undefined _0[3]; // compressed
+	int item[3]; 
+	byte loc[3]; 
+	byte mod[3]; 
+	undefined _1[2]; // compressed
+};
+
+struct D2PetTypeTxt{
+	uint petType; 
+	int field_0x4; 
+	short group; 
+	short basemax; 
+	ushort name; 
+	char icontype; 
+	char baseicon[32]; 
+	char micon1[32]; 
+	char micon2[32]; 
+	char micon3[32]; 
+	char micon4[32]; 
+	undefined _0[3]; // compressed
+	short mclass1; 
+	short mclass2; 
+	short mclass3; 
+	short mclass4; 
+	undefined _1[2]; // compressed
+	int nSkillIndexCounter; 
+	short nSkillId[16]; 
+};
+
+struct D2ItemTypesTxt{
+	char code[4]; 
+	short equiv1; 
+	short equiv2; 
+	char repair; 
+	char body; 
+	byte bodyloc1; 
+	byte bodyloc2; 
+	short shoots; 
+	short quiver; 
+	char throwable; 
+	char reload; 
+	char reequip; 
+	char autostack; 
+	char magic; 
+	char rare; 
+	char normal; 
+	char charm; 
+	char gem; 
+	char beltable; 
+	char maxsock1; 
+	char maxsock25; 
+	char maxsock40; 
+	char treasureclass; 
+	char rarity; 
+	char staffmods; 
+	char costformula; 
+	char _class; 
+	char storepage; 
+	char varinvgfx; 
+	string invgfx[6]; 
+};
+
+struct D2SetsTxtPStrc{
+	int pcodea; 
+	pointer pparama; 
+	int pmina; 
+	int pmaxa; 
+	int pcodeb; 
+	pointer pparamb; 
+	int pminb; 
+	int pmaxb; 
+};
+
+struct D2SetsTxtFStrc{
+	int fcode; 
+	pointer fparam; 
+	int fmin; 
+	int fmax; 
+};
+
+struct D2UniqueSetItemsTxtEntry{
+	int prop; 
+	int par; 
+	int min; 
+	int max; 
+};
+
+struct D2SetItemsTxtEntry{
+	int apropa; 
+	int apara; 
+	int amina; 
+	int amaxa; 
+	int apropb; 
+	int aparb; 
+	int aminb; 
+	int amaxb; 
+};
+
+struct D2SetItemsTxt{
+	short nId; 
+	char index[32]; 
+	short version; 
+	undefined _0[4]; // compressed
+	char item[4]; 
+	short set; 
+	short setIndex; 
+	short lvl; 
+	short lvlReq; 
+	int rarity; 
+	int costMult; 
+	int costAdd; 
+	char chrtransform; 
+	char invtransform; 
+	char flippyfile[32]; 
+	char invfile[32]; 
+	short dropsound; 
+	short usesound; 
+	char dropsfxframe; 
+	char addFunc; 
+	D2UniqueSetItemsTxtEntry sEntry[9]; 
+	D2SetItemsTxtEntry sEntryEx[5]; 
+};
+
+struct D2SetsTxt{
+	short index; 
+	short name; 
+	short version; 
+	undefined _0[6]; // compressed
+	int nTxtSetItemsCount; 
+	D2SetsTxtPStrc field_0x10[4]; 
+	D2SetsTxtFStrc field_0x90[8]; 
+	D2SetItemsTxt* pTxtSetItems[6]; 
+};
+
+struct D2UniqueItemsTxt{
+	undefined _0[2]; // compressed
+	char index[32]; 
+	undefined _1[2]; // compressed
+	short version; 
+	undefined _2[2]; // compressed
+	char code[4]; 
+	int enabled:1; 
+	int nolimit:1; 
+	int carry1:1; 
+	int ladder:1; 
+	undefined _3[3]; // compressed
+	short rarity; 
+	undefined _4[2]; // compressed
+	short lvl; 
+	short lvlReq; 
+	char chrtransform; 
+	char invtransform; 
+	char flippyfile[32]; 
+	char invfile[32]; 
+	undefined _5[2]; // compressed
+	int costMult; 
+	int costAdd; 
+	short dropsound; 
+	short usesound; 
+	char dropsfxframe; 
+	undefined _6[3]; // compressed
+	D2UniqueSetItemsTxtEntry sEntry[12]; 
+};
+
+struct D2MonPropTxtEntry{
+	int prop; 
+	int par; 
+	int min; 
+	int max; 
+};
+
+struct D2MonPropTxt{
+	int Id; 
+	D2MonPropTxtEntry entry[3][6]; 
+	char chance[3][6]; 
+	undefined _0[2]; // compressed
+};
+
+struct D2MonTypeTxt{
+	short type; 
+	short equiv1; 
+	short equiv2; 
+	short equiv3; 
+	short strsing; 
+	short strplur; 
+};
+
+struct D2MonUModTxt{
+	short uniquemod; 
+	undefined _0[2]; // compressed
+	short version; 
+	char enabled; 
+	char xfer; 
+	char champion; 
+	char fpick; 
+	short exclude1; 
+	short exclude2; 
+	short cpick[3]; 
+	short upick[3]; 
+	undefined _1[2]; // compressed
+	int constants; 
+};
+
+struct D2LevelsTxt{
+	char Id; 
+	undefined field_0x1; 
+	char Pal; 
+	char Act; 
+	char Teleport; 
+	char Rain; 
+	char Mud; 
+	char NoPer; 
+	char IsInside; 
+	char DrawEdges; 
+	undefined _0[2]; // compressed
+	int WarpDist; 
+	short MonLvl[3]; 
+	short MonLvlEx[3]; 
+	int MonDen[3]; 
+	char MonUMin[3]; 
+	char MonUMax[3]; 
+	char MonWndr; 
+	char MonSpcWalk; 
+	char Quest; 
+	char rangedspawn; 
+	char NumMon; 
+	char nValidMonCount; /* Created by retype action*/
+	char nValinNMonCount; /* Created by retype action*/
+	char nValidUMonCount; /* Created by retype action*/
+	short mon[25]; 
+	short nmon[25]; 
+	short umon[25]; 
+	short cmon[4]; 
+	short cpct[4]; 
+	short camt[4]; 
+	char Waypoint; 
+	char ObjGrp[8]; 
+	char ObjPrb[8]; 
+	char LevelName[40]; 
+	char LevelWarp[40]; 
+	char EntryFile[40]; 
+	undefined field_0x16d; 
+	WCHAR wszLevelName[40]; 
+	WCHAR wszLevelWarp[40]; 
+	undefined _1[2]; // compressed
+	int Themes; 
+	int FloorFilter; 
+	int BlankScreen; 
+	char SoundEnv; 
+	undefined _2[3]; // compressed
+};
+
+struct D2LevelDefsColor{
+	char Intensity; 
+	char Red; 
+	char Green; 
+	char Blue; 
+};
+
+struct D2LevelDefsTxt{
+	int QuestFlag; 
+	int QuestFlagEx; 
+	int Layer; 
+	int SizeX[3]; 
+	int SizeY[3]; 
+	int OffsetX; 
+	int OffsetY; 
+	int Depend; 
+	enum eD2DrlgType DrlgType; 
+	int LevelType; 
+	int SubType; 
+	int SubTheme; 
+	int SubWaypoint; 
+	int SubShrine; 
+	int Vis[8]; 
+	int Warp[8]; 
+	D2LevelDefsColor ColorInfo; 
+	int Portal; 
+	int Position; 
+	int SaveMonsters; 
+	int LOSDraw; 
+};
+
+struct D2ExperienceTxt{
+	int Class[7]; 
+	int ExpRatio; 
+};
+
+struct D2DifficultyLevelsTxt{
+	int ResistPenalty; 
+	int DeathExpPenalty; 
+	int UberCodeOddsNormal; 
+	int UberCodeOddsGood; 
+	int MonsterSkillBonus; 
+	int MonsterFreezeDivisor; 
+	int MonsterColdDivisor; 
+	int AiCurseDivisor; 
+	int UltraCodeOddsNormal; 
+	int UltraCodeOddsGood; 
+	int LifeStealDivisor; 
+	int ManaStealDivisor; 
+	int UniqueDamageBonus; 
+	int ChampionDamageBonus; 
+	int HireableBossDamagePercent; 
+	int MonsterCEDamagePercent; 
+	int StaticFieldMin; 
+	int GambleRare; 
+	int GambleSet; 
+	int GambleUnique; 
+	int GambleUber; 
+	int GambleUltra; 
+};
+
+struct D2AutomapRelatedTxt{
+	void* _0[2]; // compressed
+};
+
+struct D2DataTableTxtStrc{
+	D2PlayerClassTxt* pTxtPlayerClass; 
+	D2TxtLinkStrc* pTxtPlayerClassLink; 
+	D2BodyLocsTxt* pTxtBodyLocs; 
+	D2TxtLinkStrc* pTxtBodyLocsLink; 
+	D2StorePageTxt* pTxtStorePage; 
+	D2TxtLinkStrc* pTxtStorePageLink; 
+	D2ElemTypesTxt* pTxtElemTypes; 
+	D2TxtLinkStrc* pTxtElemTypesLink; 
+	D2HitClassTxt* pTxtHitClass; 
+	D2TxtLinkStrc* pTxtHitClassLink; 
+	D2MonModeTxtSmall* pTxtMonMode; 
+	D2TxtLinkStrc* pTxtMonModeLink; 
+	D2PlrModeTxt* pTxtPlrMode; 
+	D2TxtLinkStrc* pTxtPlrModeLink; 
+	D2SkillCalcTxt* pTxtSkillCalc; 
+	D2TxtLinkStrc* pTxtSkillCalcLink; 
+	pointer pSkillsCodeUnk1; 
+	int nSkillsCodeUnk2; 
+	int nSkillsCodeUnk3; 
+	pointer pSkillsDescCodeUnk1; 
+	int nSkillsDescCodeUnk2; 
+	int nSkillsDescCodeUnk3; 
+	D2MissCalcTxt* pTxtMissCalc; 
+	D2TxtLinkStrc* pTxtMissCalcLink; 
+	pointer pMissCodeUnk1; 
+	int nMissCodeUnk2; 
+	int nMissCodeUnk3; 
+	D2SkillsHeaderTxt* pTxtSkillsHeader; 
+	D2TxtLinkStrc* pTxtSkillsHeaderLink; 
+	D2EventsTxt* pTxtEvents; 
+	D2TxtLinkStrc* pTxtEventsLink; 
+	D2CompCodeTxt* pTxtCompCode; 
+	D2TxtLinkStrc* pTxtCompCodeLink; 
+	int nTxtCompCodeSize; 
+	D2MonAiTxt* pTxtMonAi; 
+	D2TxtLinkStrc* pTxtMonAiLink; 
+	int nTxtMonAiSize; 
+	D2TxtLinkStrc* sTxtItemsLink; 
+	pointer pItemsCodeUnk1; 
+	int nItemsCodeUnk2; 
+	int nItemsCodeUnk3; 
+	D2PropertiesTxt* pTxtProperties; 
+	D2TxtLinkStrc* pTxtPropertiesLink; 
+	int nTxtPropertiesSize; 
+	D2TxtLinkStrc* pTxtRunesLink; 
+	D2HireDescTxt* pTxtHireDesc; 
+	D2TxtLinkStrc* pTxtHireDescLink; 
+	D2StatesTxt* pTxtStates; 
+	D2TxtLinkStrc* pTxtStatesLink; 
+	int nTxtStatesSize; 
+	D2StatesDataTbls* pStatesDataTbls; 
+	D2StatesDataTbls* pSingleStateDataTbl[40]; 
+	D2AllStatesDataTbl* pAllStatesDataTblFlag0x04; 
+	int nAllStatesDataTblFlag0x04Size; 
+	D2AllStatesDataTbl* pAllStatesDataTblFlag0x0B; 
+	int nAllStatesDataTblFlag0x0BSize; 
+	D2AllStatesDataTbl* pAllStatesDataTblFlag0x10; 
+	int nAllStatesDataTblFlag0x10Size; 
+	D2AllStatesDataTbl* pAllStatesDataTblFlag0x05; 
+	int nAllStatesDataTblFlag0x05Size; 
+	D2AllStatesDataTbl* pStatesItemTypesDataTbl; 
+	int nStatesItemTypesDataTblSize; 
+	D2SoundsTxtSmall* pTxtSounds; 
+	D2TxtLinkStrc* pTxtSoundsLink; 
+	int nTxtSoundsSize; 
+	D2HirelingTxt* pTxtHireling; 
+	int nTxtHirelingSize; 
+	int nTxtHirelingIdLines[512]; 
+	D2NpcTxt* pTxtNpc; 
+	int nTxtNpcSize; 
+	D2ColorsTxt* pTxtColors; 
+	D2TxtLinkStrc* pTxtColorsLink; 
+	D2TxtLinkStrc* pTxtMonsterTblsLink; 
+	D2ParsedTreasureClassStrc* pParsedTreasureClass; 
+	int nParsedTreasureClassSize; 
+	D2ParsedDifficultyTreasureClassStrc pParsedTreasureClassDiffActChestABC; 
+	D2MonStatsTxt* pTxtMonStats; 
+	D2TxtLinkStrc* pTxtMonStatsLink; 
+	int nTxtMonStatsSize; 
+	D2MonSoundsTxt* pTxtMonSounds; 
+	D2TxtLinkStrc* pTxtMonSoundsLink; 
+	int nTxtMonSoundsSize; 
+	D2MonStats2Txt* pTxtMonStats2; 
+	D2TxtLinkStrc* pTxtMonStats2Link; 
+	int nTxtMonStats2Size; 
+	D2MonPlaceTxt* pTxtMonPlace; 
+	D2TxtLinkStrc* pTxtMonPlaceLink; 
+	int nTxtMonPlaceSize; 
+	D2MonPresetTxtPlace* pTxtMonPresetPlace; 
+	D2MonPresetTxt* pTxtMonPresetPerAct[5]; 
+	int pTxtMonPresetPerActId[5]; 
+	D2SuperUniquesTxt* pTxtSuperUniques; 
+	D2TxtLinkStrc* pTxtSuperUniquesLink; 
+	int nTxtSuperUniquesSize; 
+	short aTxtSuperUniquesHardcoded[66]; 
+	D2MissilesTxt* pTxtMissiles; 
+	D2TxtLinkStrc* pTxtMissilesLink; 
+	int nTxtMissilesSize; 
+	D2MonLvlTxt* pTxtMonLvl; 
+	int nTxtMonLvlSize; 
+	D2MonSeqTxt* pTxtMonSeq; 
+	D2TxtLinkStrc* pTxtMonSeqLink; 
+	int nTxtMonSeqSize; 
+	D2MonSeqMonsterTbls* pMonSeqMonsterTbls; 
+	int nMonSeqMonsterTblsSize; 
+	D2SkillDescTxt* pTxtSkillDesc; 
+	D2TxtLinkStrc* pTxtSkillDescLink; 
+	int nTxtSkillDescSize; 
+	D2SkillsTxt* pTxtSkills; 
+	D2TxtLinkStrc* pTxtSkillsLink; 
+	int nTxtSkillsCount; 
+	D2SkillsPerClassCounter* pSkillsPerClassCounter; 
+	int nSkillCountMaxPerClass; 
+	D2SkillsPerClassStrc* pSkillsPerClassStrc; 
+	int nPassiveSkillsCount; 
+	D2PassiveSkillsPerClassStrc* pPassiveSkillsPerClassStrc; 
+	D2TxtLinkStrc* pTxtOverlayLink; 
+	D2OverlayTxt* pTxtOverlay; 
+	int nTxtOverlaySize; 
+	D2CharStatsTxt* pTxtCharStats; 
+	int nTxtCharStatsSize; 
+	D2ItemStatCostTxt* pTxtItemStatCost; 
+	D2TxtLinkStrc* pTxtItemStatCostLink; 
+	int nTxtItemStatCostSize; 
+	short* pItemStatCostDescPriority; 
+	int nItemStatCostDescPrioritySize; 
+	D2MonEquipTxt* pTxtMonEquip; 
+	int nTxtMonEquipSize; 
+	D2PetTypeTxt* pTxtPetType; 
+	D2TxtLinkStrc* pTxtPetTypeLink; 
+	int nTxtPetTypeSize; 
+	D2TxtLinkStrc* pTxtItemTypesLink; 
+	D2ItemTypesTxt* pTxtItemTypes; 
+	int nTxtItemTypesSize; 
+	int nTxtItemTypesUnknownSize; 
+	pointer pTxtItemTypesUnknown; 
+	D2TxtLinkStrc* pTxtSetsLink; 
+	D2SetsTxt* pTxtSets; 
+	int nTxtSetsSize; 
+	D2TxtLinkStrc* pTxtSetItemsLink; 
+	D2SetItemsTxt* pTxtSetItems; 
+	int nTxtSetItemsSize; 
+	D2TxtLinkStrc* pTxtUniqueItemsLink; 
+	D2UniqueItemsTxt* pTxtUniqueItems; 
+	int nTxtUniqueItemsSize; 
+	D2TxtLinkStrc* pTxtMonPropLink; 
+	D2MonPropTxt* pTxtMonProp; /* structure need to be checked if it spawns properly*/
+	int nTxtMonPropSize; 
+	D2TxtLinkStrc* pTxtMonTypeLink; 
+	D2MonTypeTxt* pTxtMonType; 
+	int nTxtMonTypeSize; 
+	pointer pTxtMonTypeUnknown; /* Allocated inside of MonType*/
+	int nTxtMonTypeUnknownSize; /* Allocated inside of MonType*/
+	D2TxtLinkStrc* pTxtMonUmodLink; 
+	D2MonUModTxt* pTxtMonUmod; 
+	int nTxtMonUmodSize; 
+	D2LevelsTxt* pTxtLevels; 
+	int nTxtLevelsSize; 
+	D2LevelDefsTxt* pTxtLevelDefs; 
+	D2LvlPrestTxt* pTxtLvlPrest; 
+	int nTxtLvlPrestSize; 
+	int nTxtItemStatCostStuff; 
+	int nTxtItemStatCostStuffShiftedUnknonw; 
+	D2AnimDataStrc* pAnimTbls; 
+	D2ExperienceTxt* pTxtExperience; 
+	D2DifficultyLevelsTxt* pTxtDifficultyLevels; 
+	int nTxtDifficultyLevelsSize; 
+	BOOL field_0xc84; 
+	int pActMisc_0x008_B; 
+	pointer pActMisc_0x468_B; 
+	pointer pActMisc_0x468_A; 
+	int pActMisc_0x008_A; 
+	D2SeedStrc sSeed; 
+	D2AutomapRelatedTxt sAutomapRelated; 
+	undefined4 _0[25]; // compressed
+	bool field_0xd0c; 
+};
+
+struct D2CoordStrc{
+	int nX; 
+	int nY; 
 };
 
 }; // ghidra namespace

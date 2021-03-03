@@ -22,6 +22,10 @@ namespace Ghidra {
             if (this->eUnitType != UNIT_PLAYER) return nullptr;
             return this->pUnitData.pUnitDataPlayer;
         }
+
+        D2DynamicPathStrc* getPath() {
+            return this->pPath.pDynamicPath;
+        }
     };
 
     class D2UnitMonster : public D2UnitStrc {
@@ -29,6 +33,10 @@ namespace Ghidra {
         D2UnitDataMonsterStrc *getUnitData() {
             if (this->eUnitType != UNIT_MONSTER) return nullptr;
             return this->pUnitData.pUnitDataMonster;
+        }
+
+        D2DynamicPathStrc* getPath() {
+            return this->pPath.pDynamicPath;
         }
     };
 
