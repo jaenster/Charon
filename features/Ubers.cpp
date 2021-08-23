@@ -93,6 +93,7 @@ REMOTEFUNC(BYTE __stdcall, GetObjectFlags, (D2::Types::UnitAny* ptObject), 0x622
 REMOTEFUNC(void __stdcall, RoomPortalFlag, (D2::Types::Room1* param_1, DWORD flag), 0x61AED0);
 REMOTEFUNC(D2::Types::UnitAny* __fastcall, SpawnUniquePack, (IncompleteGameData* pGame, D2::Types::Room1* pRoom, BOOL zero, DWORD dwClassId, void* subtiles, int x, int y, BOOL flag), 0x5A43E0);
 REMOTEFUNC(D2::Types::UnitAny* __fastcall, SpawnMonster, (IncompleteGameData* pGame, D2::Types::Room1* pRoom, int x, int y, DWORD dwClassId, DWORD guid, DWORD seed, BOOL isChampion, BOOL isSuperUnique, DWORD superUniqueId, const char (&mods)[9]), 0x5A4440);
+REMOTEFUNC(void __fastcall, SpawnMonsterWithMode, (IncompleteGameData* pGame, D2::Types::Room1* pRoom, int32_t x, int32_t y, DWORD dwClassId, DWORD dwMode, DWORD dwUnkOne, DWORD dwUnkZero), 0x5b2f20);
 REMOTEFUNC(DWORD __fastcall, SpawnPortal, (IncompleteGameData* pGame, D2::Types::UnitAny* pUnit, D2::Types::Room1* pDrlgRoom, int nX, int nY, DWORD eD2LevelId, D2::Types::UnitAny** param_7, int nClassId, DWORD param_9), 0x56D130);
 REMOTEFUNC(void __fastcall, OpenPortal, (IncompleteGameData* pGame, D2::Types::UnitAny* pUnit, DWORD LevelId), 0x5A9930);
 REMOTEFUNC(DWORD __stdcall, GetAct, (int levelId), 0x6427f0);
@@ -113,7 +114,6 @@ ASMPTR UberMephAIPointer = 0x73D340, UberMephAI = 0x5F81C0;
 ASMPTR UberDiabloAIPointer = 0x73D350, UberDiabloAI = 0x05E9DF0;
 
 ASMPTR CowsCubeOutputHook = 0x565a80, CubeKeysHook = 0x565a90, CubeOrgansHook = 0x565aa0;
-ASMPTR RoomInit_Original = 0x542b40, RoomInit_Rejoin = 0x542b46;
 ASMPTR KillMonster_Original = 0x57CCB0, KillMonster_Rejoin = 0x57CCB6;
 
 DWORD guid = 0x4FFFFFFF;
@@ -157,10 +157,19 @@ T randomElement(std::vector<T> v) {
     return v[distr(gen2)];
 }
 
+int randomNumber(int min, int max) {
+    std::uniform_int_distribution<> distr(min, max); // define the range
+    return distr(gen2);
+}
+
 // Toggle for debug
 const bool KEY_ORGAN_DEBUG = false;
 
 BOOL __fastcall CubeKeys_Intercept(IncompleteGameData* pGame, D2::Types::UnitAny* pUnit) {
+    if (!Settings["ladderItems"]) {
+        return FALSE;
+    }
+
     if (pGame->nDifficulty != 2) return PlaySoundMaybe(pUnit, 0x14, pUnit), 0;
     std::vector<int> p;
 
@@ -195,6 +204,10 @@ BOOL __fastcall CubeKeys_Intercept(IncompleteGameData* pGame, D2::Types::UnitAny
 }
 
 BOOL __fastcall CubeOrgans_Intercept(IncompleteGameData* pGame, D2::Types::UnitAny* pUnit) {
+    if (!Settings["ladderItems"]) {
+        return FALSE;
+    }
+
     if (pGame->nDifficulty != 2 && !gameFlags[pGame->seed].flags.tristramPortal) return PlaySoundMaybe(pUnit, 0x14, pUnit), 0;
 
     if (PortalTo(pGame, pUnit, 136)) {
@@ -207,80 +220,6 @@ BOOL __fastcall CubeOrgans_Intercept(IncompleteGameData* pGame, D2::Types::UnitA
 
 BOOL __fastcall CowsCubeOutput_Intercept(IncompleteGameData* pGame, D2::Types::UnitAny* pUnit) {
     return CowsCubeOutputOriginal(pGame, pUnit);
-}
-
-__declspec(naked) void __fastcall RoomInit_Relocated(IncompleteGameData* pGame, D2::Types::Room1* pRoom1) {
-    __asm {
-        push ebp
-        mov ebp, esp
-        sub esp, 0x18
-        jmp RoomInit_Rejoin
-    }
-}
-
-void __fastcall RoomInit_Hook(IncompleteGameData* pGame, D2::Types::Room1* pRoom1) {
-    RoomInit_Relocated(pGame, pRoom1);
-    D2::Types::Level* level = pRoom1->pRoom2->pLevel;
-    D2::Types::Room2* room = pRoom1->pRoom2;
-    D2::Types::PresetUnit* unit;
-
-
-    switch (level->dwLevelNo) {
-    case 133: // Den
-        for (unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
-            if (unit->dwTxtFileNo == 397 && !gameFlags[pGame->seed].flags.lillithSpawned) {
-                char mods[9] = { 1 };
-                if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 707, guid++, 0, false, false, 0, mods)) {
-                    gameFlags[pGame->seed].flags.lillithSpawned = true;
-                }
-            }
-        }
-        break;
-    case 134: // Sands
-        for (unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
-            if (unit->dwTxtFileNo == 402 && !gameFlags[pGame->seed].flags.durielSpawned) {
-                char mods[9] = { 1 };
-                if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 708, guid++, 0, false, false, 0, mods)) {
-                    gameFlags[pGame->seed].flags.durielSpawned = true;
-                }
-            }
-        }
-        break;
-    case 135: // Furnace
-        for (unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
-            if (unit->dwTxtFileNo == 397 && !gameFlags[pGame->seed].flags.izualSpawned) {
-                char mods[9] = { 1 };
-                if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 706, guid++, 0, false, false, 0, mods)) {
-                    gameFlags[pGame->seed].flags.izualSpawned = true;
-                }
-            }
-        }
-        break;
-    case 136: // Uber Tristram
-        for (unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
-            switch (unit->dwTxtFileNo) {
-            case 26: // Cain cage original, uber spawns
-                char mods[9] = { 1 };
-                if (!gameFlags[pGame->seed].flags.uberMephSpawned) {
-                    if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 704, guid++, 0, false, false, 0, mods)) {
-                        gameFlags[pGame->seed].flags.uberMephSpawned = true;
-                    }
-                }
-                if (!gameFlags[pGame->seed].flags.uberBaalSpawned) {
-                    if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 709, guid++, 0, false, false, 0, mods)) {
-                        gameFlags[pGame->seed].flags.uberBaalSpawned = true;
-                    }
-                }
-                if (!gameFlags[pGame->seed].flags.uberDiabloSpawned) {
-                    if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 705, guid++, 0, false, false, 0, mods)) {
-                        gameFlags[pGame->seed].flags.uberDiabloSpawned = true;
-                    }
-                }
-                break;
-            }
-        }
-        break;
-    }
 }
 
 __declspec(naked) void __fastcall KillMonster_Relocated(IncompleteGameData* pGame, D2::Types::UnitAny* pVictim, D2::Types::UnitAny* pAttacker, BOOL bRemoveFromOwner) {
@@ -336,7 +275,7 @@ void __fastcall KillMonster_Hook(IncompleteGameData* pGame, D2::Types::UnitAny* 
     else if (pVictim->dwTxtFileNo == 705) { // Diablo clone drops anni :)
         SpawnItem(pGame, pVictim, "cm1 ", 90, D2::ItemQuality::UNIQUE, 381);
     }
-    else if constexpr (KEY_ORGAN_DEBUG && rand() % 2 == 0) {
+    else if (KEY_ORGAN_DEBUG && rand() % 2 == 0) {
         SpawnItem(pGame, pVictim, randomElement(keyCodes), 90, D2::ItemQuality::NORMAL);
     }
 
@@ -351,39 +290,31 @@ void __fastcall KillMonster_Hook(IncompleteGameData* pGame, D2::Types::UnitAny* 
 const char minionMods[9] = { 0 };
 
 void __fastcall UberMephAIReplacement(IncompleteGameData* pGame, D2::Types::UnitAny* pUnit, D2::Types::AIParams* pAiParams) {
-    // @TODO: Spawn rates are aggressive, needs tweaking
-    const std::vector<DWORD> ids = { 725, 726, 727, 728, 729, 730 }, chances = { 0, 0, 0, 1, 2, 3 };
+    const std::vector<DWORD> ids = { 725, 726, 727, 728, 729, 730 };
     D2::Types::UnitAny* pTarget = pAiParams->pTarget;
-    int c = randomElement(chances);
 
-    while (c--) {
-        SpawnMonster(pGame, pTarget->pPath->pRoom1, pTarget->pPath->xPos, pTarget->pPath->yPos, randomElement(ids), guid++, rand(), false, false, 0, minionMods);
+    if (randomNumber(0, 9) < 3) {
+        SpawnMonsterWithMode(pGame, pTarget->pPath->pRoom1, pTarget->pPath->xPos, pTarget->pPath->yPos, randomElement(ids), 8, 1, 0);
     }
 
     MephAI(pGame, pUnit, pAiParams);
 }
 
 void __fastcall UberDiabloAIReplacement(IncompleteGameData* pGame, D2::Types::UnitAny* pUnit, D2::Types::AIParams* pAiParams) {
-    // @TODO: Spawn rates are aggressive, needs tweaking
-    const std::vector<DWORD> chances = { 0, 0, 0, 1 };
     D2::Types::UnitAny* pTarget = pAiParams->pTarget;
-    int c = randomElement(chances);
 
-    while (c--) {
-        SpawnMonster(pGame, pTarget->pPath->pRoom1, pTarget->pPath->xPos, pTarget->pPath->yPos, 711, guid++, rand(), false, false, 0, minionMods);
+    if (randomNumber(0, 9) < 3) {
+        SpawnMonsterWithMode(pGame, pTarget->pPath->pRoom1, pTarget->pPath->xPos, pTarget->pPath->yPos, 711, 1, 1, 0);
     }
 
     DiabloAI(pGame, pUnit, pAiParams);
 }
 
 void __fastcall UberBaalAIReplacement(IncompleteGameData* pGame, D2::Types::UnitAny* pUnit, D2::Types::AIParams* pAiParams) {
-    // @TODO: Spawn rates are aggressive, needs tweaking
-    const std::vector<DWORD> ids = { 731, 732 }, chances = { 0, 0, 0, 1, 2, 3 };
-    D2::Types::UnitAny* pTarget = pAiParams->pTarget;
-    int c = randomElement(chances);
+    const std::vector<DWORD> ids = { 731, 732 };
 
-    while (c--) {
-        SpawnMonster(pGame, pTarget->pPath->pRoom1, pTarget->pPath->xPos, pTarget->pPath->yPos, randomElement(ids), guid++, rand(), false, false, 0, minionMods);
+    if (randomNumber(0, 9) < 3) {
+        SpawnMonsterWithMode(pGame, pUnit->pPath->pRoom1, pUnit->pPath->xPos, pUnit->pPath->yPos, randomElement(ids), 1, 1, 0);
     }
 
     BaalAI(pGame, pUnit, pAiParams);
@@ -394,7 +325,6 @@ namespace Ubers {
     class : public Feature {
     public:
         void init() {
-            /*
             MemoryPatch(CowsCubeOutputHook) << JUMP(CowsCubeOutput_Intercept);
             MemoryPatch(CubeKeysHook) << JUMP(CubeKeys_Intercept);
             MemoryPatch(CubeOrgansHook) << JUMP(CubeOrgans_Intercept);
@@ -405,12 +335,74 @@ namespace Ubers {
             MemoryPatch(UberDiabloAI) << JUMP(UberDiabloAIReplacement);
             MemoryPatch(UberBaalAI) << JUMP(UberBaalAIReplacement);
 
-            MemoryPatch(RoomInit_Original) << JUMP(RoomInit_Hook);
             MemoryPatch(KillMonster_Original) << JUMP(KillMonster_Hook);
 
             // Ignore durability modification on custom spawn items
             MemoryPatch(0x559009) << NOP_TO(0x559025);
-            */
+        }
+
+        void roomInit(IncompleteGameData* pGame, D2::Types::Room1* pRoom1) {
+            D2::Types::Level* level = pRoom1->pRoom2->pLevel;
+            D2::Types::Room2* room = pRoom1->pRoom2;
+            D2::Types::PresetUnit* unit;
+
+
+            switch (level->dwLevelNo) {
+            case 133: // Den
+                for (unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
+                    if (unit->dwTxtFileNo == 397 && !gameFlags[pGame->seed].flags.lillithSpawned) {
+                        char mods[9] = { 1 };
+                        if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 707, guid++, 0, false, false, 0, mods)) {
+                            gameFlags[pGame->seed].flags.lillithSpawned = true;
+                        }
+                    }
+                }
+                break;
+            case 134: // Sands
+                for (unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
+                    if (unit->dwTxtFileNo == 402 && !gameFlags[pGame->seed].flags.durielSpawned) {
+                        char mods[9] = { 1 };
+                        if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 708, guid++, 0, false, false, 0, mods)) {
+                            gameFlags[pGame->seed].flags.durielSpawned = true;
+                        }
+                    }
+                }
+                break;
+            case 135: // Furnace
+                for (unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
+                    if (unit->dwTxtFileNo == 397 && !gameFlags[pGame->seed].flags.izualSpawned) {
+                        char mods[9] = { 1 };
+                        if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 706, guid++, 0, false, false, 0, mods)) {
+                            gameFlags[pGame->seed].flags.izualSpawned = true;
+                        }
+                    }
+                }
+                break;
+            case 136: // Uber Tristram
+                for (unit = room->pPreset; unit != NULL; unit = unit->pPresetNext) {
+                    switch (unit->dwTxtFileNo) {
+                    case 26: // Cain cage original, uber spawns
+                        char mods[9] = { 1 };
+                        if (!gameFlags[pGame->seed].flags.uberMephSpawned) {
+                            if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 704, guid++, 0, false, false, 0, mods)) {
+                                gameFlags[pGame->seed].flags.uberMephSpawned = true;
+                            }
+                        }
+                        if (!gameFlags[pGame->seed].flags.uberBaalSpawned) {
+                            if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 709, guid++, 0, false, false, 0, mods)) {
+                                gameFlags[pGame->seed].flags.uberBaalSpawned = true;
+                            }
+                        }
+                        if (!gameFlags[pGame->seed].flags.uberDiabloSpawned) {
+                            if (SpawnMonster(pGame, pRoom1, room->dwPosX * 5 + unit->dwPosX, room->dwPosY * 5 + unit->dwPosY, 705, guid++, 0, false, false, 0, mods)) {
+                                gameFlags[pGame->seed].flags.uberDiabloSpawned = true;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
         }
 
     } feature;
