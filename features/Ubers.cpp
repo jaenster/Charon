@@ -303,7 +303,7 @@ void __fastcall UberMephAIReplacement(IncompleteGameData* pGame, D2::Types::Unit
 void __fastcall UberDiabloAIReplacement(IncompleteGameData* pGame, D2::Types::UnitAny* pUnit, D2::Types::AIParams* pAiParams) {
     D2::Types::UnitAny* pTarget = pAiParams->pTarget;
 
-    if (randomNumber(0, 9) < 3) {
+    if (randomNumber(0, 9) == 0) {
         SpawnMonsterWithMode(pGame, pTarget->pPath->pRoom1, pTarget->pPath->xPos, pTarget->pPath->yPos, 711, 1, 1, 0);
     }
 
