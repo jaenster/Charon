@@ -9,6 +9,8 @@
 #include <string>
 #include <cmath>
 
+REMOTEFUNC(void __stdcall, SetupFramesPerSecond, (int32_t param_1), 0x52df80);
+
 wchar_t settingsPath[512] = { 0 };
 
 void LoadSettings() {
@@ -174,7 +176,7 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 SaveSettings();
             }),
     }, { // Second Column
-        new DialogToggleInfo(L"\u00FFc3*\u00FFc4Enable Ladder Items",
+        new DialogToggleInfo(L"\u00FFc3*\u00FFc4Enable Ladder Features",
             []() -> std::wstring {
                 return Settings["ladderItems"] ? L"\u00FFc2On" : L"\u00FFc1Off";
             }, [](MouseButton button, bool down) -> void {
@@ -359,6 +361,23 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["debugPackets"] = !Settings["debugPackets"];
                 SaveSettings();
             }),
+        new DialogToggleInfo(L"Target Single Player FPS",
+            []() -> std::wstring {
+                return L"\u00FFc4" + std::to_wstring(Settings["TargetFPS"]);
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+
+                if (button == MouseButton::LEFT) {
+                    Settings["TargetFPS"] += 5;
+                }
+                else if (button == MouseButton::RIGHT && Settings["TargetFPS"] > 0) {
+                    Settings["TargetFPS"] -= 5;
+                }
+
+                SetupFramesPerSecond(Settings["TargetFPS"]);
+
+                SaveSettings();
+            }),
     },
 };
 
@@ -450,6 +469,12 @@ namespace SettingsFeature {
             }
 
             D2::NoPickUp = Settings["noPickup"];
+
+            if (!Settings["TargetFPS"]) {
+                Settings["TargetFPS"] = 25;
+            }
+
+            SetupFramesPerSecond(Settings["TargetFPS"]);
 
             // Pause the game like with the normal esc menu
             MemoryPatch(0x44efe3) << JUMP(pauseGameIntercept);

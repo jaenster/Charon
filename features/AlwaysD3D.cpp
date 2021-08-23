@@ -133,7 +133,7 @@ void ClearScreen() {
 // D2 doesn't do a great job at it by default, so we're helping out.
 void throttle() {
     // Single player doesn't need throttling. It runs at 25 fps already.
-    if (State["ingame"] && GameType < 1) {
+    if (State["inGame"] && GameType < 1) {
         return;
     }
 
@@ -175,7 +175,8 @@ DWORD BeginScene() {
     // Gaussian Cubic seems to deform the outlines a bit.
     DWORD filterType = filterValues[Settings["alwaysD3DFilter"]];
     Direct3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, filterType);
-    Direct3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
+    Direct3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, filterType);
+    Direct3DDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, filterType);
 
     return true;
 }
