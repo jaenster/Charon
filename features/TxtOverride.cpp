@@ -9,6 +9,12 @@ using D2::Types::UniqueItemsTable;
 using D2::Types::TreasureClassExTable;
 using D2::Types::BINField;
 
+struct CubeMainIncomplete {
+    BYTE enabled;
+    BYTE ladder;
+    BYTE unk[326];
+};
+
 ASMPTR CreateTxtTableArray_Rejoin = 0x6122f9;
 ASMPTR CreateTxtTableArray_Original = 0x6122f0;
 
@@ -34,6 +40,15 @@ void* __stdcall CreateTxtTableArray_Intercept(void* pMemory, char* szTableName, 
 
         for (int c = 0; c < tableSize; c++) {
             runes[c].Server = 0;
+        }
+    }
+    else if (Settings["ladderItems"] && strcmp(szTableName, "cubemain") == 0) {
+        int tableSize = *nTxtTableSize;
+        CubeMainIncomplete* cubemain = (CubeMainIncomplete*)table;
+        gamelog << COLOR(2) << "Enabling Ladder Cube Recipes" << std::endl;
+
+        for (int c = 0; c < tableSize; c++) {
+            cubemain[c].ladder = 0;
         }
     }
     else if (Settings["rebalanceDrops"] && strcmp(szTableName, "itemratio") == 0) {
