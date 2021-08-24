@@ -3,17 +3,21 @@
 This is an experiment and utility for Diablo 2. It is intended for single player and TCP/IP game use, so connections to Battle.net are disabled. It's main features include:
 
     Always in Direct 3D Mode with Alt+Enter fullscreen toggle.
-    Ladder Runewords and Unique Items in Single Player and TCP/IP
+    Ladder Runewords, Cube Recipes, and Unique Items in Single Player and TCP/IP
+    Uber Tristram and Diablo Clone in Single Player and TCP/IP
     Gently Improved Drop Rates with Respect to Single Player
     Gently Improved Rune Drop Rates with Respect to Single Player
     Map Reveal (more information now)
     Display Monsters, Missiles, and Items (superior and above) on Automap
     Updated Item Tooltips and Item Level Display
     /players X uncap (16-20 is reasonable, but very difficult)
-    Improved experience scaling for /players X
+    Experience Bonuses and Scaling
     Repeatable Socket, Respec, and Imbue Quests
     Repeatable Cow Portal (even if you killed the Cow King)
     Disabled Weather
+    Regenerate Single Player Maps (always a new map!)
+    All Items Drop Pre-Identified
+    Single Player FPS Uncap (40 FPS is a good spot)
     Loading additional mpq via command line parameter: -mpq "filename.mpq"
 
 Almost all features are optional now! Press F11 while Diablo 2 is running to enable/disable these options!
