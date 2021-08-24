@@ -1,3 +1,8 @@
+/**
+ * Uber Tristram and Diablo Clone
+ *
+ * by Nishi with help from Jaenster
+ */
 #ifdef _DEBUG
 
 #include "headers/feature.h"
