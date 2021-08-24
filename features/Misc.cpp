@@ -342,10 +342,6 @@ DWORD __stdcall OverrideWaypoints(DWORD a, DWORD b) {
 
 ASMPTR SocketNotGrey_Patches[] = { 0x452857, 0x48E878, 0x48E897 };
 
-DWORD gamestart = 0;
-
-double flashy = 0, speed = 0.03;
-
 ASMPTR GetGlobalLight_Rejoin = 0x61C0B6;
 
 __declspec(naked) void __stdcall GetGlobalLight_Original(void* pAct, BYTE* red, BYTE* green, BYTE* blue) {
@@ -414,19 +410,9 @@ public:
         AutomapInfoHooks.push_back([]() -> std::wstring {
             return version;
         });
-//
-//        AutomapInfoHooks.push_back([]() -> std::wstring {
-//            DWORD elapsed = GetTickCount() - gamestart, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
-//            wchar_t msg[16];
-//            swprintf_s(msg, L"%d:%02d", minutes, seconds);
-//            return msg;
-//        });
     }
 
     void gameLoop() {
-        gamestart = gamestart ? gamestart : GetTickCount();
-        flashy += speed;
-
         if (Settings["disableShake"] != disableShake) {
             if (Settings["disableShake"]) {
                 MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
@@ -440,8 +426,6 @@ public:
     }
 
     void oogLoop() {
-        gamestart = 0;
-
         if (Settings["regenMap"] && !State["regenMap"]) {
             MemoryPatch(0x56A200) << BYTE(0xEB);
             State["regenMap"] = true;

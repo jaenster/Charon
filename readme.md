@@ -14,10 +14,12 @@ This is an experiment and utility for Diablo 2. It is intended for single player
     Experience Bonuses and Scaling
     Repeatable Socket, Respec, and Imbue Quests
     Repeatable Cow Portal (even if you killed the Cow King)
-    Disabled Weather
+    Disabled Weather and Screen Shaking
     Regenerate Single Player Maps (always a new map!)
     All Items Drop Pre-Identified
     Single Player FPS Uncap (40 FPS is a good spot)
+    Multiple Simultaneous Windows
+    Fixed Unique Monster Color Bug
     Loading additional mpq via command line parameter: -mpq "filename.mpq"
 
 Almost all features are optional now! Press F11 while Diablo 2 is running to enable/disable these options!
