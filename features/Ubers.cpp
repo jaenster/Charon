@@ -3,8 +3,6 @@
  *
  * by Nishi with help from Jaenster
  */
-#ifdef _DEBUG
-
 #include "headers/feature.h"
 #include "headers/common.h"
 #include "headers/hook.h"
@@ -473,5 +471,3 @@ namespace Ubers {
     } feature;
 
 }
-
-#endif
