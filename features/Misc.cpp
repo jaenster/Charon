@@ -374,6 +374,7 @@ wchar_t* __fastcall UnitVisualname(D2::Types::LivingUnit *pUnit) {
 
 // This feature class registers itself.
 class : public Feature {
+    DWORD disableShake = 0;
 public:
     void init() {
         if (!Settings["disableSplash"]) {
@@ -382,7 +383,7 @@ public:
         }
 
         MemoryPatch(0x4f5621) << NOP_TO(0x4f5672); // Allow multiple windows open
-        MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
+
         MemoryPatch(0x43BF60) << ASM::RET; // Prevent battle.net connections
         MemoryPatch(0x515FB1) << BYTE(0x01); // Delay of 1 on cleaning up sounds after quiting game
         MemoryPatch(0x4781AC) << BYTESEQ{ 0x6A, 0x05, 0x90, 0x90, 0x90 }; // Hyperjoin for TCP/IP games
@@ -425,6 +426,17 @@ public:
     void gameLoop() {
         gamestart = gamestart ? gamestart : GetTickCount();
         flashy += speed;
+
+        if (Settings["disableShake"] != disableShake) {
+            if (Settings["disableShake"]) {
+                MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
+            }
+            else {
+                MemoryPatch(0x476D40) << REVERT(1);
+            }
+        }
+
+        disableShake = Settings["disableShake"];
     }
 
     void oogLoop() {

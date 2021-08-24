@@ -174,6 +174,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 SaveSettings();
             }),
         nullptr, // Empty Gap
+        new DialogToggleInfo(L"Disable screen shake",
+            []() -> std::wstring {
+                return Settings["disableShake"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["disableShake"] = !Settings["disableShake"];
+                SaveSettings();
+            }),
         new DialogToggleInfo(L"Disable splash on start",
             []() -> std::wstring {
                 return Settings["disableSplash"] ? L"\u00FFc2On" : L"\u00FFc1Off";
