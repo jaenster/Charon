@@ -8,6 +8,7 @@
 #include <functional>
 #include <sstream>
 #include "utilities.h"
+#include "headers/D2Structs.h"
 #include "headers/ghidra.h"
 
 typedef std::wstringstream& InputStream;
@@ -35,7 +36,7 @@ public:
 	virtual void deinit();
 	virtual void gameLoop();
 	virtual void oogLoop();
-	virtual void gameServerLoop(Ghidra::D2GameStrc* pGame);
+	virtual void gameServerLoop(D2::Types::IncompleteGameData* pGame);
 	virtual bool windowMessage(HWND, UINT, WPARAM, LPARAM);
 	virtual bool keyEvent(DWORD, bool, DWORD);
 	virtual bool chatInput(InputStream);

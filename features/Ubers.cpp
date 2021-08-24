@@ -60,6 +60,15 @@ struct theTCThing {
     }*pSomething;
 };
 
+struct WEdata {
+    BYTE  type = 0x5A;
+    BYTE  fct = 0x11;
+    BYTE  id = 4;
+    DWORD param;
+    WORD  z = 0;
+    BYTE  uk[31];
+};
+
 #pragma pack(pop)
 
 union GameFlagsType {
@@ -80,10 +89,11 @@ union GameFlagsType {
         bool uberMephKilled : 1;
         bool torchDropped : 1;
         bool dCloneSpawned : 1;
+        bool dCloneAnnounced : 1;
+        bool dCloneKilled : 1;
     } flags;
 };
 
-REMOTEFUNC(BOOL __fastcall, CowsCubeOutputOriginal, (IncompleteGameData* pGame, D2::Types::UnitAny* pUnit), 0x594140);
 REMOTEFUNC(void __stdcall, UnitLocation, (D2::Types::UnitAny* pUnit, POINT* pPoint), 0x620870);
 REMOTEFUNC(void __fastcall, FindSpawnablePosition, (D2::Types::Room1* pDrlgRoom, POINT* pos, DWORD param_1_00, DWORD param_2_00, D2::Types::Room1** pRoomsNear, DWORD param_6, int param_7), 0x545340);
 REMOTEFUNC(BOOL __stdcall, SetsModeWithFlagsC4Update, (D2::Types::UnitAny* pUnit, DWORD dwMode), 0x624690);
@@ -104,6 +114,8 @@ REMOTEFUNC(D2::Types::UnitAny* __fastcall, SpawnItemWithStruct, (IncompleteGameD
 REMOTEFUNC(D2::Types::Room1* __fastcall, FindBestSpotToSpawnItem, (D2::Types::Room1* pDrlgRoom, POINT* pUnitPosition, POINT* pNewPosition, WORD param_2_00, BYTE param_5), 0x555DA0);
 REMOTEFUNC(DWORD __stdcall, GetItemClassIdByCode, (DWORD dwItemCode), 0x633680);
 REMOTEFUNC(void __fastcall, PlaySoundMaybe, (D2::Types::UnitAny* pUnit, short nUpdateType, D2::Types::UnitAny* pUpdateUnit), 0x553380);
+REMOTEFUNC(void __fastcall, ForEachConnectedClient, (IncompleteGameData* pGame, void* func, void *param), 0x52ded0);
+void* Send_0x5A_EventMessages = (void*)0x53c850;
 
 REMOTEFUNC(void __fastcall, MephAI, (IncompleteGameData* pGame, D2::Types::UnitAny* pUnit, D2::Types::AIParams* pAiParams), 0x5F78B0);
 REMOTEFUNC(void __fastcall, DiabloAI, (IncompleteGameData* pGame, D2::Types::UnitAny* pUnit, D2::Types::AIParams* pAiParams), 0x5E9170);
@@ -113,7 +125,7 @@ ASMPTR UberBaalAIPointer = 0x73D330, UberBaalAI = 0x5FD200;
 ASMPTR UberMephAIPointer = 0x73D340, UberMephAI = 0x5F81C0;
 ASMPTR UberDiabloAIPointer = 0x73D350, UberDiabloAI = 0x05E9DF0;
 
-ASMPTR CowsCubeOutputHook = 0x565a80, CubeKeysHook = 0x565a90, CubeOrgansHook = 0x565aa0;
+ASMPTR CubeKeysHook = 0x565a90, CubeOrgansHook = 0x565aa0;
 ASMPTR KillMonster_Original = 0x57CCB0, KillMonster_Rejoin = 0x57CCB6;
 
 DWORD guid = 0x4FFFFFFF;
@@ -218,10 +230,6 @@ BOOL __fastcall CubeOrgans_Intercept(IncompleteGameData* pGame, D2::Types::UnitA
     return PlaySoundMaybe(pUnit, 0x14, pUnit), 0;
 }
 
-BOOL __fastcall CowsCubeOutput_Intercept(IncompleteGameData* pGame, D2::Types::UnitAny* pUnit) {
-    return CowsCubeOutputOriginal(pGame, pUnit);
-}
-
 __declspec(naked) void __fastcall KillMonster_Relocated(IncompleteGameData* pGame, D2::Types::UnitAny* pVictim, D2::Types::UnitAny* pAttacker, BOOL bRemoveFromOwner) {
     __asm {
         push ebp
@@ -275,7 +283,7 @@ void __fastcall KillMonster_Hook(IncompleteGameData* pGame, D2::Types::UnitAny* 
     else if (pVictim->dwTxtFileNo == 705) { // Diablo clone drops anni :)
         SpawnItem(pGame, pVictim, "cm1 ", 90, D2::ItemQuality::UNIQUE, 381);
     }
-    else if (KEY_ORGAN_DEBUG && rand() % 2 == 0) {
+    else if constexpr (KEY_ORGAN_DEBUG && rand() % 2 == 0) {
         SpawnItem(pGame, pVictim, randomElement(keyCodes), 90, D2::ItemQuality::NORMAL);
     }
 
@@ -320,12 +328,39 @@ void __fastcall UberBaalAIReplacement(IncompleteGameData* pGame, D2::Types::Unit
     BaalAI(pGame, pUnit, pAiParams);
 }
 
+__declspec(naked) void __fastcall SPAWN_UniqueMonster_Relocated(IncompleteGameData* pGame, D2::Types::Room1* pRoom, int32_t nX, int32_t nY, uint32_t dwUniqueId) {
+    static ASMPTR SPAWN_UniqueMonster_Rejoin = 0x5a49b9;
+    __asm {
+        push   ebp        //5a49b0 -> 55
+        mov    ebp, esp    //5a49b1 -> 8b ec
+        sub    esp, 0x110  //5a49b3 -> 81 ec 10 01 00 00
+        jmp    SPAWN_UniqueMonster_Rejoin
+    };
+}
+
+void __fastcall SPAWN_UniqueMonster(IncompleteGameData* pGame, D2::Types::Room1* pRoom, int32_t nX, int32_t nY, uint32_t dwUniqueId) {
+    if (pGame->nDifficulty == 2 && Settings["ladderItems"] && Settings["sojCount"] >= Settings["sojLimit"] && gameFlags[pGame->seed].flags.dCloneAnnounced && !gameFlags[pGame->seed].flags.dCloneSpawned) {
+        char mods[9] = { 1 };
+        if (SpawnMonster(pGame, pRoom, nX, nY, 333, guid++, 0, false, false, 0, mods)) {
+            gameFlags[pGame->seed].flags.dCloneSpawned = true;
+
+            while (Settings["sojCount"] >= Settings["sojLimit"]) {
+                Settings["sojLimit"] += randomNumber(80, 120);
+            }
+
+            SaveSettings();
+        }
+    }
+    else {
+        SPAWN_UniqueMonster_Relocated(pGame, pRoom, nX, nY, dwUniqueId);
+    }
+}
+
 namespace Ubers {
 
     class : public Feature {
     public:
         void init() {
-            MemoryPatch(CowsCubeOutputHook) << JUMP(CowsCubeOutput_Intercept);
             MemoryPatch(CubeKeysHook) << JUMP(CubeKeys_Intercept);
             MemoryPatch(CubeOrgansHook) << JUMP(CubeOrgans_Intercept);
 
@@ -336,9 +371,34 @@ namespace Ubers {
             MemoryPatch(UberBaalAI) << JUMP(UberBaalAIReplacement);
 
             MemoryPatch(KillMonster_Original) << JUMP(KillMonster_Hook);
+            MemoryPatch(0x5a49b0) << JUMP(SPAWN_UniqueMonster) << NOP_TO(0x5a49b9);
 
             // Ignore durability modification on custom spawn items
             MemoryPatch(0x559009) << NOP_TO(0x559025);
+
+            if (!Settings["sojLimit"]) {
+                Settings["sojCount"] = randomNumber(80, 120);
+                Settings["sojLimit"] = Settings["sojCount"] + randomNumber(80, 120);
+            }
+        }
+
+        void gameServerLoop(IncompleteGameData* pGame) {
+            if (pGame->nDifficulty == 2 && Settings["ladderItems"] && !gameFlags[pGame->seed].flags.dCloneAnnounced) {
+                if (randomNumber(1, Settings["sojSaleTime"] * 25) == 1) {
+                    Settings["sojCount"] = Settings["sojCount"] + 1;
+                    SaveSettings();
+
+                    WEdata packet;
+                    packet.param = Settings["sojCount"];
+
+                    if (Settings["sojCount"] >= Settings["sojLimit"]) {
+                        packet.fct++;
+                        gameFlags[pGame->seed].flags.dCloneAnnounced = true;
+                    }
+
+                    ForEachConnectedClient(pGame, Send_0x5A_EventMessages, &packet);
+                }
+            }
         }
 
         void roomInit(IncompleteGameData* pGame, D2::Types::Room1* pRoom1) {

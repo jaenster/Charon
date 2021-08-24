@@ -91,7 +91,14 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["disableRoofs"] = !Settings["disableRoofs"];
                 SaveSettings();
             }),
-        nullptr, // Empty Gap
+        new DialogToggleInfo(L"Info Popups",
+            []() -> std::wstring {
+                return Settings["infoPopups"] ? L"\u00FFc2On" : L"\u00FFc1Off";
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                Settings["infoPopups"] = !Settings["infoPopups"];
+                SaveSettings();
+            }),
         nullptr, // Empty Gap
         new DialogToggleInfo(L"Regen Single Player Maps",
             []() -> std::wstring {
@@ -184,6 +191,21 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                 Settings["ladderItems"] = !Settings["ladderItems"];
                 SaveSettings();
             }),
+        new DialogToggleInfo(L"SOJ Sale Time (seconds)",
+            []() -> std::wstring {
+                return Settings["sojSaleTime"] == 150 ? L"\u00FFc2~150" : (L"\u00FFc4~" + std::to_wstring(Settings["sojSaleTime"]));
+            }, [](MouseButton button, bool down) -> void {
+                if (down) return;
+                
+                if (button == MouseButton::LEFT) {
+                    Settings["sojSaleTime"] += Settings["sojSaleTime"] < 15 ? 1 : 15;
+                }
+                else if (button == MouseButton::RIGHT && Settings["sojSaleTime"] > 1) {
+                    Settings["sojSaleTime"] -= Settings["sojSaleTime"] <= 15 ? 1 : 15;
+                }
+
+                SaveSettings();
+            }),
         new DialogToggleInfo(L"\u00FFc3*\u00FFc4Tweak Drops for Solo",
             []() -> std::wstring {
                 return Settings["rebalanceDrops"] ? L"\u00FFc2On" : L"\u00FFc1Off";
@@ -251,14 +273,6 @@ std::vector<std::vector<DialogToggleInfo*>> SettingsColumns = {
                     Settings["xpMin"] -= 250;
                 }
 
-                SaveSettings();
-            }),
-        new DialogToggleInfo(L"Info Popups",
-            []() -> std::wstring {
-                return Settings["infoPopups"] ? L"\u00FFc2On" : L"\u00FFc1Off";
-            }, [](MouseButton button, bool down) -> void {
-                if (down) return;
-                Settings["infoPopups"] = !Settings["infoPopups"];
                 SaveSettings();
             }),
         nullptr, // Empty Gap
@@ -472,6 +486,10 @@ namespace SettingsFeature {
 
             if (!Settings["TargetFPS"]) {
                 Settings["TargetFPS"] = 25;
+            }
+
+            if (!Settings["sojSaleTime"]) {
+                Settings["sojSaleTime"] = 150;
             }
 
             SetupFramesPerSecond(Settings["TargetFPS"]);

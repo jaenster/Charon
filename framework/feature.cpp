@@ -1,6 +1,7 @@
 #include "headers/common.h"
 #include "headers/feature.h"
 #include "headers/remote.h"
+#include "headers/D2Structs.h"
 #include <iostream>
 
 HotkeyCallbackMap HotkeyCallbacks;
@@ -21,7 +22,7 @@ void Feature::postInit() { }
 void Feature::deinit() { }
 void Feature::gameLoop() { }
 void Feature::oogLoop() { }
-void Feature::gameServerLoop(Ghidra::D2GameStrc* pGame) { }
+void Feature::gameServerLoop(D2::Types::IncompleteGameData* pGame) { }
 bool Feature::windowMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { return true; }
 bool Feature::keyEvent(DWORD keyCode, bool down, DWORD flags) { return true; }
 bool Feature::chatInput(InputStream msg) { return true; }
