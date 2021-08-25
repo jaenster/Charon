@@ -88,14 +88,14 @@ namespace Ghidra {
             return { adjust.x + (double)this->pPath.pStaticPath->nPosX, adjust.y + (double)this->pPath.pStaticPath->nPosY };
         }
 
-        return { 0, 0}; // ToDo; need to fix dynamic path as its wrong defined in ghidra
+        return { 0, 0 }; // ToDo; need to fix dynamic path as its wrong defined in ghidra
     }
 
     DPOINT D2UnitStrc::getTargetPos(DPOINT adjust) {
         if (this->eUnitType == UNIT_OBJECT || this->eUnitType == UNIT_WARP || this->eUnitType == UNIT_ITEM) {
-            return this->pos();
+            return this->pos(adjust);
         }
 
-        return { 0, 0}; // ToDo; need to fix dynamic path as its wrong defined in ghidra
+        return { 0, 0 }; // ToDo; need to fix dynamic path as its wrong defined in ghidra
     }
 }

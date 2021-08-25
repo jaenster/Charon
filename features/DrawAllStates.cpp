@@ -15,7 +15,6 @@ namespace DrawAllStates {
     public:
         void init() override {
             State[name] = false;
-            Settings[name] = true;
         }
 
         void gameLoop() override {
