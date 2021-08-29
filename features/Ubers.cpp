@@ -69,7 +69,7 @@ struct WEdata {
     BYTE  id = 4;
     DWORD param;
     WORD  z = 0;
-    BYTE  uk[31];
+    BYTE  uk[31] = { 0 };
 };
 
 #pragma pack(pop)
@@ -342,16 +342,10 @@ __declspec(naked) void __fastcall SPAWN_UniqueMonster_Relocated(IncompleteGameDa
 }
 
 void __fastcall SPAWN_UniqueMonster(IncompleteGameData* pGame, D2::Types::Room1* pRoom, int32_t nX, int32_t nY, uint32_t dwUniqueId) {
-    if (pGame->nDifficulty == 2 && Settings["ladderItems"] && Settings["sojCount"] >= Settings["sojLimit"] && gameFlags[pGame->seed].flags.dCloneAnnounced && !gameFlags[pGame->seed].flags.dCloneSpawned) {
+    if (Settings["ladderItems"] && gameFlags[pGame->seed].flags.dCloneAnnounced && !gameFlags[pGame->seed].flags.dCloneSpawned) {
         char mods[9] = { 1 };
         if (SpawnMonster(pGame, pRoom, nX, nY, 333, guid++, 0, false, false, 0, mods)) {
             gameFlags[pGame->seed].flags.dCloneSpawned = true;
-
-            while (Settings["sojCount"] >= Settings["sojLimit"]) {
-                Settings["sojLimit"] += randomNumber(80, 120);
-            }
-
-            SaveSettings();
         }
     }
     else {
@@ -388,10 +382,9 @@ namespace Ubers {
         void gameServerLoop(IncompleteGameData* pGame) {
             if (pGame->nDifficulty == 2 && Settings["ladderItems"] && !gameFlags[pGame->seed].flags.dCloneAnnounced) {
                 if (randomNumber(1, Settings["sojSaleTime"] * 25) == 1) {
-                    Settings["sojCount"] = Settings["sojCount"] + 1;
-                    SaveSettings();
-
                     WEdata packet;
+ 
+                    Settings["sojCount"] = Settings["sojCount"] + 1;
                     packet.param = Settings["sojCount"];
 
                     if (Settings["sojCount"] >= Settings["sojLimit"]) {
@@ -399,6 +392,11 @@ namespace Ubers {
                         gameFlags[pGame->seed].flags.dCloneAnnounced = true;
                     }
 
+                    while (Settings["sojCount"] >= Settings["sojLimit"]) {
+                        Settings["sojLimit"] += randomNumber(80, 120);
+                    }
+
+                    SaveSettings();
                     ForEachConnectedClient(pGame, Send_0x5A_EventMessages, &packet);
                 }
             }

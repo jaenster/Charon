@@ -11,13 +11,13 @@
     <LocalDebuggerCommand>$(DIABLO2_PATH)\Game.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(DIABLO2_PATH)</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommandArguments> -loaddll "C:\Users\jwebb\OneDrive\Projects\Charon\Debug\Charon.dll" -w</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments> -loaddll "$(TargetPath)" -w</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommand>$(DIABLO2_PATH)\Game.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(DIABLO2_PATH)</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommandArguments> -loaddll "C:\Users\jwebb\OneDrive\Projects\Charon\Debug\Charon.dll" -w</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments> -loaddll "$(TargetPath)" -w</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>
