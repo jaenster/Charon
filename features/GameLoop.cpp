@@ -83,7 +83,7 @@ public:
         // override the entire sleepy section - 32 bytes long
         MemoryPatch(0x451C2A)
             << CALL(_gameLoop)
-            << BYTES(ASM::NOP, 2);
+            << BYTES(ASM::NOP, 27);
 
         // override the entire sleepy section - 23 bytes long
         MemoryPatch(0x4FA663)

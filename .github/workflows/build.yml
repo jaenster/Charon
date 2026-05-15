@@ -1,0 +1,71 @@
+name: build
+
+on:
+  push:
+    branches: [ "**" ]
+    tags:     [ "v*" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [ Release, Debug ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Configure (CMake, x86)
+        run: cmake -S . -B build -A Win32 -T v142
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.config }} --parallel
+
+      - name: Locate artifact
+        id: locate
+        shell: pwsh
+        run: |
+          $dll = Get-ChildItem -Path build -Recurse -Filter Charon.dll | Select-Object -First 1
+          if (-not $dll) { Write-Error "Charon.dll not found"; exit 1 }
+          "dll_path=$($dll.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Built: $($dll.FullName) ($([math]::Round($dll.Length/1KB,1)) KB)"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Charon-${{ matrix.config }}-x86
+          path: ${{ steps.locate.outputs.dll_path }}
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Release DLL
+        uses: actions/download-artifact@v4
+        with:
+          name: Charon-Release-x86
+          path: release
+
+      - name: Rename for release
+        run: |
+          mv release/Charon.dll "release/Charon-${{ github.ref_name }}-x86.dll"
+          ls -la release/
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.dll
+          generate_release_notes: true
