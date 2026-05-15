@@ -80,10 +80,14 @@ class : public Feature {
 public:
     void init() {
         MemoryPatch(0x405e09) << JUMP(_postInitHook);
-        // override the entire sleepy section - 32 bytes long
+        // Patch MessageGameLoop @ 0x451C2A:
+        //   call _gameLoop                       (5 bytes)
+        //   NOP out the 19 bytes of conditional  (skip-Sleep-when-mouse-evt-or-host)
+        //   Fall through to the original `push 0xA; call ds:[Sleep]` at 0x451C42
+        // so Sleep(10) becomes unconditional after the feature callbacks.
         MemoryPatch(0x451C2A)
             << CALL(_gameLoop)
-            << BYTES(ASM::NOP, 2);
+            << BYTES(ASM::NOP, 19);
 
         // override the entire sleepy section - 23 bytes long
         MemoryPatch(0x4FA663)
