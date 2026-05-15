@@ -33,7 +33,9 @@ jobs:
         id: locate
         shell: pwsh
         run: |
-          $dll = Get-ChildItem -Path build -Recurse -Filter Charon.dll | Select-Object -First 1
+          $dll = Get-ChildItem -Path . -Recurse -Filter Charon.dll |
+                 Where-Object { $_.FullName -match "\\${{ matrix.config }}\\" } |
+                 Select-Object -First 1
           if (-not $dll) { Write-Error "Charon.dll not found"; exit 1 }
           "dll_path=$($dll.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Built: $($dll.FullName) ($([math]::Round($dll.Length/1KB,1)) KB)"
