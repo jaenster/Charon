@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <random>
 #include <cmath>
+#include <climits>
 
 using D2::Types::IncompleteGameData;
 
@@ -261,8 +262,14 @@ D2::Types::UnitAny* SpawnItem(IncompleteGameData* pGame, D2::Types::UnitAny* pVi
         pItemGen.dwFileIndex = dwTxtFileNo;
     }
 
-    pItemGen.nInitSeed = rand() % 666;
-    pItemGen.nModSeed = rand() % 666;
+    // Use the hardware-seeded mt19937 (gen2/rd2) declared above instead of CRT
+    // rand(): there is no srand() anywhere in Charon, so bare rand() produces
+    // the same sequence after every Game.exe launch — making affixes like
+    // randclassskill cycle the same classes (Ama, Barb, Sorc, …) on each
+    // fresh process. The full 32-bit seed space is exposed because nInitSeed
+    // / nModSeed are DWORDs in ItemGenerationData.
+    pItemGen.nInitSeed = randomNumber(0, INT_MAX);
+    pItemGen.nModSeed  = randomNumber(0, INT_MAX);
 
     return SpawnItemWithStruct(pGame, &pItemGen, 1);
 }
