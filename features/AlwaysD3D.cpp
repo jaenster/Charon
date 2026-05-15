@@ -216,6 +216,39 @@ BOOL __stdcall SetWindowPosStub(HWND hWnd, HWND hWndInsertAfter, int X, int Y, i
     return true;
 }
 
+// Coexist with PlugY's cursor lock.
+//
+// PlugY's lockMouseCursor (Windowed.cpp) reads ResolutionX/Y at
+// D2Client + 0x31146C / 0x311470 — the exact bytes Charon writes to in
+// ScreenSizeHook (0x71146C / 0x711470). When alwaysD3D stretches the
+// window past 800x600 but ScreenWidth/Height stay at 800x600 (we *must*
+// keep them at the internal canvas size, otherwise the hundreds of D2
+// internal call sites that use these globals as canvas dimensions for
+// UI placement would draw off-surface), PlugY ends up calling
+// ClipCursor with a rect that's smaller than the actual window — the
+// cursor cannot leave the 800-px region anchored at the client's
+// top-left. Match for GamingForFun's report: cursor cannot move past
+// the right side of the game window when Charon + PlugY are loaded
+// together.
+//
+// Detect a stale clip on each loop iteration and lift it. Only acts
+// when the clip rect is strictly smaller than the window in either
+// axis — so a deliberate /lockmouse via PlugY (or any clip that
+// already matches the window) is left untouched.
+void unclipIfStaleSmaller() {
+    if (!D2::hWnd) return;
+    RECT clip, win;
+    if (!GetClipCursor(&clip)) return;
+    if (!GetWindowRect(D2::hWnd, &win)) return;
+    const LONG clipW = clip.right  - clip.left;
+    const LONG clipH = clip.bottom - clip.top;
+    const LONG winW  = win.right   - win.left;
+    const LONG winH  = win.bottom  - win.top;
+    if (clipW < winW || clipH < winH) {
+        ClipCursor(NULL);
+    }
+}
+
 namespace AlwaysD3D {
 
     class : public Feature {
@@ -275,6 +308,9 @@ namespace AlwaysD3D {
                 startFull = false;
             }
         }
+
+        void oogLoop()  { if (usingAD3D) unclipIfStaleSmaller(); }
+        void gameLoop() { if (usingAD3D) unclipIfStaleSmaller(); }
     } feature;
 
 }
